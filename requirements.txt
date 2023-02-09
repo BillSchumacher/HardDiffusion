@@ -1,0 +1,7 @@
+celery[redis]
+django
+django-celery-beat
+django-celery-results
+django-restframework
+psycopg2
+python-dotenv
