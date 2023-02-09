@@ -3,5 +3,12 @@ django
 django-celery-beat
 django-celery-results
 django-restframework
+numpy
 psycopg2
 python-dotenv
+sdkit
+typing-extensions
+--extra-index-url https://download.pytorch.org/whl/cu116
+torch
+torchvision
+torchaudio
