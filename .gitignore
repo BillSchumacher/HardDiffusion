@@ -2,3 +2,5 @@ __pycache__
 db.sqlite3
 *.pyc
 .env
+*.ckpt
+image_0.jpeg

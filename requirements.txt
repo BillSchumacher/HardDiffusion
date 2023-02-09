@@ -5,6 +5,7 @@ django-celery-results
 django-restframework
 numpy
 psycopg2
+pydantic
 python-dotenv
 sdkit
 typing-extensions
@@ -12,3 +13,5 @@ typing-extensions
 torch
 torchvision
 torchaudio
+triton; sys_platform == 'linux'
+xformers

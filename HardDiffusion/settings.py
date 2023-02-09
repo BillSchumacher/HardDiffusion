@@ -20,7 +20,23 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+STABLE_DIFFUSION_DIR = os.path.join(BASE_DIR, 'sd_models')
 
+MODEL_DIRS = {
+    'stable-diffusion': os.path.join(STABLE_DIFFUSION_DIR, 'stable-diffusion'),
+    'vae': os.path.join(STABLE_DIFFUSION_DIR, 'vae'),
+    'hypernetwork': os.path.join(STABLE_DIFFUSION_DIR, 'hypernetwork'),
+    'gfpgan': os.path.join(STABLE_DIFFUSION_DIR, 'gfpgan'),
+    'realesrgan': os.path.join(STABLE_DIFFUSION_DIR, 'realesrgan'),
+}
+
+DEFAULT_MODEL = {
+    'stable-diffusion': 'v2-1_768-ema-pruned.ckpt',
+}
+
+MODELS = {
+    'stable-diffusion': ['v2-1_768-ema-pruned.ckpt']
+}
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -37,6 +53,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'generate',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,7 +77,7 @@ ROOT_URLCONF = 'HardDiffusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
