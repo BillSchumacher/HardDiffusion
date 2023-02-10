@@ -7,7 +7,7 @@ numpy
 psycopg2
 pydantic
 python-dotenv
-sdkit
+git+https://github.com/BillSchumacher/sdkit.git@main#egg=sdkit
 typing-extensions
 --extra-index-url https://download.pytorch.org/whl/cu116
 torch

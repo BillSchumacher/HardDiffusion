@@ -34,6 +34,10 @@ DEFAULT_MODEL = {
     'stable-diffusion': 'v2-1_768-ema-pruned.ckpt',
 }
 
+DEFAULT_MODEL_CONFIG = {
+    'stable-diffusion': 'v2-1_768-ema-pruned.yaml',
+}
+
 MODELS = {
     'stable-diffusion': ['v2-1_768-ema-pruned.ckpt']
 }
