@@ -1,17 +1,25 @@
+accelerate
+black
 celery[redis]
+diffusers[torch,training]
 django
 django-celery-beat
 django-celery-results
 django-restframework
+flake8
+ftfy
+isort
 numpy
 psycopg2
 pydantic
+pylint
+pylint_django
 python-dotenv
-git+https://github.com/BillSchumacher/sdkit.git@main#egg=sdkit
 typing-extensions
 --extra-index-url https://download.pytorch.org/whl/cu116
 torch
 torchvision
 torchaudio
+transformers
 triton; sys_platform == 'linux'
 xformers

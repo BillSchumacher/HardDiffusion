@@ -1,0 +1,4 @@
+[behave]
+paths = django_auditmatic/tests/features
+junit_directory = reports
+junit = yes

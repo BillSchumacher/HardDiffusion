@@ -1,7 +1,7 @@
-"""Generate app config."""
+"""Train app config."""
 from django.apps import AppConfig
 
 
-class GenerateConfig(AppConfig):
+class TrainConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "generate"
+    name = "train"

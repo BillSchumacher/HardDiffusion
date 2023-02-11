@@ -1,0 +1,10 @@
+
+<div>
+    <h1>Generate</h1>
+    <form method="post" class="">
+        {% csrf_token %}
+        <label for="prompt" class="form-label">Prompt</label>
+        <textarea class=" form-control" id="prompt" cols="42" rows="7" name="prompt" placeholder="Photograph of an astronaut riding a horse" value="Photograph of an astronaut riding a horse"></textarea>
+        <input class="btn btn-primary" type="submit" value="Generate">
+    </form>
+</div>

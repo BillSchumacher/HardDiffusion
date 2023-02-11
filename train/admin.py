@@ -1,4 +1,4 @@
-"""admin.py for generate app."""
+"""Train app admin module."""
 # from django.contrib import admin
 
 # Register your models here.
