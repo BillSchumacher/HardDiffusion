@@ -23,12 +23,11 @@ os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
 BASE_DIR = Path(__file__).resolve().parent.parent
 STABLE_DIFFUSION_DIR = os.path.join(BASE_DIR, 'sd_models')
 
+# Stable diffusion settings.
+MODEL_TYPES = ['stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan']
 MODEL_DIRS = {
-    'stable-diffusion': os.path.join(STABLE_DIFFUSION_DIR, 'stable-diffusion'),
-    'vae': os.path.join(STABLE_DIFFUSION_DIR, 'vae'),
-    'hypernetwork': os.path.join(STABLE_DIFFUSION_DIR, 'hypernetwork'),
-    'gfpgan': os.path.join(STABLE_DIFFUSION_DIR, 'gfpgan'),
-    'realesrgan': os.path.join(STABLE_DIFFUSION_DIR, 'realesrgan'),
+    model_type: os.path.join(STABLE_DIFFUSION_DIR, model_type)
+    for model_type in MODEL_TYPES
 }
 
 DEFAULT_MODEL = {
@@ -144,14 +143,21 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Celery settings
+REDIS_CONNECTION_STRING = os.getenv(
+    'REDIS_CONNECTION_STRING', 'redis://localhost:6379/5'
+)
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_BROKER_URL = 'redis://localhost:6379/5'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/5'
+CELERY_CACHE_BACKEND = REDIS_CONNECTION_STRING
+CELERY_BROKER_URL = REDIS_CONNECTION_STRING
+CELERY_RESULT_BACKEND = REDIS_CONNECTION_STRING
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
