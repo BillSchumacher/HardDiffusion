@@ -1,37 +1,30 @@
 """Celery tasks for generating images."""
 import os
-
+import sys
 from django.conf import settings
 
-import sdkit
 from celery import shared_task
-from sdkit.generate import generate_images
-from sdkit.models import load_model
-from sdkit.utils import log, save_images
+
+if 'celery' in sys.argv:
+    from diffusers import StableDiffusionPipeline
+
+    import torch
+else:
+    # Avoid loading these on the web server.
+    StableDiffusionPipeline = None
+    torch = None
 
 
 @shared_task()
 def generate_image(prompt: str) -> None:
     """Generate an image."""
-    context = sdkit.Context()
+    # model_path = os.path.join(
+    #    settings.MODEL_DIRS["stable-diffusion"],
+    #    settings.DEFAULT_MODEL_CONFIG["stable-diffusion"],
+    # )
+    pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4")
+    # pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config)
+    pipe = pipe.to("cuda")
 
-    # set the path to the model file on the disk
-    # (.ckpt or .safetensors file)
-    context.model_paths["stable-diffusion"] = os.path.join(
-        settings.MODEL_DIRS["stable-diffusion"],
-        settings.DEFAULT_MODEL["stable-diffusion"],
-    )
-
-    context.model_configs["stable-diffusion"] = os.path.join(
-        settings.MODEL_DIRS["stable-diffusion"],
-        settings.DEFAULT_MODEL_CONFIG["stable-diffusion"],
-    )
-    load_model(context, "stable-diffusion")
-
-    # generate the image
-    images = generate_images(context, prompt=prompt, seed=42, width=512, height=512)
-
-    # save the image
-    save_images(images, dir_path=settings.BASE_DIR)
-
-    log.info("Generated images!")
+    image = pipe(prompt=prompt).images[0]
+    image.save("image.png")

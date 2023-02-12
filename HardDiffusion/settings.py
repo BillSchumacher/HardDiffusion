@@ -21,26 +21,6 @@ os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-STABLE_DIFFUSION_DIR = os.path.join(BASE_DIR, 'sd_models')
-
-# Stable diffusion settings.
-MODEL_TYPES = ['stable-diffusion', 'vae', 'hypernetwork', 'gfpgan', 'realesrgan']
-MODEL_DIRS = {
-    model_type: os.path.join(STABLE_DIFFUSION_DIR, model_type)
-    for model_type in MODEL_TYPES
-}
-
-DEFAULT_MODEL = {
-    'stable-diffusion': 'v2-1_768-ema-pruned.ckpt',
-}
-
-DEFAULT_MODEL_CONFIG = {
-    'stable-diffusion': 'v2-1_768-ema-pruned.yaml',
-}
-
-MODELS = {
-    'stable-diffusion': ['v2-1_768-ema-pruned.ckpt']
-}
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
