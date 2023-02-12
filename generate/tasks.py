@@ -10,8 +10,7 @@ from celery import shared_task
 
 from generate.models import GeneratedImage
 
-
-if 'HardDiffusion' in sys.argv:
+if "HardDiffusion" in sys.argv:
     from diffusers import StableDiffusionPipeline
 
     # import torch
@@ -24,17 +23,14 @@ HOSTNAME = settings.HOSTNAME
 
 @shared_task()
 def generate_image(
-    prompt: str,
-    model_path_or_name: str = "CompVis/stable-diffusion-v1-4"
+    prompt: str, model_path_or_name: str = "CompVis/stable-diffusion-v1-4"
 ) -> Tuple[str, str]:
     """Generate an image."""
     # model_path = os.path.join(
     #    settings.MODEL_DIRS["stable-diffusion"],
     #    settings.DEFAULT_MODEL_CONFIG["stable-diffusion"],
     # )
-    pipe = StableDiffusionPipeline.from_pretrained(
-        model_path_or_name
-    )
+    pipe = StableDiffusionPipeline.from_pretrained(model_path_or_name)
     # pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config)
     pipe = pipe.to("cuda")
 
