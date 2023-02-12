@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
+import platform
 import random
 from pathlib import Path
 
@@ -19,8 +20,18 @@ from dotenv import load_dotenv
 load_dotenv()
 os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
 
+
+hostname = os.getenv(
+    'HOSTNAME',
+    os.getenv('COMPUTERNAME', platform.node())
+)
+if '.' in hostname:
+    hostname = hostname.split('.')[0]
+HOSTNAME = hostname
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -39,6 +50,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'generate',
     'train',
+    'user',
     'django_celery_results',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -142,3 +154,4 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+AUTH_USER_MODEL = 'user.User'
