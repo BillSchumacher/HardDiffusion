@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 import platform
 import random
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -28,7 +29,8 @@ hostname = os.getenv(
 if '.' in hostname:
     hostname = hostname.split('.')[0]
 HOSTNAME = hostname
-
+USE_LOCALHOST = sys.argv == ['manage.py', 'runserver'] or \
+    os.getenv('USE_LOCALHOST', '0') == '1'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

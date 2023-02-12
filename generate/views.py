@@ -1,4 +1,5 @@
 """Views for the generate app."""
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
@@ -13,12 +14,17 @@ def index(request) -> HttpResponse:
     if request.method == "POST":
         _generate_image: Task = generate_image  # type: ignore
         _generate_image.delay(request.POST["prompt"])
-    return render(request, "generate.html")
+    context = (
+        {"use_localhost": "true"}
+        if settings.USE_LOCALHOST
+        else {"use_localhost": "false"}
+    )
+    return render(request, "generate.html", context)
 
 
 def images(request) -> JsonResponse:
     """Show generated images."""
-    generated_images = GeneratedImage.objects.all()
+    generated_images = GeneratedImage.objects.all().order_by("-id")[:10]
     return JsonResponse(
         {
             "images": [
