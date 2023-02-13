@@ -28,7 +28,11 @@ def images(request) -> JsonResponse:
     return JsonResponse(
         {
             "images": [
-                {"filename": image.filename, "host": image.host}
+                {
+                    "filename": image.filename,
+                    "host": image.host,
+                    "created_at": image.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                }
                 for image in generated_images
             ]
         }

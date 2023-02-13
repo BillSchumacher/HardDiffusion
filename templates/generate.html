@@ -5,10 +5,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white" style="width: 380px;">
+<div class="d-flex flex-column align-items-stretch flex-grow-1 bg-white">
     <a href="/" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
-      <svg class="bi pe-none me-2" width="30" height="24"><use xlink:href="#bootstrap"/></svg>
-      <span class="fs-5 fw-semibold">Generated Images</span>
+      <span class="fs-5 fw-semibold">Generated Images </span> - <span id="clock"></span>
     </a>
     <div id="generated_images_list" class="list-group list-group-flush border-bottom scrollarea">
       <a href="#" class="list-group-item list-group-item-action active py-3 lh-sm" aria-current="true">
@@ -23,6 +22,21 @@
 </div>
 <script>
     const use_localhost = {{ use_localhost }};
+    const durations = ['years', 'months', 'days', 'hours', 'minutes', 'seconds'];
+    function timeSince(timestamp) {
+        var time_since_str = '';
+        var time_since = timestamp.until(now).toDuration(durations).toObject();
+        for (const duration of durations) {
+            var time_since_duration = time_since[duration];
+            if (time_since_duration > 0.0) {
+                if (time_since_duration == 1)
+                    time_since_str += ` ${Math.round(time_since_duration)} ${duration.slice(0, -1)}`;
+                else
+                    time_since_str += ` ${Math.round(time_since_duration)} ${duration}`;
+            }
+        };
+        return time_since_str + ' ago';
+    }
     var generated_images_list = document.getElementById("generated_images_list");
     var generated_images = [];
     setInterval(get_generated_images, 1000);
@@ -33,7 +47,11 @@
             update_generated_images(data.images);
         });
     }
+    var now = null;
+    var clock = document.getElementById("clock");
     function update_generated_images(images) {
+        now = DateTime.now();
+        clock.innerText = now.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
         if (images.length == 0) {
             generated_images_list.innerHTML = "<p>No images generated yet.</p>";
         } else {
@@ -43,17 +61,59 @@
             console.log(images, generated_images)
             generated_images_list.innerHTML = "";
             generated_images = stringified;
+
             for (var i = 0; i < images.length; i++) {
                 var image = images[i];
-                var image_element = document.createElement("img");
+                var image_src = '';
                 if (use_localhost)
-                    image_element.src = `http://localhost:8000/${image.filename}`;
+                    image_src = `http://localhost:8000/${image.filename}`;
                 else
-                    image_element.src = `http://${image.host}/${image.filename}`;
-                generated_images_list.appendChild(image_element);
+                    image_src = `http://${image.host}/${image.filename}`;
+                
+                var link_element = document.createElement("a");
+                link_element.classList.add("list-group-item", "list-group-item-action", "py-3", "lh-sm");
+                
+                var card_element = document.createElement("div");
+                card_element.classList.add("card");
+                var card_row_element = document.createElement("div");
+                card_row_element.classList.add("row", "g-0");
+                var card_col1_element = document.createElement("div");
+                card_col1_element.classList.add("col-md-4");
+                var card_col2_element = document.createElement("div");
+                card_col2_element.classList.add("col-md-8", "position-relative");
+                var card_body_element = document.createElement("div");
+                card_body_element.classList.add("card-body");
+                var card_title_element = document.createElement("h5");
+                card_title_element.classList.add("card-title");
+                card_title_element.innerHTML = image.prompt;
+                var card_text1_element = document.createElement("p");
+                card_text1_element.classList.add("card-text");
+                card_text1_element.innerHTML = `Resolution: ${image.width} x ${image.height}`;
+                var card_text2_element = document.createElement("p");
+                var card_footer_element = document.createElement("div");
+                card_footer_element.classList.add("card-footer", "position-absolute", "bottom-0", "w-100");
+                
+                card_text2_element.classList.add("card-text");
+                var image_timestamp = DateTime.fromISO(image.created_at);
+                var timestamp_str = timeSince(image_timestamp);
+                card_text2_element.innerHTML = `<small class="text-muted">Generated ${timestamp_str} @ ${image_timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)}</small>`;
+                var card_image_element = document.createElement("img");
+                card_image_element.classList.add("img-fluid", "rounded-start");
+                card_image_element.src = image_src;
+                card_image_element.alt = image.prompt;
+                card_col1_element.appendChild(card_image_element);
+                card_body_element.appendChild(card_title_element);
+                card_body_element.appendChild(card_text1_element);
+                card_footer_element.appendChild(card_text2_element);
+                card_col2_element.appendChild(card_body_element);
+                card_col2_element.appendChild(card_footer_element);
+                card_row_element.appendChild(card_col1_element);
+                card_row_element.appendChild(card_col2_element);
+                card_element.appendChild(card_row_element);
+                link_element.appendChild(card_element);
+                generated_images_list.appendChild(link_element);
             }
         }
     }
 </script>
-<div class="b-example-divider b-example-vr"></div>
 {% endblock %}
