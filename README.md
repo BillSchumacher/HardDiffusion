@@ -23,3 +23,6 @@ License
 -------
 
 MIT with use restrictions, see LICENSE.
+
+Painting Icon by Vick Romero, License is uncertain...
+https://dribbble.com/shots/3854786-Loading-Screen-1-5-Painting

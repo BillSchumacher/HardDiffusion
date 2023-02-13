@@ -1,42 +1,73 @@
 """Celery tasks for generating images."""
 import os
 import sys
-from typing import Tuple
-from uuid import uuid4
+from types import ModuleType
+from typing import Optional, Tuple
 
 from django.conf import settings
+from django.utils import timezone
 
 from celery import shared_task
 
 from generate.models import GeneratedImage
 
 if "HardDiffusion" in sys.argv:
+    import torch
+    import diffusers
+    def run_safety_checker(self, image, device, dtype):
+        """Disabled."""
+        has_nsfw_concept = None
+        return image, has_nsfw_concept
+    diffusers.StableDiffusionPipeline.run_safety_checker = run_safety_checker
     from diffusers import StableDiffusionPipeline
-
-    # import torch
 else:
     # Avoid loading these on the web server.
     StableDiffusionPipeline: StableDiffusionPipeline = None  # type: ignore
-    # torch = None
+    torch: ModuleType = None  # type: ignore
 HOSTNAME = settings.HOSTNAME
 
 
-@shared_task()
+@shared_task(bind=True)
 def generate_image(
-    prompt: str, model_path_or_name: str = "CompVis/stable-diffusion-v1-4"
+    self,
+    prompt: str = "An astronaut riding a horse on the moon.",
+    model_path_or_name: str = "CompVis/stable-diffusion-v1-4",
+    seed: Optional[int] = None,
+    guidance_scale: float = 7.5,
+    num_inference_steps: int = 50,
+    height: int = 512,
+    width: int = 512,
 ) -> Tuple[str, str]:
     """Generate an image."""
-    # model_path = os.path.join(
-    #    settings.MODEL_DIRS["stable-diffusion"],
-    #    settings.DEFAULT_MODEL_CONFIG["stable-diffusion"],
-    # )
+    task_id = self.request.id
+    params = {
+        "prompt": prompt,
+        "guidance_scale": guidance_scale,
+        "num_inference_steps": num_inference_steps,
+        "height": height,
+        "width": width,
+    }
+
+    generated_image = GeneratedImage.objects.filter(task_id=task_id).first()
+    if generated_image is None:
+        raise ValueError(f"GeneratedImage for Task {task_id} not found")
+    start = timezone.now()
     pipe = StableDiffusionPipeline.from_pretrained(model_path_or_name)
     # pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config)
     pipe = pipe.to("cuda")
 
-    image = pipe(prompt=prompt).images[0]
-    filename = f"{uuid4().hex}.png"
+    generator = torch.Generator("cuda")
+    if seed:
+        generator.manual_seed(seed)
+    image = pipe(generator=generator, **params).images[0]
+    seed = generator.initial_seed()
+    end = timezone.now()
+    duration = (end - start).total_seconds()
+    generated_image.seed = seed
+    generated_image.duration = duration
+    generated_image.generated_at = end
+    filename = generated_image.filename
+    generated_image.host = HOSTNAME
     image.save(os.path.join(settings.MEDIA_ROOT, filename))
-
-    GeneratedImage(filename=filename, host=HOSTNAME).save()
+    generated_image.save()
     return filename, HOSTNAME

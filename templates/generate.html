@@ -7,7 +7,7 @@
 {% block content %}
 <div class="d-flex flex-column align-items-stretch flex-grow-1 bg-white">
     <a href="/" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
-      <span class="fs-5 fw-semibold">Generated Images </span> - <span id="clock"></span>
+      <span class="fs-5 fw-semibold">Generated Images</span>&nbsp;-&nbsp;<span id="clock"></span>
     </a>
     <div id="generated_images_list" class="list-group list-group-flush border-bottom scrollarea">
     </div>
@@ -45,7 +45,7 @@
         now = DateTime.now();
         clock.innerText = now.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
         if (images.length == 0) {
-            generated_images_list.innerHTML = "<p>No images generated yet.</p>";
+            generated_images_list.innerHTML = "<div class='container'><p>No images generated yet.</p></div>";
         } else {
             const stringified = JSON.stringify(images);
             if (stringified === generated_images)
@@ -57,10 +57,11 @@
             for (var i = 0; i < images.length; i++) {
                 var image = images[i];
                 var image_src = '';
+                var image_filename = image.generated_at ? image.filename : 'painting.gif';
                 if (use_localhost)
-                    image_src = `http://localhost:8000/${image.filename}`;
+                    image_src = `http://localhost:8000/${image_filename}`;
                 else
-                    image_src = `http://${image.host}/${image.filename}`;
+                    image_src = `http://${image.host}/${image_filename}`;
                 
                 var link_element = document.createElement("a");
                 link_element.classList.add("list-group-item", "list-group-item-action", "py-3", "lh-sm");
@@ -81,14 +82,28 @@
                 var card_text1_element = document.createElement("p");
                 card_text1_element.classList.add("card-text");
                 card_text1_element.innerHTML = `Resolution: ${image.width} x ${image.height}`;
+                
+                var card_text3_element = document.createElement("p");
+                card_text3_element.classList.add("card-text");
+                card_text3_element.innerHTML = `Seed: ${image.seed}`;
+                var card_text4_element = document.createElement("p");
+                card_text4_element.classList.add("card-text");
+                card_text4_element.innerHTML = `Num Inference Steps: ${image.num_inference_steps}  Guidance Scale: ${image.guidance_scale}`;
                 var card_text2_element = document.createElement("p");
                 var card_footer_element = document.createElement("div");
                 card_footer_element.classList.add("card-footer", "position-absolute", "bottom-0", "w-100");
                 
                 card_text2_element.classList.add("card-text");
-                var image_timestamp = DateTime.fromISO(image.created_at);
-                var timestamp_str = timeSince(image_timestamp);
-                card_text2_element.innerHTML = `<small class="text-muted">Generated ${timestamp_str} @ ${image_timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)}</small>`;
+                
+                if (image.generated_at) {
+                    var image_timestamp = DateTime.fromISO(image.generated_at);
+                    var timestamp_str = timeSince(image_timestamp);
+                    card_text2_element.innerHTML = `<small class="text-muted">Generated ${timestamp_str} @ ${image_timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)} in ${image.duration}</small>`;
+                } else {
+                    var image_timestamp = DateTime.fromISO(image.created_at);
+                    var timestamp_str = timeSince(image_timestamp);
+                    card_text2_element.innerHTML = `<small class="text-muted">Created ${timestamp_str} @ ${image_timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)}</small>`;
+                }
                 var card_image_element = document.createElement("img");
                 card_image_element.classList.add("img-fluid", "rounded-start");
                 card_image_element.src = image_src;
@@ -96,6 +111,8 @@
                 card_col1_element.appendChild(card_image_element);
                 card_body_element.appendChild(card_title_element);
                 card_body_element.appendChild(card_text1_element);
+                card_body_element.appendChild(card_text3_element);
+                card_body_element.appendChild(card_text4_element);
                 card_footer_element.appendChild(card_text2_element);
                 card_col2_element.appendChild(card_body_element);
                 card_col2_element.appendChild(card_footer_element);

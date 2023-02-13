@@ -1,10 +1,22 @@
 
 <div>
     <h1>Generate</h1>
-    <form method="post" class="">
+    <form id="generate_form" method="post" class="" onsubmit="return fetchpost()">
         {% csrf_token %}
         <label for="prompt" class="form-label">Prompt</label>
         <textarea class=" form-control" id="prompt" cols="42" rows="7" name="prompt" placeholder="Photograph of an astronaut riding a horse" value="Photograph of an astronaut riding a horse"></textarea>
         <input class="btn btn-primary" type="submit" value="Generate">
     </form>
+    <script>
+        function fetchpost () {
+          var data = new FormData(document.getElementById("generate_form"));
+          fetch("{% url 'queue_prompt' %}", { method: "post", body: data })
+          .then(res => res.json())
+          .then(txt => {
+            console.log(txt);
+          })
+          .catch(err => console.log(err));
+          return false;
+        }
+    </script>
 </div>
