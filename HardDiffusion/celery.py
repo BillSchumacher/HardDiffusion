@@ -1,3 +1,4 @@
+""" celery app for HardDiffusion. """
 import logging
 import os
 import sys
@@ -41,7 +42,7 @@ def schedule_health_check(worker):
 
 
 def health_check_completed(result):
-    logger.info("Health check completed with msg: %s", result)
+    logger.debug("Health check completed with msg: %s", result)
 
 
 # Set the default Django settings module for the 'celery' program.

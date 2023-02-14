@@ -85,7 +85,7 @@ def images(request) -> JsonResponse:
 
 
 def renderer_health(request) -> HttpResponse:
-    """Render an image."""
+    """Check GPU memory"""
     render_devices = RenderWorkerDevice.objects.filter(
         last_update_at__gt=timezone.now() - timedelta(seconds=30)
     )
