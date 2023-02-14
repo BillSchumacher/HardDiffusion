@@ -1,0 +1,79 @@
+<div id="advanced_prompt" class="d-flex flex-column flex-shrink-0 text-bg-light" style="display: none;">
+    <div id="advanced_prompt_container" style="display: none;">
+        <div style="display: flex; justify-content: space-between;"><h4>Advanced</h4><button onclick="toggle_advanced()" type="button" class="btn-close" aria-label="Close"></button></div>
+        <div>
+            <div>
+                <div style="display: flex; justify-content: space-between;">
+                    <label for="seedControl" class="form-label">Seed</label>
+                    <div class="form-check form-switch form-check-reverse">
+                        <input class="form-check-input" onchange="toggle_random_seed();" type="checkbox" id="randomSeedCheckbox" checked>
+                        <label class="form-check-label" for="flexSwitchCheckReverse">Random</label>
+                    </div>
+                </div>
+                <input type="number" class="form-control" id="seedControl" placeholder="Enter seed number..." style="display: none;">
+            </div>
+            <div  class="mb-3" style="display: flex;">
+                <div>
+                    <label for="widthControl" class="form-label">Width</label>
+                    <input type="number" class="form-control" id="widthControl" placeholder="512">
+                </div>
+                <div>
+                    <label for="heightControl" class="form-label">Height</label>
+                    <input type="number" class="form-control" id="heightControl" placeholder="512">
+                </div>
+            </div>
+            <div class="mb-3">
+                <div>
+                    <label for="inferenceStepsControl" class="form-label">Inference Steps</label>
+                    <input type="number" class="form-control" id="inferenceStepsControl" placeholder="50">
+                </div>
+            </div>
+            <div class="mb-3">
+                <div>
+                    <label for="guidanceScaleControl" class="form-label">Guidance Scale</label>
+                    <input type="number" class="form-control" id="guidanceScaleControl" placeholder="7.5">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<div id="advanced_prompt_vr" class="b-example-divider b-example-vr" style="display: none;"></div>
+
+<script>
+    var random_seed = true;
+    var random_seed_checkbox = document.getElementById("randomSeedCheckbox");
+    var seed_input = document.getElementById("seedControl");
+    function toggle_random_seed() {
+        random_seed = !random_seed;
+        if (random_seed) {
+            seed_input.style.display = 'none';
+        } else {
+            seed_input.style.display = 'block';
+        }
+    }
+    var show_advanced = false;
+    var advanced_prompt = document.getElementById("advanced_prompt");
+    var advanced_prompt_container = document.getElementById("advanced_prompt_container");
+    var advanced_prompt_vr = document.getElementById("advanced_prompt_vr");
+    function toggle_advanced() {
+        var advanced_switch = document.getElementById("advancedSwitch");
+        show_advanced = !show_advanced;
+        if (show_advanced) {
+            advanced_prompt.style.display = "block";
+            advanced_prompt.style.width = '280px';
+            advanced_prompt_container.style.display = "block";
+            advanced_prompt_vr.style.display = "block";
+            advanced_prompt.classList.add('p-3')
+            advanced_switch.checked = true;
+        } else {
+            advanced_prompt.style.display = "none";
+            advanced_prompt.classList.remove('p-3');
+            advanced_prompt_container.style.display = "none";
+            advanced_prompt.style.width = '0';
+            advanced_prompt_vr.style.display = "none";
+            advanced_switch.checked = false;
+        }
+    }
+</script>

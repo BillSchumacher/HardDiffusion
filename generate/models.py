@@ -26,3 +26,16 @@ class GeneratedImage(models.Model):
     def filename(self):
         """Return the filename."""
         return f"{self.task_id}.png"
+
+
+class RenderWorkerDevice(models.Model):
+    """Model for render worker devices."""
+
+    host = models.CharField(max_length=255, blank=True, null=True)
+    device_id = models.IntegerField(blank=True, null=True)
+    device_name = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_update_at = models.DateTimeField(auto_now=True)
+    allocated_memory = models.FloatField(blank=True, null=True)
+    total_memory = models.FloatField(blank=True, null=True)
+    cached_memory = models.FloatField(blank=True, null=True)

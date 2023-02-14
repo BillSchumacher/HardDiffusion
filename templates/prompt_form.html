@@ -1,12 +1,27 @@
 
+<div id="left_column" class="d-flex flex-column flex-shrink-0 p-3 text-bg-light" style="width: 270px;">
 <div>
-    <h1>Generate</h1>
+    <h4>Generate</h4>
     <form id="generate_form" method="post" class="" onsubmit="return fetchpost()">
         {% csrf_token %}
         <label for="prompt" class="form-label">Prompt</label>
         <textarea class=" form-control" id="prompt" cols="42" rows="7" name="prompt" placeholder="Photograph of an astronaut riding a horse" value="Photograph of an astronaut riding a horse"></textarea>
-        <input class="btn btn-primary" type="submit" value="Generate">
+        <div class="containter pt-3">
+            <div class="row">
+                <div class="col" style="display: flex; align-items: center; justify-content: center;">
+                    <div class="form-check form-switch form-check-reverse">
+                        <input class="form-check-input" onchange="toggle_advanced();" type="checkbox" id="advancedSwitch">
+                        <label class="form-check-label" for="advancedSwitch">Advanced</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <input class="btn btn-primary" type="submit" value="Generate">
+                </div>
+            </div>
+        </div>
     </form>
+    <hr/>
+    <div id="renderers"></div>
     <script>
         function fetchpost () {
           var data = new FormData(document.getElementById("generate_form"));
@@ -18,5 +33,36 @@
           .catch(err => console.log(err));
           return false;
         }
+        function check_renderers() {
+            fetch("{% url 'renderer_health' %}")
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                var renderers = document.getElementById("renderers");
+                var health_output = "";
+
+                for (const [key, value] of Object.entries(data.results)) {
+                    console.log(`${key}: ${value}`);
+                    let devices_output = [];
+                    health_output += `<div><h5>Host ${key}</h5>`;
+                    for (var i = 0; i < value.length; i++) {
+                        var renderer = value[i];
+            
+                        health_output += `<h6>Device #${renderer.id}: ${renderer.name}</h6>`;
+                        health_output += `<p class='p-0 m-0'>${renderer.usage}</p>`;
+                        health_output += `<p class='p-0 m-0'>${renderer.device_allocated}</p>`;
+                        health_output += `<p class='p-0 m-0'>${renderer.device_cached}</p>`;
+                        health_output += `<p class='p-0 m-0'>${renderer.memory}</p>`;
+                    }
+                    health_output += `</div>`;
+                }
+                renderers.innerHTML = health_output;
+            })
+            .catch(err => console.log(err));
+        }
+        setInterval(check_renderers, 5000);
     </script>
 </div>
+</div>
+
+<div class="b-example-divider b-example-vr"></div>
