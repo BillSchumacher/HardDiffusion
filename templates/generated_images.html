@@ -198,7 +198,7 @@
                 if (!image.generated_at) {
                     if (created_images_set.has(image.id)) {
                         const time_since_created = images_image.created.until(now).toDuration(['hours']).toObject();
-                        if (time_since_created['hours'] > 1 || last_generated < images_image.created) {
+                        if (time_since_created['hours'] > 1) {
                             created_images_set.delete(image.id);
                             error_images_set.add(image.id);
                             const image_element = document.getElementById(`image_${image.id}`);
