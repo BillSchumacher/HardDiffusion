@@ -4,34 +4,34 @@
         <div>
             <div>
                 <div style="display: flex; justify-content: space-between;">
-                    <label for="seedControl" class="form-label">Seed</label>
+                    <label for="seed_input" class="form-label">Seed</label>
                     <div class="form-check form-switch form-check-reverse">
-                        <input class="form-check-input" onchange="toggle_random_seed();" type="checkbox" id="randomSeedCheckbox" checked>
-                        <label class="form-check-label" for="flexSwitchCheckReverse">Random</label>
+                        <input class="form-check-input" onchange="toggle_random_seed();" type="checkbox" id="random_seed_checkbox" checked>
+                        <label class="form-check-label" for="random_seed_checkbox">Random</label>
                     </div>
                 </div>
-                <input type="number" class="form-control" id="seedControl" placeholder="Enter seed number..." style="display: none;">
+                <input type="number" class="form-control" id="seed_input" placeholder="Enter seed number..." style="display: none;">
             </div>
             <div  class="mb-3" style="display: flex;">
                 <div>
-                    <label for="widthControl" class="form-label">Width</label>
-                    <input type="number" class="form-control" id="widthControl" placeholder="512">
+                    <label for="width_input" class="form-label">Width</label>
+                    <input type="number" class="form-control" id="width_input" placeholder="512">
                 </div>
                 <div>
-                    <label for="heightControl" class="form-label">Height</label>
-                    <input type="number" class="form-control" id="heightControl" placeholder="512">
-                </div>
-            </div>
-            <div class="mb-3">
-                <div>
-                    <label for="inferenceStepsControl" class="form-label">Inference Steps</label>
-                    <input type="number" class="form-control" id="inferenceStepsControl" placeholder="50">
+                    <label for="height_input" class="form-label">Height</label>
+                    <input type="number" class="form-control" id="height_input" placeholder="512">
                 </div>
             </div>
             <div class="mb-3">
                 <div>
-                    <label for="guidanceScaleControl" class="form-label">Guidance Scale</label>
-                    <input type="number" class="form-control" id="guidanceScaleControl" placeholder="7.5">
+                    <label for="inference_steps_input" class="form-label">Inference Steps</label>
+                    <input type="number" class="form-control" id="inference_steps_input" placeholder="50">
+                </div>
+            </div>
+            <div class="mb-3">
+                <div>
+                    <label for="guidance_scale_input" class="form-label">Guidance Scale</label>
+                    <input type="number" class="form-control" id="guidance_scale_input" placeholder="7.5">
                 </div>
             </div>
         </div>
@@ -43,8 +43,8 @@
 
 <script>
     var random_seed = true;
-    var random_seed_checkbox = document.getElementById("randomSeedCheckbox");
-    var seed_input = document.getElementById("seedControl");
+    var random_seed_checkbox = document.getElementById("random_seed_checkbox");
+    var seed_input = document.getElementById("seed_input");
     function toggle_random_seed() {
         random_seed = !random_seed;
         if (random_seed) {
@@ -58,7 +58,7 @@
     var advanced_prompt_container = document.getElementById("advanced_prompt_container");
     var advanced_prompt_vr = document.getElementById("advanced_prompt_vr");
     function toggle_advanced() {
-        var advanced_switch = document.getElementById("advancedSwitch");
+        var advanced_switch = document.getElementById("advanced_switch");
         show_advanced = !show_advanced;
         if (show_advanced) {
             advanced_prompt.style.display = "block";

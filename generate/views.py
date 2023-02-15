@@ -1,6 +1,7 @@
 """Views for the generate app."""
 from collections import defaultdict
 from datetime import timedelta
+from typing import Optional
 
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
@@ -8,7 +9,6 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from celery import Task
-from pydantic import Json
 
 from generate.models import GeneratedImage, RenderWorkerDevice
 from generate.tasks import generate_image
@@ -29,13 +29,15 @@ def queue_prompt(request) -> JsonResponse:
     if request.method == "POST":
         _generate_image: Task = generate_image  # type: ignore
         guidance_scale = float(request.POST.get("guidance_scale", 7.5))
-        num_inference_steps = int(request.POST.get("num_inference_steps", 50))
+        inference_steps = int(request.POST.get("inference_steps", 50))
         height = int(request.POST.get("height", 512))
         width = int(request.POST.get("width", 512))
         seed = request.POST.get("seed", None)
+        if seed:
+            seed = int(seed)
         params = {
             "guidance_scale": guidance_scale,
-            "num_inference_steps": num_inference_steps,
+            "num_inference_steps": inference_steps,
             "height": height,
             "width": width,
             "seed": seed,
@@ -54,13 +56,14 @@ def queue_prompt(request) -> JsonResponse:
     return JsonResponse({"error": "POST request required", "task_id": None})
 
 
-def images(request) -> JsonResponse:
+def images(request, last: Optional[int] = None) -> JsonResponse:
     """Show generated images."""
     generated_images = GeneratedImage.objects.all().order_by("-id")[:10]
     return JsonResponse(
         {
             "images": [
-                {
+                {   
+                    "id": image.id,
                     "task_id": image.filename[:-4],
                     "filename": image.filename,
                     "host": image.host,

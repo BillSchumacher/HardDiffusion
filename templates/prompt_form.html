@@ -10,8 +10,8 @@
             <div class="row">
                 <div class="col" style="display: flex; align-items: center; justify-content: center;">
                     <div class="form-check form-switch form-check-reverse">
-                        <input class="form-check-input" onchange="toggle_advanced();" type="checkbox" id="advancedSwitch">
-                        <label class="form-check-label" for="advancedSwitch">Advanced</label>
+                        <input class="form-check-input" onchange="toggle_advanced();" type="checkbox" id="advanced_switch">
+                        <label class="form-check-label" for="advanced_switch">Advanced</label>
                     </div>
                 </div>
                 <div class="col">
@@ -24,25 +24,47 @@
     <div id="renderers"></div>
     <script>
         function fetchpost () {
-          var data = new FormData(document.getElementById("generate_form"));
-          fetch("{% url 'queue_prompt' %}", { method: "post", body: data })
-          .then(res => res.json())
-          .then(txt => {
-            console.log(txt);
-          })
-          .catch(err => console.log(err));
-          return false;
+            var data = new FormData(document.getElementById("generate_form"));
+            var random_seed_checkbox = document.getElementById("random_seed_checkbox");
+            var seed_input = document.getElementById("seed_input");
+            var width_input = document.getElementById("width_input");
+            var height_input = document.getElementById("height_input");
+            var inference_steps_input = document.getElementById("inference_steps_input");
+            var guidance_scale_input = document.getElementById("guidance_scale_input");
+            if (!random_seed_checkbox.checked) {
+                data.set("seed", seed_input.value);
+            }
+            if (width_input.value != "") {
+                data.set("width", width_input.value);
+            }
+            if (height_input.value != "") {
+                data.set("height", height_input.value);
+            }
+            if (inference_steps_input.value != "") {
+                data.set("inference_steps", inference_steps_input.value);
+            }
+            if (guidance_scale_input.value != "") {
+                data.set("guidance_scale", guidance_scale_input.value);
+            }
+
+            fetch("{% url 'queue_prompt' %}", { method: "post", body: data })
+            .then(res => res.json())
+            .then(data => {
+                //console.log(data);
+            })
+            .catch(err => console.log(err));
+            return false;
         }
         function check_renderers() {
             fetch("{% url 'renderer_health' %}")
             .then(res => res.json())
             .then(data => {
-                console.log(data);
+                //console.log(data);
                 var renderers = document.getElementById("renderers");
                 var health_output = "";
 
                 for (const [key, value] of Object.entries(data.results)) {
-                    console.log(`${key}: ${value}`);
+                    //console.log(`${key}: ${value}`);
                     let devices_output = [];
                     health_output += `<div><h5>Host ${key}</h5>`;
                     for (var i = 0; i < value.length; i++) {

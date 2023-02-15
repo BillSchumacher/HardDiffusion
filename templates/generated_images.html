@@ -8,6 +8,7 @@
 <script>
     const use_localhost = {{ use_localhost }};
     const durations = ['years', 'months', 'days', 'hours', 'minutes', 'seconds'];
+    let last_generated = null;
     function timeSince(timestamp) {
         var time_since_str = '';
         var time_since = timestamp.until(now).toDuration(durations).toObject();
@@ -22,9 +23,226 @@
         };
         return time_since_str + ' ago';
     }
-    var generated_images_list = document.getElementById("generated_images_list");
+    const generated_images_list = document.getElementById("generated_images_list");
     var generated_images = [];
-    setInterval(get_generated_images, 1000);
+
+    var now = null;
+    const clock = document.getElementById("clock");
+    var images_loading = [];
+    var images_generated = [];
+
+    function get_image_src(image) {
+        let image_src = '';
+        const image_filename = image.generated_at ? image.filename : 'painting.gif';
+        return use_localhost ? `http://localhost:8000/${image_filename}` : `http://${image.host}/${image_filename}`;
+    }
+    function get_image_error_src(image) {
+        return use_localhost ? `http://localhost:8000/error.gif` : `http://${image.host}/error.gif`;
+    }
+    function create_image_element(image) {
+        const element = document.createElement("img");
+        element.id = `image_${image.id}`;
+        element.classList.add("img-fluid", "rounded-start");
+        element.src = get_image_src(image);
+        element.alt = image.prompt;
+        return element;
+    }
+
+    function create_list_item_element(element_id) {  
+        const element = document.createElement("a");
+        element.classList.add("list-group-item", "list-group-item-action", "py-3", "lh-sm");
+        element.href = `#${element_id}`;
+        element.id = element_id;
+        return element;
+    }
+
+    function create_card_text_element(element_id = null, text) {
+        const element = document.createElement("p");
+        element.classList.add("card-text", "p-0", "m-0");
+        element.style.display = "block";
+        element.id = element_id;
+        element.innerHTML = text;
+        return element;
+    }
+
+    function create_card_footer_element(element_id = null) {
+        const element = document.createElement("div");
+        element.classList.add("card-footer", "position-absolute", "bottom-0", "w-100");
+        element.id = element_id;
+        return element;
+    }
+
+    function create_card_title_element(element_id = null, text) {
+        const element = document.createElement("h5");
+        element.classList.add("card-title", "p-0", "m-0");
+        element.style.display = "block";
+        element.innerHTML = text;
+        return element;
+    }
+
+    function create_card_element(element_id = null) {
+        const element = document.createElement("div");
+        element.classList.add("card");
+        element.id = element_id;
+        return element;
+    }
+
+    function create_card_row_element(element_id = null) {
+        const element = document.createElement("div");
+        element.classList.add("row", "g-0");
+        element.id = element_id;
+        return element;
+    }
+
+    function create_card_image_col_element(image) {
+        const element = document.createElement("div");
+        element.classList.add("col-md-4");
+        element.appendChild(create_image_element(image));
+        return element;
+    }
+
+    function get_image_timestamp_message(image) {
+        const image_timestamp = image.generated_at ? image.generated : image.created;
+        const timestamp_str = timeSince(image_timestamp);
+        const formatted_timestamp = image_timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
+        if (image.generated_at) {
+            return `<small class="text-muted">Generated ${timestamp_str} @ ${formatted_timestamp} in ${image.duration}</small>`;
+        }
+        return `<small class="text-muted">Created ${timestamp_str} @ ${formatted_timestamp}</small>`;
+    }
+
+    function create_image_card_footer(image) {
+        const footer_element = create_card_footer_element();
+        const timestamp_element = create_card_text_element(`image_${image.id}_timestamp`, get_image_timestamp_message(image));
+        footer_element.appendChild(timestamp_element);
+        return footer_element;
+    }
+
+    function create_card_body_element() {
+        const element = document.createElement("div");
+        element.classList.add("card-body");
+        return element;
+    }
+
+    function create_card_info_col_element() {
+        const element = document.createElement("div");
+        element.classList.add("col-md-8", "position-relative");
+        return element;
+    }
+
+    function create_image_card_body(image) {
+        const card_body_element = create_card_body_element();
+        const card_title_element = create_card_title_element(null, image.prompt);
+        const card_resolution_and_seed_element = create_card_text_element(null, 
+            `<div style='display: flex; justify-content: space-evenly;'>
+                <div><b>Resolution:</b> ${image.width} x ${image.height}</div>
+                <div style='display: flex; flex-wrap: no-wrap;'><div><b>Seed:&nbsp;</b></div><div id='seed_${image.id}'>${image.seed}</div></div>
+            </div>`
+        );
+        const card_inference_and_guidance_element = create_card_text_element(null, 
+            `<div style='display: flex; justify-content: space-evenly;'>
+                <div><b>Inference Steps:</b> ${image.num_inference_steps}</div>
+                <div><b>Guidance Scale:</b> ${image.guidance_scale}</div>
+            </div>`
+        );
+        card_body_element.appendChild(card_title_element);
+        card_body_element.appendChild(card_resolution_and_seed_element);
+        card_body_element.appendChild(card_inference_and_guidance_element);
+        return card_body_element
+    }
+
+    function create_image_list_item_element(image) {
+        const list_item_element = create_list_item_element(image.id);
+        const card_element = create_card_element(null);
+        const card_row_element = create_card_row_element(null);
+        const card_image_col_element = create_card_image_col_element(image);
+        const card_info_col_element = create_card_info_col_element();
+        const card_body_element = create_image_card_body(image);
+        card_info_col_element.appendChild(card_body_element);
+        card_info_col_element.appendChild(create_image_card_footer(image));
+        card_row_element.appendChild(card_image_col_element);
+        card_row_element.appendChild(card_info_col_element);
+        card_element.appendChild(card_row_element);
+        list_item_element.appendChild(card_element);
+        return list_item_element;
+    }
+    const generated_images_set = new Set();
+    const created_images_set = new Set();
+    const error_images_set = new Set();
+    const all_images_set = new Set();
+    const images_dict = {};
+    const no_images_message = "<div class='container'><p>No images generated yet.</p></div>";
+
+
+    function update_generated_images(images) {
+        if (!now) now = DateTime.now();
+        if (images.length == 0) {
+            generated_images_list.innerHTML = no_images_message;
+        } else {
+            if (generated_images_list.innerHTML == no_images_message)
+                generated_images_list.innerHTML = "";
+            images.reverse();
+            
+            for (let i = 0; i < images.length; i++) {
+                const image = images[i];
+                if (generated_images_set.has(image.id)) {
+                    continue;
+                }
+                if (!all_images_set.has(image.id)) {
+                    all_images_set.add(image.id);
+                    image.created = DateTime.fromISO(image.created_at);
+                    image.generated = image.generated_at ? DateTime.fromISO(image.generated_at) : null;
+                    images_dict[image.id] = image;
+                }
+                const images_image = images_dict[image.id];
+                if (!image.generated_at) {
+                    if (created_images_set.has(image.id)) {
+                        const time_since_created = images_image.created.until(now).toDuration(['hours']).toObject();
+                        if (time_since_created['hours'] > 1 || last_generated < images_image.created) {
+                            created_images_set.delete(image.id);
+                            error_images_set.add(image.id);
+                            const image_element = document.getElementById(`image_${image.id}`);
+                            image_element.src = get_image_error_src(image);
+                        }
+                        continue;
+                    }
+                    if (error_images_set.has(image.id)) {
+                        continue;
+                    }
+                    created_images_set.add(image.id);
+                } else {
+                    if (!images_image.generated) {
+                        images_image.generated = DateTime.fromISO(image.generated_at);
+                        last_generated = images_image.generated;
+                    }
+                    generated_images_set.add(image.id);
+                    if (created_images_set.has(image.id)) {
+                        created_images_set.delete(image.id);
+                        const image_element = document.getElementById(`image_${image.id}`);
+                        image_element.src = get_image_src(image);
+                        const timestamp_element = document.getElementById(`image_${image.id}_timestamp`);
+                        timestamp_element.innerHTML = get_image_timestamp_message(images_image);
+                        const seed_element = document.getElementById(`seed_${image.id}`);
+                        seed_element.innerHTML = image.seed;
+                        images_image.seed = image.seed;
+                        images_image.generated_at = image.generated_at;
+                        images_image.duration = image.duration;
+
+                        continue;  
+                    } 
+                }
+                generated_images_list.insertBefore(create_image_list_item_element(images_image), generated_images_list.firstChild);
+            }
+        }
+    }
+    setInterval(() => {
+        now = DateTime.now();
+        clock.innerText = now.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
+        for (const image of Object.values(images_dict)) {
+            const timestamp_element = document.getElementById(`image_${image.id}_timestamp`);
+            timestamp_element.innerHTML = get_image_timestamp_message(image);
+        }
+    }, 1000);
     function get_generated_images() {
         fetch("/images").then(function(response) {
             return response.json();
@@ -32,94 +250,12 @@
             update_generated_images(data.images);
         });
     }
-    var now = null;
-    var clock = document.getElementById("clock");
-    function update_generated_images(images) {
-        now = DateTime.now();
-        clock.innerText = now.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS);
-        if (images.length == 0) {
-            generated_images_list.innerHTML = "<div class='container'><p>No images generated yet.</p></div>";
-        } else {
-            const stringified = JSON.stringify(images);
-            if (stringified === generated_images)
-                return;
-            console.log(images, generated_images)
-            generated_images_list.innerHTML = "";
-            generated_images = stringified;
-
-            for (var i = 0; i < images.length; i++) {
-                var image = images[i];
-                var image_src = '';
-                var image_filename = image.generated_at ? image.filename : 'painting.gif';
-                if (use_localhost)
-                    image_src = `http://localhost:8000/${image_filename}`;
-                else
-                    image_src = `http://${image.host}/${image_filename}`;
-                
-                var link_element = document.createElement("a");
-                link_element.classList.add("list-group-item", "list-group-item-action", "py-3", "lh-sm");
-                
-                var card_element = document.createElement("div");
-                card_element.classList.add("card");
-                var card_row_element = document.createElement("div");
-                card_row_element.classList.add("row", "g-0");
-                var card_col1_element = document.createElement("div");
-                card_col1_element.classList.add("col-md-4");
-                var card_col2_element = document.createElement("div");
-                card_col2_element.classList.add("col-md-8", "position-relative");
-                var card_body_element = document.createElement("div");
-                card_body_element.classList.add("card-body");
-                var card_title_element = document.createElement("h5");
-                card_title_element.classList.add("card-title");
-                card_title_element.innerHTML = image.prompt;
-                var card_text1_element = document.createElement("p");
-                card_text1_element.classList.add("card-text");
-                card_text1_element.innerHTML = `<b>Resolution:</b> ${image.width} x ${image.height} <b>Seed:</b> ${image.seed}`;
-                
-                //var card_text3_element = document.createElement("p");
-                //card_text3_element.classList.add("card-text");
-                //card_text3_element.innerHTML = `<b>Seed:</b> ${image.seed}`;
-                var card_text4_element = document.createElement("p");
-                card_text4_element.classList.add("card-text");
-                card_text4_element.innerHTML = `<b>Num Inference Steps:</b> ${image.num_inference_steps} <b>Guidance Scale:</b> ${image.guidance_scale}`;
-                //var card_text5_element = document.createElement("p");
-                //card_text5_element.classList.add("card-text");
-                //card_text5_element.innerHTML = `<b>Guidance Scale:</b> ${image.guidance_scale}`;
-                
-                var card_text2_element = document.createElement("p");
-                var card_footer_element = document.createElement("div");
-                card_footer_element.classList.add("card-footer", "position-absolute", "bottom-0", "w-100");
-                
-                card_text2_element.classList.add("card-text");
-                
-                if (image.generated_at) {
-                    var image_timestamp = DateTime.fromISO(image.generated_at);
-                    var timestamp_str = timeSince(image_timestamp);
-                    card_text2_element.innerHTML = `<small class="text-muted">Generated ${timestamp_str} @ ${image_timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)} in ${image.duration}</small>`;
-                } else {
-                    var image_timestamp = DateTime.fromISO(image.created_at);
-                    var timestamp_str = timeSince(image_timestamp);
-                    card_text2_element.innerHTML = `<small class="text-muted">Created ${timestamp_str} @ ${image_timestamp.toLocaleString(DateTime.DATETIME_MED_WITH_SECONDS)}</small>`;
-                }
-                var card_image_element = document.createElement("img");
-                card_image_element.classList.add("img-fluid", "rounded-start");
-                card_image_element.src = image_src;
-                card_image_element.alt = image.prompt;
-                card_col1_element.appendChild(card_image_element);
-                card_body_element.appendChild(card_title_element);
-                card_body_element.appendChild(card_text1_element);
-                //card_body_element.appendChild(card_text3_element);
-                card_body_element.appendChild(card_text4_element);
-                //card_body_element.appendChild(card_text5_element);
-                card_footer_element.appendChild(card_text2_element);
-                card_col2_element.appendChild(card_body_element);
-                card_col2_element.appendChild(card_footer_element);
-                card_row_element.appendChild(card_col1_element);
-                card_row_element.appendChild(card_col2_element);
-                card_element.appendChild(card_row_element);
-                link_element.appendChild(card_element);
-                generated_images_list.appendChild(link_element);
-            }
-        }
+    setInterval(get_generated_images, 2000);
+    function load_more(last_id) {
+        fetch(`/images?last_id=${last_id}`).then(function(response) {
+            return response.json();
+        }).then(function(data) {
+            update_generated_images(data.images);
+        });
     }
 </script>
