@@ -35,6 +35,26 @@
                 </div>
             </div>
         </div>
+        <hr/>
+        
+        <label for="guidance_scale_input" class="form-label">Model</label>
+        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="model_input" onchange="model_changed()">
+            <option>Default Model</option>
+            {% for model in models %}
+            <option value="{{ model.model_id }}">{{ model.model_id }}</option>
+            {% endfor %}
+        </select>
+        <div id="model_repo_link">
+        <a target="_blank" href="https://huggingface.co/{{ default_model }}">Model Documentation</a>
+        </div>
+        <script>
+            var model_repo_link = document.getElementById("model_repo_link");
+            var model_input = document.getElementById("model_input");
+            function model_changed() {
+                const model_id = model_input.value;
+                model_repo_link.innerHTML = `<a target="_blank" href="https://huggingface.co/${model_id}">Model Documentation</a>`;
+            }
+        </script>
     </div>
     
 </div>

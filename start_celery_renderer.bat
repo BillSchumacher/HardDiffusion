@@ -1,2 +1,2 @@
-start /B celery -A HardDiffusion worker -l INFO --concurrency=1 -Q render 
-start /B celery -A HardDiffusion worker -l INFO --concurrency=1 -Q render_health
+start /B python -m celery -A HardDiffusion worker -l INFO --concurrency=1 -Q render 
+start /B python -m celery -A HardDiffusion worker -l INFO --concurrency=1 -Q render_health

@@ -22,4 +22,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("generate.urls")),
     path("train/", include("train.urls")),
+    path("model/", include("model.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -17,6 +17,9 @@ class GeneratedImage(models.Model):
     num_inference_steps = models.IntegerField(blank=True, null=True)
     height = models.IntegerField(blank=True, null=True)
     width = models.IntegerField(blank=True, null=True)
+    model = models.CharField(max_length=255, blank=True, null=True)
+    error = models.BooleanField(default=False)
+    nsfw = models.BooleanField(default=False)
 
     def __str__(self):
         """Return the image path."""

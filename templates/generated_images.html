@@ -30,6 +30,7 @@
     const clock = document.getElementById("clock");
     var images_loading = [];
     var images_generated = [];
+    var default_model = '{{ default_model }}';
 
     function get_image_src(image) {
         let image_src = '';
@@ -145,9 +146,16 @@
                 <div><b>Guidance Scale:</b> ${image.guidance_scale}</div>
             </div>`
         );
+        const card_model_element = create_card_text_element(null, 
+            `<div style='display: flex; justify-content: space-evenly;'>
+                <div><b>Model:</b> ${image.model ? image.model : default_model}</div>
+                <div><b>NSFW Enabled:</b> ${image.nsfw ? "True" : "False"}</div>
+            </div>`
+        );
         card_body_element.appendChild(card_title_element);
         card_body_element.appendChild(card_resolution_and_seed_element);
         card_body_element.appendChild(card_inference_and_guidance_element);
+        card_body_element.appendChild(card_model_element);
         return card_body_element
     }
 
@@ -198,7 +206,7 @@
                 if (!image.generated_at) {
                     if (created_images_set.has(image.id)) {
                         const time_since_created = images_image.created.until(now).toDuration(['hours']).toObject();
-                        if (time_since_created['hours'] > 1) {
+                        if (time_since_created['hours'] > 1 || images_image.error) {
                             created_images_set.delete(image.id);
                             error_images_set.add(image.id);
                             const image_element = document.getElementById(`image_${image.id}`);

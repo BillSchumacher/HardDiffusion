@@ -15,34 +15,31 @@ class WorkerHealthMonitor(bootsteps.StartStopStep):
 
     requires = {"celery.worker.components:Timer", "celery.worker.components:Pool"}
 
-    def __init__(self, worker, **kwargs):
+    def __init__(self, _, **__):
         self.tref = None
         self.interval = 10
 
-    def start(self, worker):
+    def start(self, parent):
         logger.info(
             "Registering health monitor timer with %d seconds interval", self.interval
         )
-        self.tref = worker.timer.call_repeatedly(
+        self.tref = parent.timer.call_repeatedly(
             self.interval,
             schedule_health_check,
-            (worker,),
+            (parent,),
         )
 
-    def stop(self, worker):
+    def stop(self, _):
         if self.tref:
             self.tref.cancel()
             self.tref = None
 
 
 def schedule_health_check(worker):
+    """Schedule a health check to be run in the render worker pool."""
     from generate.tasks import health_check
 
-    worker.pool.apply_async(health_check, callback=health_check_completed)
-
-
-def health_check_completed(result):
-    logger.debug("Health check completed with msg: %s", result)
+    worker.pool.apply_async(health_check)
 
 
 # Set the default Django settings module for the 'celery' program.

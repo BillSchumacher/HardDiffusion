@@ -34,6 +34,7 @@ USE_LOCALHOST = sys.argv == ['manage.py', 'runserver'] or \
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DEFAULT_TEXT_TO_IMAGE_MODEL = os.getenv('DEFAULT_TEXT_TO_IMAGE_MODEL', 'CompVis/stable-diffusion-v1-4')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     'generate',
     'train',
     'user',
+    'model',
     'django_celery_results',
     'django.contrib.admin',
     'django.contrib.auth',

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block middle_column %}
+<div class="container mt-2">
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Text-To-Image</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Text-To-Speech</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Text-To-Text</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Image-To-Image</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Image-To-Text</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Classification</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#">Depth Estimation</a></li>
+            <li><a class="dropdown-item" href="#">Object Detection</a></li>
+            <li><a class="dropdown-item" href="#">Unconditional Image Generation</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Audio Classification</a></li>
+            <li><a class="dropdown-item" href="#">Image Classification</a></li>
+            <li><a class="dropdown-item" href="#">Image Segmentation</a></li>
+            <li><a class="dropdown-item" href="#">Text Classification</a></li>
+            <li><a class="dropdown-item" href="#">Token Classification</a></li>
+            <li><a class="dropdown-item" href="#">Video Classification</a></li>
+          </ul>
+        </li>
+      </ul>
+<div>
+<table id="model-table" class="table table-sm table-striped table-hover display" style="width:100%">
+    <thead>
+        <tr>
+            <th scope="col">Model ID</th>
+            <th scope="col">Likes</th>
+            <th scope="col">Updated</th>
+            <!--<th scope="col">Tags</th>-->
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for model in models %}
+        <tr>
+            <td scope="col"><a href="https://huggingface.co/{{ model.modelId }}" target="_blank">{{ model.modelId }}</a></td>
+            <td scope="col">{{ model.likes }}</td>
+            <td scope="col">{{ model.lastModified }}</td>
+            <!--<td scope="col">{{ model.tags }}</td>-->
+            <td scope="col">
+                {% if not model.added %}
+                <a href="{% url 'add_huggingface_text_to_image_model' %}?model_id={{ model.modelId|iriencode }}&likes={{ model.likes }}">Add</a>
+                {% else %}
+                <a href="{% url 'remove_huggingface_text_to_image_model' %}?model_id={{ model.modelId|iriencode }}">Remove</a>
+                {% endif %}
+                <!--
+                <div class="form-check form-switch form-check-reverse">
+                    <input class="form-check-input" onchange="console.log('{{model.modelId}} toggled');" type="checkbox" id="use_{{ model.modelId }}_switch">
+                    <label class="form-check-label" for="use_{{ model.modelId }}_switch">Use</label>
+                </div>
+                -->
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#model-table').DataTable(
+            {
+                order: [[1, 'desc']],
+                fixedHeader: true,
+                scrollY: '50vh',
+                scrollCollapse: true,
+            }
+        );
+    });
+</script>
+{% endblock %}

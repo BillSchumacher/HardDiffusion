@@ -12,15 +12,18 @@ from celery import Task
 
 from generate.models import GeneratedImage, RenderWorkerDevice
 from generate.tasks import generate_image
+from model.models import TextToImageModel
 
 
 def index(request) -> HttpResponse:
     """Generate an image."""
-    context = (
-        {"use_localhost": "true"}
-        if settings.USE_LOCALHOST
-        else {"use_localhost": "false"}
-    )
+    models = TextToImageModel.objects.all().order_by("likes")
+
+    context = {
+        "use_localhost": "true" if settings.USE_LOCALHOST else "false",
+        "models": models,
+        "default_model": settings.DEFAULT_TEXT_TO_IMAGE_MODEL,
+    }
     return render(request, "generate.html", context)
 
 
@@ -33,6 +36,8 @@ def queue_prompt(request) -> JsonResponse:
         height = int(request.POST.get("height", 512))
         width = int(request.POST.get("width", 512))
         seed = request.POST.get("seed", None)
+        model: str = request.POST.get("model", settings.DEFAULT_TEXT_TO_IMAGE_MODEL)
+        nsfw: bool = bool(len(request.POST.get("nsfw", "")))
         if seed:
             seed = int(seed)
         params = {
@@ -41,14 +46,19 @@ def queue_prompt(request) -> JsonResponse:
             "height": height,
             "width": width,
             "seed": seed,
+            "nsfw": nsfw,
         }
         result = _generate_image.apply_async(
-            kwargs=dict(prompt=request.POST["prompt"], **params), countdown=2
+            kwargs=dict(
+                prompt=request.POST["prompt"], model_path_or_name=model, **params
+            ),
+            countdown=2,
         )
         task_id = result.id
         GeneratedImage(
             prompt=request.POST["prompt"],
             task_id=task_id,
+            model=model,
             **params,
         ).save()
 
@@ -62,7 +72,7 @@ def images(request, last: Optional[int] = None) -> JsonResponse:
     return JsonResponse(
         {
             "images": [
-                {   
+                {
                     "id": image.id,
                     "task_id": image.filename[:-4],
                     "filename": image.filename,
@@ -80,6 +90,8 @@ def images(request, last: Optional[int] = None) -> JsonResponse:
                     "num_inference_steps": image.num_inference_steps,
                     "height": image.height,
                     "width": image.width,
+                    "model": image.model,
+                    "error": image.error,
                 }
                 for image in generated_images
             ]

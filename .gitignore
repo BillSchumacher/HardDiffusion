@@ -6,3 +6,4 @@ db.sqlite3
 image_0.jpeg
 sd_models/**/*.yaml
 media/*.png
+out
