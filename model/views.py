@@ -31,10 +31,8 @@ def add_huggingface_text_to_image_model(request):
 
 def remove_huggingface_text_to_image_model(request):
     """Remove text-to-image model."""
-    model_id = request.GET.get("model_id")
-    if model_id:
-        model = TextToImageModel.objects.filter(model_id=model_id).first()
-        if model:
+    if model_id := request.GET.get("model_id"):
+        if model := TextToImageModel.objects.filter(model_id=model_id).first():
             model.delete()
     return redirect("search_huggingface_text_to_image_models")
 
@@ -49,14 +47,10 @@ def search_huggingface_text_to_image_models(request):
     else:
         last_search = datetime.fromisoformat(result.decode("utf-8"))
         if now - last_search < timedelta(days=1):
-            cached_models = r.get("models")
-            if cached_models:
+            if cached_models := r.get("models"):
                 models = json.loads(cached_models.decode("utf-8"))
                 for cached_model in models:
-                    if cached_model["modelId"] in added_models:
-                        cached_model["added"] = True
-                    else:
-                        cached_model["added"] = False
+                    cached_model["added"] = cached_model["modelId"] in added_models
                 return render(request, "search.html", {"models": models})
         else:
             r.set("last_search", now.isoformat())
@@ -85,10 +79,7 @@ def search_huggingface_text_to_image_models(request):
     )
     r.set("last_search", now.isoformat())
     for model in models:
-        if model.modelId in added_models:
-            model["added"] = True
-        else:
-            model["added"] = False
+        model["added"] = model.modelId in added_models
     return render(request, "search.html", {"models": models})
 
 
