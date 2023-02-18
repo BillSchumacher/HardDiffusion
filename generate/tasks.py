@@ -42,17 +42,14 @@ logger = logging.getLogger("HardDiffusion")
 def get_pipeline(model_path_or_name, nsfw):
     """Get the pipeline for the given model path or name."""
     if model_path_or_name.startswith("./") and model_path_or_name.endswith(".ckpt"):
-        pipe = load_pipeline_from_original_stable_diffusion_ckpt(
+        return load_pipeline_from_original_stable_diffusion_ckpt(
             model_path_or_name,
             model_path_or_name.replace(".ckpt", ".yaml"),
         )
-    else:
-        if not nsfw:
-            StableDiffusionPipeline.run_safety_checker = original_run_safety_checker
-        else:
-            StableDiffusionPipeline.run_safety_checker = run_safety_checker
-        pipe = StableDiffusionPipeline.from_pretrained(model_path_or_name)
-    return pipe
+    StableDiffusionPipeline.run_safety_checker = (
+        run_safety_checker if nsfw else original_run_safety_checker
+    )
+    return StableDiffusionPipeline.from_pretrained(model_path_or_name)
 
 
 def ensure_model_name(model_path_or_name) -> str:

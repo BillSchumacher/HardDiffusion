@@ -194,23 +194,23 @@ class TextualInversionDataset(Dataset):
         return self._length
 
     def __getitem__(self, i):
-        example = {}
         image = Image.open(self.image_paths[i % self.num_images])
 
-        if not image.mode == "RGB":
+        if image.mode != "RGB":
             image = image.convert("RGB")
 
         placeholder_string = self.placeholder_token
         text = random.choice(self.templates).format(placeholder_string)
 
-        example["input_ids"] = self.tokenizer(
-            text,
-            padding="max_length",
-            truncation=True,
-            max_length=self.tokenizer.model_max_length,
-            return_tensors="pt",
-        ).input_ids[0]
-
+        example = {
+            "input_ids": self.tokenizer(
+                text,
+                padding="max_length",
+                truncation=True,
+                max_length=self.tokenizer.model_max_length,
+                return_tensors="pt",
+            ).input_ids[0]
+        }
         # default to score-sde preprocessing
         img = np.array(image).astype(np.uint8)
 
@@ -383,11 +383,11 @@ def training_function(text_encoder, vae, unet):
     )
 
     weight_dtype = torch.float32
-    if accelerator.mixed_precision == "fp16":
-        weight_dtype = torch.float16
-    elif accelerator.mixed_precision == "bf16":
+    if accelerator.mixed_precision == "bf16":
         weight_dtype = torch.bfloat16
 
+    elif accelerator.mixed_precision == "fp16":
+        weight_dtype = torch.float16
     # Move vae and unet to device
     vae.to(accelerator.device, dtype=weight_dtype)
     unet.to(accelerator.device, dtype=weight_dtype)
@@ -423,9 +423,9 @@ def training_function(text_encoder, vae, unet):
     progress_bar.set_description("Steps")
     global_step = 0
 
-    for epoch in range(num_train_epochs):
+    for _ in range(num_train_epochs):
         text_encoder.train()
-        for step, batch in enumerate(train_dataloader):
+        for batch in train_dataloader:
             with accelerator.accumulate(text_encoder):
                 # Convert images to latent space
                 latents = (
@@ -477,10 +477,11 @@ def training_function(text_encoder, vae, unet):
 
                 # Zero out the gradients for all token embeddings except the newly added
                 # embeddings for the concept, as we only want to optimize the concept embeddings
-                if accelerator.num_processes > 1:
-                    grads = text_encoder.module.get_input_embeddings().weight.grad
-                else:
-                    grads = text_encoder.get_input_embeddings().weight.grad
+                grads = (
+                    text_encoder.module.get_input_embeddings().weight.grad
+                    if accelerator.num_processes > 1
+                    else text_encoder.get_input_embeddings().weight.grad
+                )
                 # Get the index for tokens that we want to zero the grads for
                 index_grads_to_zero = (
                     torch.arange(len(tokenizer)) != placeholder_token_id
@@ -523,7 +524,7 @@ def training_function(text_encoder, vae, unet):
         )
         pipeline.save_pretrained(output_dir)
         # Also save the newly trained embeddings
-        save_path = os.path.join(output_dir, f"learned_embeds.bin")
+        save_path = os.path.join(output_dir, "learned_embeds.bin")
         save_progress(text_encoder, placeholder_token_id, accelerator, save_path)
 
 
@@ -575,18 +576,12 @@ This is the `{placeholder_token}` concept taught to Stable Diffusion via Textual
 Here is the new concept you will be able to use as {what_to_teach_article}:
 {image_string}
 """
-    # Save the readme to a file
-    readme_file = open("README.md", "w")
-    readme_file.write(readme_text)
-    readme_file.close()
-    # Save the token identifier to a file
-    text_file = open("token_identifier.txt", "w")
-    text_file.write(placeholder_token)
-    text_file.close()
-    # Save the type of teached thing to a file
-    type_file = open("type_of_concept.txt", "w")
-    type_file.write(what_to_teach)
-    type_file.close()
+    with open("README.md", "w") as readme_file:
+        readme_file.write(readme_text)
+    with open("token_identifier.txt", "w") as text_file:
+        text_file.write(placeholder_token)
+    with open("type_of_concept.txt", "w") as type_file:
+        type_file.write(what_to_teach)
     operations = [
         CommitOperationAdd(
             path_in_repo="learned_embeds.bin",
