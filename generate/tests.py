@@ -76,3 +76,23 @@ class TestGeneratedImage(TestCase):
         self.assertNotEqual(
             image_diff(image, Image.new("RGB", (512, 512), "black")), None
         )
+
+    def test_nsfw_anything(self):
+        """
+        Test the render_image function with nsfw=False and the anything model.
+        This model threw an error when nsfw=False and transformers 4.22.0 was used.
+
+        Fixed by transformers==4.27.0dev0
+        """
+        self.params["prompt"] = "1girl, white hair, golden eyes, beautiful eyes, "\
+            "detail, flower meadow, cumulonimbus clouds, lighting, detailed sky, garden"
+        self.model = "andite/anything-v4.0"
+
+        image, seed = render_image(
+            self.model, False, self.seed, self.params, self.generated_image
+        )
+        # image.save(os.path.join(settings.MEDIA_ROOT, 'anything_nsfw_test.png'))
+        self.assertEqual(seed, self.seed)
+        self.assertNotEqual(
+            image_diff(image, Image.new("RGB", (512, 512), "black")), None
+        )
