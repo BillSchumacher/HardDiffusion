@@ -369,14 +369,10 @@ def search_hugging_face_models(request, model_class, model_type):
     else:
         last_search = datetime.fromisoformat(result.decode("utf-8"))
         if now - last_search < timedelta(days=1):
-            cached_models = r.get("models")
-            if cached_models:
+            if cached_models := r.get("models"):
                 models = json.loads(cached_models.decode("utf-8"))
                 for cached_model in models:
-                    if cached_model["modelId"] in added_models:
-                        cached_model["added"] = True
-                    else:
-                        cached_model["added"] = False
+                    cached_model["added"] = cached_model["modelId"] in added_models
                 return render(request, "search.html", {"models": models})
         else:
             r.set("last_search", now.isoformat())

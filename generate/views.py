@@ -29,41 +29,41 @@ def index(request) -> HttpResponse:
 
 def queue_prompt(request) -> JsonResponse:
     """Queue a prompt to be generated."""
-    if request.method == "POST":
-        _generate_image: Task = generate_image  # type: ignore
-        guidance_scale = float(request.POST.get("guidance_scale", 7.5))
-        inference_steps = int(request.POST.get("inference_steps", 50))
-        height = int(request.POST.get("height", 512))
-        width = int(request.POST.get("width", 512))
-        seed = request.POST.get("seed", None)
-        model: str = request.POST.get("model", settings.DEFAULT_TEXT_TO_IMAGE_MODEL)
-        nsfw: bool = bool(len(request.POST.get("nsfw", "")))
-        if seed:
-            seed = int(seed)
-        params = {
-            "guidance_scale": guidance_scale,
-            "num_inference_steps": inference_steps,
-            "height": height,
-            "width": width,
-            "seed": seed,
-            "nsfw": nsfw,
-        }
-        result = _generate_image.apply_async(
-            kwargs=dict(
-                prompt=request.POST["prompt"], model_path_or_name=model, **params
-            ),
-            countdown=2,
-        )
-        task_id = result.id
-        GeneratedImage(
-            prompt=request.POST["prompt"],
-            task_id=task_id,
-            model=model,
-            **params,
-        ).save()
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required", "task_id": None})
+    _generate_image: Task = generate_image  # type: ignore
+    guidance_scale = float(request.POST.get("guidance_scale", 7.5))
+    inference_steps = int(request.POST.get("inference_steps", 50))
+    height = int(request.POST.get("height", 512))
+    width = int(request.POST.get("width", 512))
+    seed = request.POST.get("seed", None)
+    model: str = request.POST.get("model", settings.DEFAULT_TEXT_TO_IMAGE_MODEL)
+    nsfw: bool = bool(len(request.POST.get("nsfw", "")))
+    if seed:
+        seed = int(seed)
+    params = {
+        "guidance_scale": guidance_scale,
+        "num_inference_steps": inference_steps,
+        "height": height,
+        "width": width,
+        "seed": seed,
+        "nsfw": nsfw,
+    }
+    result = _generate_image.apply_async(
+        kwargs=dict(
+            prompt=request.POST["prompt"], model_path_or_name=model, **params
+        ),
+        countdown=2,
+    )
+    task_id = result.id
+    GeneratedImage(
+        prompt=request.POST["prompt"],
+        task_id=task_id,
+        model=model,
+        **params,
+    ).save()
 
-        return JsonResponse({"error": None, "task_id": task_id})
-    return JsonResponse({"error": "POST request required", "task_id": None})
+    return JsonResponse({"error": None, "task_id": task_id})
 
 
 def images(request, last: Optional[int] = None) -> JsonResponse:
