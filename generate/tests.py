@@ -84,8 +84,10 @@ class TestGeneratedImage(TestCase):
 
         Fixed by transformers==4.27.0dev0
         """
-        self.params["prompt"] = "1girl, white hair, golden eyes, beautiful eyes, "\
+        self.params["prompt"] = (
+            "1girl, white hair, golden eyes, beautiful eyes, "
             "detail, flower meadow, cumulonimbus clouds, lighting, detailed sky, garden"
+        )
         self.model = "andite/anything-v4.0"
 
         image, seed = render_image(

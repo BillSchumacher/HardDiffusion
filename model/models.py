@@ -11,11 +11,27 @@ class ModelMixin(models.Model):
         abstract = True
 
 
+class ConversationalModel(ModelMixin):
+    pass
+
+
 class DepthEstimationModel(ModelMixin):
     pass
 
 
+class FeatureExtractionModel(ModelMixin):
+    pass
+
+
 class ObjectDetectionModel(ModelMixin):
+    pass
+
+
+class TextGenerationModel(ModelMixin):
+    pass
+
+
+class TranslationModel(ModelMixin):
     pass
 
 
@@ -48,4 +64,12 @@ class ImageClassificationModel(ModelMixin):
 
 
 class TextClassificationModel(ModelMixin):
+    pass
+
+
+class TokenClassificationModel(ModelMixin):
+    pass
+
+
+class VideoClassificationModel(ModelMixin):
     pass
