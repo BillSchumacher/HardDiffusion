@@ -33,10 +33,8 @@ def add_model(request, model_class):
 
 
 def remove_model(request, model_class):
-    model_id = request.GET.get("model_id")
-    if model_id:
-        model = model_class.objects.filter(model_id=model_id).first()
-        if model:
+    if model_id := request.GET.get("model_id"):
+        if model := model_class.objects.filter(model_id=model_id).first():
             model.delete()
 
 
