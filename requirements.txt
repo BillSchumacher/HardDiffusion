@@ -8,6 +8,7 @@ django-celery-results
 django-restframework
 flake8
 ftfy
+huggingface_hub
 isort
 numpy
 psycopg2

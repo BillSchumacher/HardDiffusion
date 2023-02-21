@@ -54,9 +54,9 @@
             <!--<td scope="col">{{ model.tags }}</td>-->
             <td scope="col">
                 {% if not model.added %}
-                <a href="{% url 'add_huggingface_text_to_image_model' %}?model_id={{ model.modelId|iriencode }}&likes={{ model.likes }}">Add</a>
+                <a href="{% url 'add_huggingface_model' %}?model_id={{ model.modelId|iriencode }}&likes={{ model.likes }}">Add</a>
                 {% else %}
-                <a href="{% url 'remove_huggingface_text_to_image_model' %}?model_id={{ model.modelId|iriencode }}">Remove</a>
+                <a href="{% url 'remove_huggingface_model' %}?model_id={{ model.modelId|iriencode }}">Remove</a>
                 {% endif %}
                 <!--
                 <div class="form-check form-switch form-check-reverse">
