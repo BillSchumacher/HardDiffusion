@@ -1,0 +1,7 @@
+<li class="nav-item">
+{% if pipeline_tag == link_pipeline_tag %}
+   <a class="nav-link active {% if dropdown %}dropdown-item{% endif %}" aria-current="page" href="#">{{ label }}</a>
+{% else %}
+   <a class="nav-link {% if dropdown %}dropdown-item{% endif %}" href="{{ search_url }}?pipeline_tag={{ link_pipeline_tag }}">{{ label }}</a>
+{% endif %}
+</li>

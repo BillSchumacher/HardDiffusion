@@ -1,14 +1,19 @@
 import json
 from datetime import datetime, timedelta
 from typing import Union
-from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 
+from django.http import (
+    HttpResponse,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+)
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
 from huggingface_hub.hf_api import HfApi, ModelSearchArguments
 from huggingface_hub.utils.endpoint_helpers import ModelFilter
+
 from HardDiffusion.redthis import r
 from model.models import (
     AudioClassificationModel,
@@ -16,6 +21,7 @@ from model.models import (
     DepthEstimationModel,
     FeatureExtractionModel,
     ImageClassificationModel,
+    ImageSegmentationModel,
     ImageToImageModel,
     ImageToTextModel,
     ObjectDetectionModel,
@@ -25,9 +31,9 @@ from model.models import (
     TextToSpeechModel,
     TokenClassificationModel,
     TranslationModel,
+    UnconditionalImageGenerationModel,
     VideoClassificationModel,
 )
-
 
 HF_PIPELINE_TAG_TO_MODEL_CLASS = {
     "Audio_to_Audio": None,
@@ -35,7 +41,7 @@ HF_PIPELINE_TAG_TO_MODEL_CLASS = {
     "DocumentQuestionAnswering": None,
     "Fill_Mask": None,
     "GraphMachineLearning": None,
-    "ImageSegmentation": None,
+    "ImageSegmentation": ImageSegmentationModel,
     "QuestionAnswering": None,
     "ReinforcementLearning": None,
     "Robotics": None,
@@ -44,7 +50,7 @@ HF_PIPELINE_TAG_TO_MODEL_CLASS = {
     "TableQuestionAnswering": None,
     "TabularClassification": None,
     "TabularRegression": None,
-    "UnconditionalImageGeneration": None,
+    "UnconditionalImageGeneration": UnconditionalImageGenerationModel,
     "VisualQuestionAnswering": None,
     "VoiceActivityDetection": None,
     "Zero_ShotClassification": None,
@@ -83,11 +89,11 @@ pipeline_tag args.
 
 
 def redirect_with_pipeline_tag(
-    pipeline_tag: str
+    pipeline_tag: str,
 ) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect]:
     """Redirect to search_hugging_face_models with pipeline_tag."""
-    redirect_url = reverse('search_hugging_face_models')
-    return redirect(f'{redirect_url}?pipeline_tag={pipeline_tag}')
+    redirect_url = reverse("search_hugging_face_models")
+    return redirect(f"{redirect_url}?pipeline_tag={pipeline_tag}")
 
 
 def add_model(request, model_class):
@@ -107,26 +113,20 @@ def remove_model(request, model_class):
 
 
 def add_huggingface_model(
-    request
+    request,
 ) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect]:
     """Add object_detection model."""
     pipeline_tag = request.GET.get("pipeline_tag", "Text_to_Image")
-    add_model(
-        request,
-        HF_PIPELINE_TAG_TO_MODEL_CLASS.get(pipeline_tag)
-    )
+    add_model(request, HF_PIPELINE_TAG_TO_MODEL_CLASS.get(pipeline_tag))
     return redirect_with_pipeline_tag(pipeline_tag)
 
 
 def remove_huggingface_model(
-    request
+    request,
 ) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect]:
     """Remove object_detection model."""
     pipeline_tag = request.GET.get("pipeline_tag", "Text_to_Image")
-    remove_model(
-        request,
-        HF_PIPELINE_TAG_TO_MODEL_CLASS.get(pipeline_tag)
-    )
+    remove_model(request, HF_PIPELINE_TAG_TO_MODEL_CLASS.get(pipeline_tag))
     return redirect_with_pipeline_tag(pipeline_tag)
 
 
@@ -134,9 +134,7 @@ def search_huggingface_models(request):
     """Search object_detection models."""
     pipeline_tag = request.GET.get("pipeline_tag", "Text_to_Image")
     return search_hugging_face_models(
-        request,
-        HF_PIPELINE_TAG_TO_MODEL_CLASS.get(pipeline_tag),
-        pipeline_tag
+        request, HF_PIPELINE_TAG_TO_MODEL_CLASS.get(pipeline_tag), pipeline_tag
     )
 
 
@@ -144,6 +142,20 @@ def get_hf_filter(pipeline_tag) -> ModelFilter:
     """Get filter for pipeline_tag."""
     args = ModelSearchArguments()
     return ModelFilter(task=getattr(args.pipeline_tag, pipeline_tag))
+
+
+def render_search(request, models, pipeline_tag) -> HttpResponse:
+    return render(
+        request,
+        "search.html",
+        {
+            "models": models,
+            "pipeline_tag": pipeline_tag,
+            "search_url": reverse("search_huggingface_models"),
+            "add_url": reverse("add_huggingface_model"),
+            "remove_url": reverse("remove_huggingface_model"),
+        },
+    )
 
 
 def search_hugging_face_models(request, model_class, pipeline_tag):
@@ -162,7 +174,7 @@ def search_hugging_face_models(request, model_class, pipeline_tag):
                 models = json.loads(cached_models.decode("utf-8"))
                 for cached_model in models:
                     cached_model["added"] = cached_model["modelId"] in added_models
-                return render(request, "search.html", {"models": models})
+                return render_search(request, models, pipeline_tag)
         else:
             r.set(last_search_key, now.isoformat())
 
@@ -187,13 +199,14 @@ def search_hugging_face_models(request, model_class, pipeline_tag):
         ),
     )
     pipe.set(last_search_key, now.isoformat())
+    pipe.execute()
     for model in models:
         if model.modelId in added_models:
             setattr(model, "added", True)
         else:
             setattr(model, "added", False)
-    pipe.execute()
-    return render(request, "search.html", {"models": models})
+    return render_search(request, models, pipeline_tag)
+
 
 """
  ModelInfo: {

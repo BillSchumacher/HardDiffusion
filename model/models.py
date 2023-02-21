@@ -71,5 +71,13 @@ class TokenClassificationModel(ModelMixin):
     pass
 
 
+class ImageSegmentationModel(ModelMixin):
+    pass
+
+
+class UnconditionalImageGenerationModel(ModelMixin):
+    pass
+
+
 class VideoClassificationModel(ModelMixin):
     pass

@@ -1,36 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Search{% endblock %}
+
 {% block middle_column %}
 <div class="container mt-2">
     <ul class="nav nav-tabs">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Text-To-Image</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Text-To-Speech</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Text-To-Text</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Image-To-Image</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Image-To-Text</a>
-        </li>
+        {% include 'search_active.html' with link_pipeline_tag="Text_to_Image" dropdown=False label="Text-To-Image" %}
+        {% include 'search_active.html' with link_pipeline_tag="Text_to_Speech" dropdown=False label="Text-To-Speech" %}
+        {% include 'search_active.html' with link_pipeline_tag="TextGeneration" dropdown=False label="Text-To-Text" %}
+        {% include 'search_active.html' with link_pipeline_tag="Image_to_Image" dropdown=False label="Image-To-Image" %}
+        {% include 'search_active.html' with link_pipeline_tag="Image_to_Text" dropdown=False label="Image-To-Text" %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Classification</a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Depth Estimation</a></li>
-            <li><a class="dropdown-item" href="#">Object Detection</a></li>
-            <li><a class="dropdown-item" href="#">Unconditional Image Generation</a></li>
+            
+            {% include 'search_active.html' with link_pipeline_tag="DepthEstimation" dropdown=True label="Depth Estimation" %}
+            {% include 'search_active.html' with link_pipeline_tag="ObjectDetection" dropdown=True label="Object Detection" %}
+            {% include 'search_active.html' with link_pipeline_tag="UnconditionalImageGeneration" dropdown=True label="Unconditional Image Generation" %}
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Audio Classification</a></li>
-            <li><a class="dropdown-item" href="#">Image Classification</a></li>
-            <li><a class="dropdown-item" href="#">Image Segmentation</a></li>
-            <li><a class="dropdown-item" href="#">Text Classification</a></li>
-            <li><a class="dropdown-item" href="#">Token Classification</a></li>
-            <li><a class="dropdown-item" href="#">Video Classification</a></li>
+            {% include 'search_active.html' with link_pipeline_tag="AudioClassification" dropdown=True label="Audio Classification" %}
+            {% include 'search_active.html' with link_pipeline_tag="ImageClassification" dropdown=True label="Image Classification" %}
+            {% include 'search_active.html' with link_pipeline_tag="ImageSegmentation" dropdown=True label="Image Segmentation" %}
+            {% include 'search_active.html' with link_pipeline_tag="TextClassification" dropdown=True label="Text Classification" %}
+            {% include 'search_active.html' with link_pipeline_tag="TokenClassification" dropdown=True label="Token Classification" %}
+            {% include 'search_active.html' with link_pipeline_tag="VideoClassification" dropdown=True label="Video Classification" %}
           </ul>
         </li>
       </ul>
@@ -54,9 +46,9 @@
             <!--<td scope="col">{{ model.tags }}</td>-->
             <td scope="col">
                 {% if not model.added %}
-                <a href="{% url 'add_huggingface_model' %}?model_id={{ model.modelId|iriencode }}&likes={{ model.likes }}">Add</a>
+                <a href="{{ add_url }}?model_id={{ model.modelId|iriencode }}&likes={{ model.likes }}">Add</a>
                 {% else %}
-                <a href="{% url 'remove_huggingface_model' %}?model_id={{ model.modelId|iriencode }}">Remove</a>
+                <a href="{{ remove_url }}?model_id={{ model.modelId|iriencode }}">Remove</a>
                 {% endif %}
                 <!--
                 <div class="form-check form-switch form-check-reverse">

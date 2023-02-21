@@ -50,9 +50,7 @@ def queue_prompt(request) -> JsonResponse:
         "nsfw": nsfw,
     }
     result = _generate_image.apply_async(
-        kwargs=dict(
-            prompt=request.POST["prompt"], model_path_or_name=model, **params
-        ),
+        kwargs=dict(prompt=request.POST["prompt"], model_path_or_name=model, **params),
         countdown=2,
     )
     task_id = result.id
