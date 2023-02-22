@@ -67,11 +67,9 @@
                 data.set("guidance_scale", guidance_scale_input.value);
             }
             if (use_multiple_models) {
-                console.log("Using multiple models", multi_model_input)
                 for (var i = 0; i < multi_model_input.length; i++) {
                     if (multi_model_input[i].checked) {
                         data.append("model", multi_model_input[i].value);
-                        console.log('appending model', multi_model_input[i].value)
                     }
                     
                 }

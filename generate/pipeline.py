@@ -224,7 +224,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
                     print(f"Skipping {attr}: key mismatch")
                     continue
                 if theta_2 and theta_1.keys() != theta_2.keys():
-                    print(f"Skipping {attr}:y mismatch")
+                    print(f"Skipping {attr}: key mismatch")
             except Exception as ex:
                 print(f"Skipping {attr} do to an unexpected error: {str(ex)}")
                 continue
