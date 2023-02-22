@@ -71,28 +71,13 @@ HF_PIPELINE_TAG_TO_MODEL_CLASS = {
     "Image_to_Text": ImageToTextModel,
     "Image_to_Image": ImageToImageModel,
 }
-"""
-pipeline_tag args.
- 'Audio_to_Audio', 'AutomaticSpeechRecognition',
- 'DocumentQuestionAnswering',  'Fill_Mask', 'GraphMachineLearning',
-   'ImageSegmentation',  'QuestionAnswering',
-     'ReinforcementLearning', 'Robotics', 'SentenceSimilarity', 'Summarization', 'TableQuestionAnswering',
-       'TabularClassification', 'TabularRegression',
-         'UnconditionalImageGeneration',
-           'VisualQuestionAnswering', 'VoiceActivityDetection', 'Zero_ShotClassification', 'Zero_ShotImageClassification'
-
-            'Translation', 'ObjectDetection', 
-        'FeatureExtraction', 'Conversational', 'DepthEstimation', 'TokenClassification',
-    'AudioClassification', 'ImageClassification', 'TextClassification',  'VideoClassification',
-    'TextGeneration', 'Text_to_Image', 'Text_to_Speech',  'Image_to_Text', 'Image_to_Image',
-"""
 
 
 def redirect_with_pipeline_tag(
     pipeline_tag: str,
 ) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect]:
     """Redirect to search_hugging_face_models with pipeline_tag."""
-    redirect_url = reverse("search_hugging_face_models")
+    redirect_url = reverse("search_huggingface_models")
     return redirect(f"{redirect_url}?pipeline_tag={pipeline_tag}")
 
 
@@ -145,6 +130,7 @@ def get_hf_filter(pipeline_tag) -> ModelFilter:
 
 
 def render_search(request, models, pipeline_tag) -> HttpResponse:
+    """Render search page."""
     return render(
         request,
         "search.html",

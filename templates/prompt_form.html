@@ -47,6 +47,7 @@
             var model_input = document.getElementById("model_input");
             var custom_model = document.getElementById("custom-model");
             var nsfw_input = document.getElementById("nsfw-input");
+
             if (nsfw_input.checked) {
                 data.set("nsfw", "true");
             }
@@ -65,11 +66,22 @@
             if (guidance_scale_input.value != "") {
                 data.set("guidance_scale", guidance_scale_input.value);
             }
-            if (model_input.value != "" && model_input.value != "Default Model") {
-                data.set("model", model_input.value);
-            }
-            if (custom_model.value != "") {
+            if (use_multiple_models) {
+                console.log("Using multiple models", multi_model_input)
+                for (var i = 0; i < multi_model_input.length; i++) {
+                    if (multi_model_input[i].checked) {
+                        data.append("model", multi_model_input[i].value);
+                        console.log('appending model', multi_model_input[i].value)
+                    }
+                    
+                }
+                data.set('model', data.getAll('model').join(';'));
+            } else if (custom_model.value != "") {
                 data.set("model", custom_model.value);
+            } else {
+                if (model_input.value != "" && model_input.value != "Default Model") {
+                    data.set("model", model_input.value);
+                }
             }
             
             fetch("{% url 'queue_prompt' %}", { method: "post", body: data })

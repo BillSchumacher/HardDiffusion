@@ -37,22 +37,109 @@
         </div>
         <hr/>
         
-        <label for="guidance_scale_input" class="form-label">Model</label>
-        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="model_input" onchange="model_changed()">
-            <option>Default Model</option>
-            {% for model in models %}
-            <option value="{{ model.model_id }}">{{ model.model_id }}</option>
-            {% endfor %}
-        </select>
-        <div id="model_repo_link">
-        <a target="_blank" href="https://huggingface.co/{{ default_model }}">Model Documentation</a>
+        <div class="col" style="display: flex; align-items: center; justify-content: center;">
+            <div class="form-check form-switch form-check-reverse">
+                <input class="form-check-input" onchange="toggle_multiple_models();" type="checkbox" id="multi_model_switch">
+                <label class="form-check-label" for="multi_model_switch">Use Multiple Models</label>
+            </div>
+        </div>
+        <div id="single_model">
+            <label for="guidance_scale_input" class="form-label">Model</label>
+            <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="model_input" onchange="model_changed()">
+                <option>Default Model</option>
+                {% for model in models %}
+                <option value="{{ model.model_id }}">{{ model.model_id }}</option>
+                {% endfor %}
+            </select>
+            <div id="model_repo_link">
+            <a target="_blank" href="https://huggingface.co/{{ default_model }}" style="display: flex;">Model Documentation <span class="material-symbols-outlined">
+                description
+                </span></a>
+            </div>
+        </div>
+        {% load model_extras %}
+        <div id="multiple_models" style="display: none;">
+                <div class="list-group list-group-flush scrollarea" style="max-height: 200px;">
+                {% for model in models %}
+                    <div class="list-group-item list-group-item-action" href="#" style="font-size: smaller; display: flex; justify-content: space-between; align-items: center;">
+                        
+                        <div style="display: flex; align-items: center;">
+                            <div>
+                            <label for="multi_model_input" class="form-label m-0">{{ model.model_id|hf_model_name }}</label>
+                            </div>
+                        </div>
+                        <div style="display: flex; min-width: 42px; align-items: center;">
+                            <div>
+                            <input class="form-check-input mt-2" type="checkbox" value="{{ model.model_id }}" onchange="model_checked()" name="multi_model_input" />
+                            <a target="_blank" href="https://huggingface.co/{{ model.model_id }}"><span class="mt-1 material-symbols-outlined">
+                                description
+                                </span></a>
+                            </div>
+                        </div>
+                        
+                    </div>
+                {% endfor %}
+                </div>
+                <div>
+                    <div>
+                        <div class="d-flex"><div>Selected models:</div><div id="selected_model_count"></div></div>
+                        <div id="selected_models">
+
+                        </div>
+                    </div>
+                </div>
         </div>
         <script>
             var model_repo_link = document.getElementById("model_repo_link");
             var model_input = document.getElementById("model_input");
+            var multi_model_input = document.getElementsByName("multi_model_input");
+            let use_multiple_models = false;
+            let selected_model_count = 0;
+            let selected_indexes = [];
+            function model_checked() {
+                let selected_models = [];
+                let count = 0;
+                for (let i = 0; i < multi_model_input.length; i++) {
+                    if (multi_model_input[i].checked) {
+                        selected_models.push(multi_model_input[i].value);
+                        count++;
+                        selected_indexes.push(i);
+                    } else {
+                        selected_indexes = selected_indexes.filter((index) => index !== i);
+                    }
+                }
+                if (count == 3) {
+                    for (let i = 0; i < multi_model_input.length; i++) {
+                        if (!multi_model_input[i].checked) {
+                            multi_model_input[i].disabled = true;
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < multi_model_input.length; i++) {
+                        multi_model_input[i].disabled = false;
+                    }
+                }
+                selected_model_count = count;
+                document.getElementById("selected_model_count").innerHTML = `${count}${count == 3 ? ' (max)' : ''}`;
+                let selected_models_html = '';
+                for (const model of selected_models) {
+                    selected_models_html += `<div>${model}</div>`;
+                }
+                document.getElementById("selected_models").innerHTML = selected_models_html;
+            }
             function model_changed() {
                 const model_id = model_input.value;
                 model_repo_link.innerHTML = `<a target="_blank" href="https://huggingface.co/${model_id}">Model Documentation</a>`;
+            }
+            function toggle_multiple_models() {
+                use_multiple_models = !use_multiple_models;
+                if (use_multiple_models) {
+                    document.getElementById("single_model").style.display = 'none';
+                    document.getElementById("multiple_models").style.display = 'block';
+                } else {
+                    document.getElementById("single_model").style.display = 'block';
+                    document.getElementById("multiple_models").style.display = 'none';
+                }
             }
         </script>
     </div>

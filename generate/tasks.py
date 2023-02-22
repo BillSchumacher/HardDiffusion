@@ -12,6 +12,7 @@ from django.utils import timezone
 from celery import shared_task
 
 from generate.models import GeneratedImage, RenderWorkerDevice
+from generate.pipeline import HardDiffusionPipeline
 
 if "HardDiffusion" in sys.argv or "test" in sys.argv:
     import diffusers
@@ -22,8 +23,9 @@ if "HardDiffusion" in sys.argv or "test" in sys.argv:
         has_nsfw_concept = None
         return image, has_nsfw_concept
 
-    original_run_safety_checker = diffusers.StableDiffusionPipeline.run_safety_checker
-    diffusers.StableDiffusionPipeline.run_safety_checker = run_safety_checker
+    # original_run_safety_checker = diffusers.StableDiffusionPipeline.run_safety_checker
+    # diffusers.StableDiffusionPipeline.run_safety_checker = run_safety_checker
+
     from diffusers import StableDiffusionPipeline
     from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
         load_pipeline_from_original_stable_diffusion_ckpt,
@@ -41,15 +43,18 @@ logger = logging.getLogger("HardDiffusion")
 
 def get_pipeline(model_path_or_name, nsfw):
     """Get the pipeline for the given model path or name."""
+    if isinstance(model_path_or_name, list):
+        return HardDiffusionPipeline.from_pretrained(model_path_or_name[0])
     if model_path_or_name.startswith("./") and model_path_or_name.endswith(".ckpt"):
         return load_pipeline_from_original_stable_diffusion_ckpt(
             model_path_or_name,
             model_path_or_name.replace(".ckpt", ".yaml"),
         )
-    StableDiffusionPipeline.run_safety_checker = (
-        run_safety_checker if nsfw else original_run_safety_checker
-    )
-    return StableDiffusionPipeline.from_pretrained(model_path_or_name)
+    # StableDiffusionPipeline.run_safety_checker = (
+    #     run_safety_checker if nsfw else original_run_safety_checker
+    # )
+    # return StableDiffusionPipeline.from_pretrained(model_path_or_name)
+    return HardDiffusionPipeline.from_single_model(model_path_or_name)
 
 
 def ensure_model_name(model_path_or_name) -> str:
@@ -91,7 +96,16 @@ def render_image(model_path_or_name, nsfw, seed, params, generated_image):
     # pipe.scheduler = EulerDiscreteScheduler.from_config(pipe.scheduler.config)
     pipe = pipe.to("cuda")
     generator = get_generator(seed)
-    image = pipe(generator=generator, **params).images[0]
+    if isinstance(model_path_or_name, list):
+        merged_pipe = pipe.merge(
+            model_path_or_name[1:],
+            interp="sigmoid",
+            alpha=0.4,
+        )
+    else:
+        merged_pipe = pipe
+
+    image = merged_pipe(generator=generator, **params).images[0]
     seed = generator.initial_seed()
     return image, seed
 

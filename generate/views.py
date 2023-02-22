@@ -49,8 +49,11 @@ def queue_prompt(request) -> JsonResponse:
         "seed": seed,
         "nsfw": nsfw,
     }
+    models = model.split(";") if ";" in model else None
     result = _generate_image.apply_async(
-        kwargs=dict(prompt=request.POST["prompt"], model_path_or_name=model, **params),
+        kwargs=dict(
+            prompt=request.POST["prompt"], model_path_or_name=models or model, **params
+        ),
         countdown=2,
     )
     task_id = result.id
