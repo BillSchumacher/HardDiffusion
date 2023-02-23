@@ -36,8 +36,6 @@
         <input type="text"  id="custom-model"  class="form-control">
     </div>
     </div>
-    <hr/>
-    <div id="renderers"></div>
     <script>
         function fetchpost () {
             var data = new FormData(document.getElementById("generate_form"));
@@ -93,34 +91,6 @@
             .catch(err => console.log(err));
             return false;
         }
-        function check_renderers() {
-            fetch("{% url 'renderer_health' %}")
-            .then(res => res.json())
-            .then(data => {
-                //console.log(data);
-                var renderers = document.getElementById("renderers");
-                var health_output = "";
-
-                for (const [key, value] of Object.entries(data.results)) {
-                    //console.log(`${key}: ${value}`);
-                    let devices_output = [];
-                    health_output += `<div><h5>Host ${key}</h5>`;
-                    for (var i = 0; i < value.length; i++) {
-                        var renderer = value[i];
-            
-                        health_output += `<h6>Device #${renderer.id}: ${renderer.name}</h6>`;
-                        health_output += `<p class='p-0 m-0'>${renderer.usage}</p>`;
-                        health_output += `<p class='p-0 m-0'>${renderer.device_allocated}</p>`;
-                        health_output += `<p class='p-0 m-0'>${renderer.device_cached}</p>`;
-                        health_output += `<p class='p-0 m-0'>${renderer.memory}</p>`;
-                    }
-                    health_output += `</div>`;
-                }
-                renderers.innerHTML = health_output;
-            })
-            .catch(err => console.log(err));
-        }
-        setInterval(check_renderers, 5000);
     </script>
 </div>
 </div>

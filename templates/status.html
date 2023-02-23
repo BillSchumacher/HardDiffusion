@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block middle_column %}
+    <div class="container">
+        <h2>Renderer's Connected</h2>
+        <div id="renderers">
+            Loading...
+        </div>
+        <script>
+            
+            function check_renderers() {
+                fetch("{% url 'renderer_health' %}")
+                .then(res => res.json())
+                .then(data => {
+                    //console.log(data);
+                    var renderers = document.getElementById("renderers");
+                    var health_output = "";
+
+                    for (const [key, value] of Object.entries(data.results)) {
+                        //console.log(`${key}: ${value}`);
+                        let devices_output = [];
+                        health_output += `<div><h5>Host ${key}</h5>`;
+                        for (var i = 0; i < value.length; i++) {
+                            var renderer = value[i];
+                
+                            health_output += `<h6>Device #${renderer.id}: ${renderer.name}</h6>`;
+                            health_output += `<p class='p-0 m-0'>${renderer.usage}</p>`;
+                            health_output += `<p class='p-0 m-0'>${renderer.device_allocated}</p>`;
+                            health_output += `<p class='p-0 m-0'>${renderer.device_cached}</p>`;
+                            health_output += `<p class='p-0 m-0'>${renderer.memory}</p>`;
+                        }
+                        health_output += `</div>`;
+                    }
+                    if (!Object.keys(data.results).length) {
+                        health_output = "No renderers connected. Run start_celery_renderers.bat on Windows or start_celery_renderers.sh on Linux or Mac.";
+                    }
+                    renderers.innerHTML = health_output;
+                })
+                .catch(err => console.log(err));
+            }
+            setInterval(check_renderers, 5000);
+        </script>
+    </div>
+{% endblock %}

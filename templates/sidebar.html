@@ -27,9 +27,13 @@
     <hr class="mt-auto">
     <ul class="nav nav-pills flex-column mb-auto">
         <li>
-          <a href="#" class="nav-link text-white">
-              <svg class="bi pe-none me-2" width="16" height="16"><use xlink:href="#tools"/></svg>
+          <a href="{% url 'status' %}" class="nav-link text-white d-flex">
+            <div class="material-symbols-rounded text-warning-emphasis  pe-none me-2 bi" style="margin-left: -4px;" id="status-icon">
+              pending
+            </div>
+            <div>
               Status
+            </div>
           </a>
         </li>
         <li>
@@ -39,4 +43,32 @@
           </a>
         </li>
     </ul>
+    <script>
+      var status_icon = document.getElementById("status-icon");
+      setInterval(function() {
+        fetch("{% url 'renderer_health' %}")
+          .then(response => response.json())
+          .then(data => {
+            if (Object.keys(data.results).length) {
+              status_icon.innerHTML = "check_circle";
+              if (status_icon.classList.contains("text-warning-emphasis")) {
+                status_icon.classList.remove("text-warning-emphasis");
+              }
+              if (status_icon.classList.contains("text-warning-emphasis")) {
+                status_icon.classList.remove("text-warning-emphasis");
+              }
+              status_icon.classList.add("text-success-emphasis");
+            } else {
+              status_icon.innerHTML = "cancel";
+              if (status_icon.classList.contains("text-warning-emphasis")) {
+                status_icon.classList.remove("text-warning-emphasis");
+              }
+              if (status_icon.classList.contains("text-warning-emphasis")) {
+                status_icon.classList.remove("text-warning-emphasis");
+              }
+              status_icon.classList.add("text-danger-emphasis");
+            }
+          });
+      }, 3000);
+    </script>
 </div>

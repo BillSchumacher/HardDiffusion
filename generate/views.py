@@ -126,3 +126,8 @@ def renderer_health(request) -> HttpResponse:
             }
         )
     return JsonResponse({"results": results_by_hostname})
+
+
+def renderer_status(request) -> HttpResponse:
+    """Check GPU memory"""
+    return render(request, "status.html", {})
