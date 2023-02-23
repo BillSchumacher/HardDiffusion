@@ -39,6 +39,8 @@ def queue_prompt(request) -> JsonResponse:
     seed = request.POST.get("seed", None)
     model: str = request.POST.get("model", settings.DEFAULT_TEXT_TO_IMAGE_MODEL)
     nsfw: bool = bool(len(request.POST.get("nsfw", "")))
+    prompt = request.POST["prompt"]
+    negative_prompt = request.POST.get("negative_prompt", None)
     if seed:
         seed = int(seed)
     params = {
@@ -52,13 +54,14 @@ def queue_prompt(request) -> JsonResponse:
     models = model.split(";") if ";" in model else None
     result = _generate_image.apply_async(
         kwargs=dict(
-            prompt=request.POST["prompt"], model_path_or_name=models or model, **params
+            prompt=prompt, negative_prompt=negative_prompt, model_path_or_name=models or model, **params
         ),
         countdown=2,
     )
     task_id = result.id
     GeneratedImage(
-        prompt=request.POST["prompt"],
+        prompt=prompt,
+        negative_prompt=negative_prompt,
         task_id=task_id,
         model=model,
         **params,
@@ -83,6 +86,7 @@ def images(request, last: Optional[int] = None) -> JsonResponse:
                     if image.generated_at
                     else None,
                     "prompt": image.prompt,
+                    "negative_prompt": image.negative_prompt,
                     "duration": f"{image.duration:.2f} seconds"
                     if image.duration
                     else None,

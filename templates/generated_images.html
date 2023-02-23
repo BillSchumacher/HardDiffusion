@@ -133,7 +133,7 @@
 
     function create_image_card_body(image) {
         const card_body_element = create_card_body_element();
-        const card_title_element = create_card_title_element(null, image.prompt);
+        const card_title_element = create_card_title_element(null, image.negative_prompt ? `<div class="fs-6"> Prompt: ${image.prompt}</div><div class="fs-6"> Negative Prompt: ${image.negative_prompt}</div>` : `<div class="fs-6"> Prompt: ${image.prompt}</div>` );
         const card_resolution_and_seed_element = create_card_text_element(null, 
             `<div style='display: flex; justify-content: space-evenly;'>
                 <div><b>Resolution:</b> ${image.width} x ${image.height}</div>

@@ -12,6 +12,7 @@ class GeneratedImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     generated_at = models.DateTimeField(blank=True, null=True)
     prompt = models.TextField()
+    negative_prompt: models.TextField = models.TextField(blank=True, null=True)
     seed = models.IntegerField(blank=True, null=True)
     guidance_scale = models.FloatField(blank=True, null=True)
     num_inference_steps = models.IntegerField(blank=True, null=True)

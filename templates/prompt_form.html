@@ -6,6 +6,9 @@
         {% csrf_token %}
         <label for="prompt" class="form-label">Prompt</label>
         <textarea class=" form-control" id="prompt" cols="42" rows="7" name="prompt" placeholder="Photograph of an astronaut riding a horse" value="Photograph of an astronaut riding a horse"></textarea>
+        <label for="prompt" class="form-label">Negative Prompt</label>
+        <textarea class=" form-control" id="negative_prompt" cols="42" rows="7" name="negative_prompt" placeholder="" value=""></textarea>
+        
         <div class="containter pt-3">
             <div class="row">
                 <div class="col" style="display: flex; align-items: center; justify-content: center;">

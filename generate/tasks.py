@@ -114,6 +114,7 @@ def render_image(model_path_or_name, nsfw, seed, params, generated_image):
 def generate_image(
     self,
     prompt: str = "An astronaut riding a horse on the moon.",
+    negative_prompt: Optional[str] = None,
     model_path_or_name: Optional[str] = None,
     seed: Optional[int] = None,
     guidance_scale: float = 7.5,
@@ -126,6 +127,7 @@ def generate_image(
     task_id = self.request.id
     params = {
         "prompt": prompt,
+        "negative_prompt": negative_prompt,
         "guidance_scale": guidance_scale,
         "num_inference_steps": num_inference_steps,
         "height": height,
