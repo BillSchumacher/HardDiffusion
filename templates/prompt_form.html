@@ -5,9 +5,9 @@
     <form id="generate_form" method="post" class="" onsubmit="return fetchpost()">
         {% csrf_token %}
         <label for="prompt" class="form-label">Prompt</label>
-        <textarea class=" form-control" id="prompt" cols="42" rows="3" name="prompt" placeholder="Photograph of an astronaut riding a horse" value="Photograph of an astronaut riding a horse"></textarea>
+        <textarea class=" form-control" id="prompt_input" cols="42" rows="3" name="prompt" placeholder="Photograph of an astronaut riding a horse" value="Photograph of an astronaut riding a horse"></textarea>
         <label for="prompt" class="form-label">Negative Prompt</label>
-        <textarea class=" form-control" id="negative_prompt" cols="42" rows="3" name="negative_prompt" placeholder="" value=""></textarea>
+        <textarea class=" form-control" id="negative_prompt_input" cols="42" rows="3" name="negative_prompt" placeholder="" value=""></textarea>
         
         <div class="containter pt-3">
             <div class="row">
@@ -41,7 +41,7 @@
         let advanced_prompt = null;
         let advanced_prompt_container = null;
         let advanced_prompt_vr = null;
-        let custom_model = null;
+        let custom_model_input = null;
         let generate_form = null;
         let guidance_scale_input = null;
         let inference_steps_input = null;
@@ -52,8 +52,12 @@
         let model_input = null;
         let model_repo_link = null;
         let multi_model_input = null;
+        let multi_model_switch = null;
         let multiple_models_element = null;
         let nsfw_input = null;
+
+        let prompt_input = null;
+        let negative_prompt_input = null;
 
         let random_seed = true;
         
@@ -95,7 +99,7 @@
             selected_model_count_element.innerHTML = `${count}${count == 3 ? ' (max)' : ''}`;
             let selected_models_html = '';
             for (const model of selected_models) {
-                selected_models_html += `<div>${model}</div>`;
+                selected_models_html += `<div class="badge bg-secondary">${model}</div>`;
             }
             selected_models_element.innerHTML = selected_models_html;
         }
@@ -108,9 +112,11 @@
         function toggle_multiple_models() {
             use_multiple_models = !use_multiple_models;
             if (use_multiple_models) {
+                multi_model_switch.checked = true;
                 single_model_element.style.display = 'none';
                 multiple_models_element.style.display = 'block';
             } else {
+                multi_model_switch.checked = false;
                 single_model_element.style.display = 'block';
                 multiple_models_element.style.display = 'none';
             }
@@ -118,6 +124,7 @@
 
         function toggle_random_seed() {
             random_seed = !random_seed;
+            localStorage.setItem('random_seed', random_seed ? '1': '0');
             if (random_seed) {
                 seed_input.style.display = 'none';
             } else {
@@ -127,6 +134,7 @@
 
         function toggle_advanced() {
             show_advanced = !show_advanced;
+            localStorage.setItem('show_advanced', show_advanced ? '1': '0');
             if (show_advanced) {
                 advanced_prompt.style.display = "block";
                 advanced_prompt.style.width = '280px';
@@ -143,42 +151,82 @@
                 advanced_switch.checked = false;
             }
         }
-
+        function toggle_nsfw() {
+            localStorage.setItem('nsfw', nsfw_input.checked ? '1': '0');
+        }
         function fetchpost () {
             var data = new FormData(generate_form);
+            const seed = seed_input.value;
+            const width = width_input.value;
+            const height = height_input.value;
+            const inference_steps = inference_steps_input.value;
+            const guidance_scale = guidance_scale_input.value;
+            const custom_model =  custom_model_input.value;
+            const selected_model = model_input.value;
+            const prompt = prompt_input.value;
+            const negative_prompt = negative_prompt_input.value;
+            localStorage.setItem("prompt", prompt);
+            localStorage.setItem("negative_prompt", negative_prompt);
+            localStorage.setItem("seed", seed);
+            localStorage.setItem("width", width);
+            localStorage.setItem("height", height);
+            localStorage.setItem("inference_steps", inference_steps);
+            localStorage.setItem("guidance_scale", guidance_scale);
+            
             if (nsfw_input.checked) {
                 data.set("nsfw", "true");
+                localStorage.setItem("nsfw", "1");
+            } else {
+                localStorage.setItem("nsfw", "0");
             }
+
             if (!random_seed_checkbox.checked) {
-                data.set("seed", seed_input.value);
+                localStorage.setItem("random_seed", "0");
+                data.set("seed", seed);
+            } else {
+                localStorage.setItem("random_seed", "1");
             }
-            if (width_input.value != "") {
-                data.set("width", width_input.value);
+
+            if (width != "") {
+                data.set("width", width);
             }
-            if (height_input.value != "") {
-                data.set("height", height_input.value);
+            if (height != "") {
+                data.set("height", height);
             }
-            if (inference_steps_input.value != "") {
-                data.set("inference_steps", inference_steps_input.value);
+            if (inference_steps != "") {
+                data.set("inference_steps", inference_steps);
             }
-            if (guidance_scale_input.value != "") {
-                data.set("guidance_scale", guidance_scale_input.value);
+            if (guidance_scale != "") {
+                data.set("guidance_scale", guidance_scale);
             }
+
+            let model_value = null;
             if (use_multiple_models) {
+                localStorage.setItem("use_multiple_models", "1");
+                localStorage.setItem("custom_model", "0");
                 for (var i = 0; i < multi_model_input.length; i++) {
                     if (multi_model_input[i].checked) {
                         data.append("model", multi_model_input[i].value);
                     }
                     
                 }
-                data.set('model', data.getAll('model').join(';'));
-            } else if (custom_model.value != "") {
-                data.set("model", custom_model.value);
+                model_value =  data.getAll('model').join(';')
+            } else if (custom_model != "") {
+                localStorage.setItem("use_multiple_models", "0");
+                localStorage.setItem("custom_model", "1");
+                model_value = custom_model;
             } else {
-                if (model_input.value != "" && model_input.value != "Default Model") {
-                    data.set("model", model_input.value);
+                localStorage.setItem("use_multiple_models", "0");
+                localStorage.setItem("custom_model", "0");
+                if (selected_model != "" && selected_model != "Default Model") {
+                    model_value = selected_model;
+                } else {
+                    model_value = "";
                 }
             }
+
+            localStorage.setItem("model", model_value);
+            data.set('model', model_value);
             
             fetch("{% url 'queue_prompt' %}", { method: "post", body: data })
             .then(res => res.json())
@@ -195,25 +243,110 @@
             advanced_prompt_container = document.getElementById("advanced_prompt_container");
             advanced_prompt_vr = document.getElementById("advanced_prompt_vr");
 
-            custom_model = document.getElementById("custom-model");
+            
+            if (localStorage.getItem('show_advanced') == '1') {
+                toggle_advanced();
+            }
+            
+            const local_model = localStorage.getItem('model');
+
+            custom_model_input = document.getElementById("custom-model");
+            const local_custom_model = localStorage.getItem('custom_model');
+            if (local_custom_model == '1') {
+                custom_model_input.value = local_model;
+            }
             generate_form = document.getElementById("generate_form");
             guidance_scale_input = document.getElementById("guidance_scale_input");
+            const local_guidance_scale = localStorage.getItem('guidance_scale');
+            if (local_guidance_scale != null && local_guidance_scale != "") {
+                guidance_scale_input.value = local_guidance_scale;
+            }
             inference_steps_input = document.getElementById("inference_steps_input");
+            const local_inference_steps = localStorage.getItem('inference_steps');
+            if (local_inference_steps != null && local_inference_steps != "") {
+                inference_steps_input.value = local_inference_steps;
+            }
 
             width_input = document.getElementById("width_input");
+            const local_width = localStorage.getItem('width');
+            if (local_width != null && local_width != "") {
+                width_input.value = local_width;
+            }
             height_input = document.getElementById("height_input");
+            const local_height = localStorage.getItem('height');
+            if (local_height != null && local_height != "") {
+                height_input.value = local_height;
+            }
             
+
             model_input = document.getElementById("model_input");
             model_repo_link = document.getElementById("model_repo_link");
             multi_model_input = document.getElementsByName("multi_model_input");
+            multi_model_switch = document.getElementById("multi_model_switch");
             multiple_models_element = document.getElementById("multiple_models");
-            nsfw_input = document.getElementById("nsfw-input");
+            single_model_element = document.getElementById("single_model");
             
-            random_seed_checkbox = document.getElementById("random_seed_checkbox");
-            seed_input = document.getElementById("seed_input");
             selected_model_count_element = document.getElementById("selected_model_count");
             selected_models_element = document.getElementById("selected_models");
-            single_model_element = document.getElementById("single_model")
+
+            const local_use_multiple_models = localStorage.getItem('use_multiple_models');
+            let local_models = null;
+            if (local_use_multiple_models == '1') {
+                toggle_multiple_models();
+                if (local_model != null && local_model != "") {
+                    local_models = local_model.split(';');
+                    for (var i = 0; i < multi_model_input.length; i++) {
+                        if (local_models.includes(multi_model_input[i].value)) {
+                            multi_model_input[i].checked = true;
+                        }
+                    }
+                }
+            } else {
+                if (local_model != null && local_model != "") {
+                    model_input.value = local_model;
+                }
+            }
+
+            if (local_use_multiple_models === '1') {
+                for (let i = 0; i < local_models.length; i++) {
+                    selected_models_element.innerHTML += `<div class="badge bg-secondary">${local_models[i]}</span>`;
+                }
+                selected_model_count_element.innerHTML = local_models.length;
+                single_model_element.style.display = "none";
+            } else {
+                selected_models_element.innerHTML = ``;
+                selected_model_count_element.innerHTML = 0;
+                single_model_element.style.display = "block";
+            }
+            
+            nsfw_input = document.getElementById("nsfw-input");
+            const local_nsfw = localStorage.getItem('nsfw');
+            if (local_nsfw == '1') {
+                nsfw_input.checked = true;
+            }
+            prompt_input = document.getElementById("prompt_input");
+            const local_prompt = localStorage.getItem('prompt');
+            if (local_prompt != null && local_prompt != "") {
+                prompt_input.value = local_prompt;
+            }
+            negative_prompt_input = document.getElementById("negative_prompt_input");
+            const local_negative_prompt = localStorage.getItem('negative_prompt');
+            if (local_negative_prompt != null && local_negative_prompt != "") {
+                negative_prompt_input.value = local_negative_prompt;
+            }
+            random_seed_checkbox = document.getElementById("random_seed_checkbox");
+            seed_input = document.getElementById("seed_input");
+
+            const local_seed = localStorage.getItem('seed');
+            if (local_seed != null && local_seed != "") {
+                seed_input.value = local_seed;
+            }
+            const local_random_seed = localStorage.getItem('random_seed');
+            if (local_random_seed == '0' || local_random_seed == null) {
+                toggle_random_seed();
+                random_seed_checkbox.checked = false;
+            }
+
         });
 
     </script>
