@@ -59,128 +59,36 @@
         </div>
         {% load model_extras %}
         <div id="multiple_models" style="display: none;">
-                <div class="list-group list-group-flush scrollarea" style="max-height: 200px;">
-                {% for model in models %}
-                    <div class="list-group-item list-group-item-action" href="#" style="font-size: smaller; display: flex; justify-content: space-between; align-items: center;">
-                        
-                        <div style="display: flex; align-items: center;">
-                            <div>
-                            <label for="multi_model_input" class="form-label m-0">{{ model.model_id|hf_model_name }}</label>
-                            </div>
+            <div class="list-group list-group-flush scrollarea" style="max-height: 200px;">
+            {% for model in models %}
+                <div class="list-group-item list-group-item-action" href="#" style="font-size: smaller; display: flex; justify-content: space-between; align-items: center;">
+                    
+                    <div style="display: flex; align-items: center;">
+                        <div>
+                        <label for="multi_model_input" class="form-label m-0">{{ model.model_id|hf_model_name }}</label>
                         </div>
-                        <div style="display: flex; min-width: 42px; align-items: center;">
-                            <div>
-                            <input class="form-check-input mt-2" type="checkbox" value="{{ model.model_id }}" onchange="model_checked()" name="multi_model_input" />
-                            <a target="_blank" href="https://huggingface.co/{{ model.model_id }}"><span class="mt-1 material-symbols-outlined">
-                                description
-                                </span></a>
-                            </div>
-                        </div>
-                        
                     </div>
-                {% endfor %}
+                    <div style="display: flex; min-width: 42px; align-items: center;">
+                        <div>
+                        <input class="form-check-input mt-2" type="checkbox" value="{{ model.model_id }}" onchange="model_checked()" name="multi_model_input" />
+                        <a target="_blank" href="https://huggingface.co/{{ model.model_id }}"><span class="mt-1 material-symbols-outlined">
+                            description
+                            </span></a>
+                        </div>
+                    </div>
+                    
                 </div>
+            {% endfor %}
+            </div>
+            <div>
                 <div>
-                    <div>
-                        <div class="d-flex"><div>Selected models:</div><div id="selected_model_count"></div></div>
-                        <div id="selected_models">
-
-                        </div>
-                    </div>
+                    <div class="d-flex"><div>Selected models:</div><div id="selected_model_count"></div></div>
+                    <div id="selected_models"></div>
                 </div>
+            </div>
         </div>
-        <script>
-            var model_repo_link = document.getElementById("model_repo_link");
-            var model_input = document.getElementById("model_input");
-            var multi_model_input = document.getElementsByName("multi_model_input");
-            let use_multiple_models = false;
-            let selected_model_count = 0;
-            let selected_indexes = [];
-            function model_checked() {
-                let selected_models = [];
-                let count = 0;
-                for (let i = 0; i < multi_model_input.length; i++) {
-                    if (multi_model_input[i].checked) {
-                        selected_models.push(multi_model_input[i].value);
-                        count++;
-                        selected_indexes.push(i);
-                    } else {
-                        selected_indexes = selected_indexes.filter((index) => index !== i);
-                    }
-                }
-                if (count == 3) {
-                    for (let i = 0; i < multi_model_input.length; i++) {
-                        if (!multi_model_input[i].checked) {
-                            multi_model_input[i].disabled = true;
-                        }
-                    }
-                } else {
-                    for (let i = 0; i < multi_model_input.length; i++) {
-                        multi_model_input[i].disabled = false;
-                    }
-                }
-                selected_model_count = count;
-                document.getElementById("selected_model_count").innerHTML = `${count}${count == 3 ? ' (max)' : ''}`;
-                let selected_models_html = '';
-                for (const model of selected_models) {
-                    selected_models_html += `<div>${model}</div>`;
-                }
-                document.getElementById("selected_models").innerHTML = selected_models_html;
-            }
-            function model_changed() {
-                const model_id = model_input.value;
-                model_repo_link.innerHTML = `<a target="_blank" href="https://huggingface.co/${model_id}">Model Documentation</a>`;
-            }
-            function toggle_multiple_models() {
-                use_multiple_models = !use_multiple_models;
-                if (use_multiple_models) {
-                    document.getElementById("single_model").style.display = 'none';
-                    document.getElementById("multiple_models").style.display = 'block';
-                } else {
-                    document.getElementById("single_model").style.display = 'block';
-                    document.getElementById("multiple_models").style.display = 'none';
-                }
-            }
-        </script>
     </div>
     
 </div>
 
 <div id="advanced_prompt_vr" class="b-example-divider b-example-vr" style="display: none;"></div>
-
-<script>
-    var random_seed = true;
-    var random_seed_checkbox = document.getElementById("random_seed_checkbox");
-    var seed_input = document.getElementById("seed_input");
-    function toggle_random_seed() {
-        random_seed = !random_seed;
-        if (random_seed) {
-            seed_input.style.display = 'none';
-        } else {
-            seed_input.style.display = 'block';
-        }
-    }
-    var show_advanced = false;
-    var advanced_prompt = document.getElementById("advanced_prompt");
-    var advanced_prompt_container = document.getElementById("advanced_prompt_container");
-    var advanced_prompt_vr = document.getElementById("advanced_prompt_vr");
-    function toggle_advanced() {
-        var advanced_switch = document.getElementById("advanced_switch");
-        show_advanced = !show_advanced;
-        if (show_advanced) {
-            advanced_prompt.style.display = "block";
-            advanced_prompt.style.width = '280px';
-            advanced_prompt_container.style.display = "block";
-            advanced_prompt_vr.style.display = "block";
-            advanced_prompt.classList.add('p-3')
-            advanced_switch.checked = true;
-        } else {
-            advanced_prompt.style.display = "none";
-            advanced_prompt.classList.remove('p-3');
-            advanced_prompt_container.style.display = "none";
-            advanced_prompt.style.width = '0';
-            advanced_prompt_vr.style.display = "none";
-            advanced_switch.checked = false;
-        }
-    }
-</script>
