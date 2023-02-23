@@ -1,10 +1,11 @@
 import glob
+import inspect
 import math
 import os
 from typing import Callable, Dict, List, Optional, Union
+
 import numpy as np
 import PIL
-import inspect
 import torch
 from diffusers import DiffusionPipeline, __version__
 from diffusers.configuration_utils import FrozenDict
@@ -31,7 +32,6 @@ from diffusers.utils import (
 from huggingface_hub._snapshot_download import snapshot_download
 from packaging import version
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
-
 
 logger = logging.get_logger("HardDiffusion")
 if SAFETENSORS_AVAILABLE := is_safetensors_available():
@@ -79,7 +79,10 @@ def preprocess(image):
         w, h = image[0].size
         w, h = map(lambda x: x - x % 8, (w, h))  # resize to integer multiple of 8
 
-        image = [np.array(i.resize((w, h), resample=PIL_INTERPOLATION["lanczos"]))[None, :] for i in image]
+        image = [
+            np.array(i.resize((w, h), resample=PIL_INTERPOLATION["lanczos"]))[None, :]
+            for i in image
+        ]
         image = np.concatenate(image, axis=0)
         image = np.array(image).astype(np.float32) / 255.0
         image = image.transpose(0, 3, 1, 2)
@@ -457,8 +460,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
     ):
         if height and width:
             if height % 8 != 0 or width % 8 != 0:
-                raise ValueError(f"`height` and `width` have to be divisible by 8 but are {height} and {width}.")
-        
+                raise ValueError(
+                    f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
+                )
+
         if not isinstance(prompt, str) and not isinstance(prompt, list):
             raise ValueError(
                 f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
@@ -517,9 +522,24 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
         return timesteps, num_inference_steps - t_start
 
-    def _prepare_text_latents(self, batch_size, num_channels_latents, height, width, dtype, device, generator, latents=None):
+    def _prepare_text_latents(
+        self,
+        batch_size,
+        num_channels_latents,
+        height,
+        width,
+        dtype,
+        device,
+        generator,
+        latents=None,
+    ):
         print("prepare text latents")
-        shape = (batch_size, num_channels_latents, height // self.vae_scale_factor, width // self.vae_scale_factor)
+        shape = (
+            batch_size,
+            num_channels_latents,
+            height // self.vae_scale_factor,
+            width // self.vae_scale_factor,
+        )
         if isinstance(generator, list) and len(generator) != batch_size:
             raise ValueError(
                 f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
@@ -527,14 +547,16 @@ class HardDiffusionPipeline(DiffusionPipeline):
             )
 
         if latents is None:
-            latents = randn_tensor(shape, generator=generator, device=device, dtype=dtype)
+            latents = randn_tensor(
+                shape, generator=generator, device=device, dtype=dtype
+            )
         else:
             latents = latents.to(device)
 
         # scale the initial noise by the standard deviation required by the scheduler
         latents = latents * self.scheduler.init_noise_sigma
         return latents
-    
+
     def prepare_latents(
         self,
         image,
@@ -547,13 +569,22 @@ class HardDiffusionPipeline(DiffusionPipeline):
         dtype,
         device,
         generator=None,
-        latents=None
+        latents=None,
     ):
         print("batch size", batch_size, "num_images_per_prompt", num_images_per_prompt)
         batch_size = batch_size * num_images_per_prompt
         print("batch size", batch_size)
         if not isinstance(image, (torch.Tensor, PIL.Image.Image, list)):
-            return self._prepare_text_latents(batch_size, num_channels_latents, height, width, dtype, device, generator, latents=latents)
+            return self._prepare_text_latents(
+                batch_size,
+                num_channels_latents,
+                height,
+                width,
+                dtype,
+                device,
+                generator,
+                latents=latents,
+            )
             raise ValueError(
                 f"`image` has to be of type `torch.Tensor`, `PIL.Image.Image` or list but is {type(image)}"
             )
@@ -656,7 +687,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 denoising steps depends on the amount of noise initially added. When `strength` is 1, added noise will
                 be maximum and the denoising process will run for the full number of iterations specified in
                 `num_inference_steps`. A value of 1, therefore, essentially ignores `image`.
-                
+
             width (`int`, *optional*, defaults to 512): output image width
             height (`int`, *optional*, defaults to 512): output image height
             num_inference_steps (`int`, *optional*, defaults to 50):
@@ -784,7 +815,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
             prompt_embeds.dtype,
             device,
             generator,
-            latents
+            latents,
         )
 
         # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline

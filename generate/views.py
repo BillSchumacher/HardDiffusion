@@ -54,7 +54,10 @@ def queue_prompt(request) -> JsonResponse:
     models = model.split(";") if ";" in model else None
     result = _generate_image.apply_async(
         kwargs=dict(
-            prompt=prompt, negative_prompt=negative_prompt, model_path_or_name=models or model, **params
+            prompt=prompt,
+            negative_prompt=negative_prompt,
+            model_path_or_name=models or model,
+            **params,
         ),
         countdown=2,
     )
