@@ -230,7 +230,6 @@ class HardDiffusionPipeline(DiffusionPipeline):
             )
 
     @property
-    # Copied from diffusers StableDiffusionPipeline._execution_device
     def _execution_device(self):
         r"""
         Returns the device on which the pipeline's models will be executed. After calling
@@ -239,14 +238,18 @@ class HardDiffusionPipeline(DiffusionPipeline):
         """
         if self.device != torch.device("meta") or not hasattr(self.unet, "_hf_hook"):
             return self.device
-        for module in self.unet.modules():
-            if (
-                hasattr(module, "_hf_hook")
-                and hasattr(module._hf_hook, "execution_device")
-                and module._hf_hook.execution_device is not None
-            ):
-                return torch.device(module._hf_hook.execution_device)
-        return self.device
+        return next(
+            (
+                torch.device(module._hf_hook.execution_device)
+                for module in self.unet.modules()
+                if (
+                    hasattr(module, "_hf_hook")
+                    and hasattr(module._hf_hook, "execution_device")
+                    and module._hf_hook.execution_device is not None
+                )
+            ),
+            self.device,
+        )
 
     # Copied from diffusers StableDiffusionPipeline._encode_prompt
     def _encode_prompt(
@@ -458,11 +461,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
         prompt_embeds=None,
         negative_prompt_embeds=None,
     ):
-        if height and width:
-            if height % 8 != 0 or width % 8 != 0:
-                raise ValueError(
-                    f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
-                )
+        if height and width and (height % 8 != 0 or width % 8 != 0):
+            raise ValueError(
+                f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
+            )
 
         if not isinstance(prompt, str) and not isinstance(prompt, list):
             raise ValueError(
@@ -474,9 +476,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 f"The value of strength should in [0.0, 1.0] but is {strength}"
             )
 
-        if (callback_steps is None) or (
-            callback_steps is not None
-            and (not isinstance(callback_steps, int) or callback_steps <= 0)
+        if (
+            callback_steps is None
+            or not isinstance(callback_steps, int)
+            or callback_steps <= 0
         ):
             raise ValueError(
                 f"`callback_steps` has to be a positive integer but is {callback_steps} of type"
@@ -505,13 +508,16 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 f" {negative_prompt_embeds}. Please make sure to only forward one of the two."
             )
 
-        if prompt_embeds is not None and negative_prompt_embeds is not None:
-            if prompt_embeds.shape != negative_prompt_embeds.shape:
-                raise ValueError(
-                    "`prompt_embeds` and `negative_prompt_embeds` must have the same shape when passed directly, but"
-                    f" got: `prompt_embeds` {prompt_embeds.shape} != `negative_prompt_embeds`"
-                    f" {negative_prompt_embeds.shape}."
-                )
+        if (
+            prompt_embeds is not None
+            and negative_prompt_embeds is not None
+            and prompt_embeds.shape != negative_prompt_embeds.shape
+        ):
+            raise ValueError(
+                "`prompt_embeds` and `negative_prompt_embeds` must have the same shape when passed directly, but"
+                f" got: `prompt_embeds` {prompt_embeds.shape} != `negative_prompt_embeds`"
+                f" {negative_prompt_embeds.shape}."
+            )
 
     def get_timesteps(self, num_inference_steps, strength, device):
         # get the original timestep using init_timestep
@@ -585,10 +591,6 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 generator,
                 latents=latents,
             )
-            raise ValueError(
-                f"`image` has to be of type `torch.Tensor`, `PIL.Image.Image` or list but is {type(image)}"
-            )
-
         image = image.to(device=device, dtype=dtype)
         if isinstance(generator, list) and len(generator) != batch_size:
             raise ValueError(
@@ -628,10 +630,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
             init_latents = torch.cat(
                 [init_latents] * additional_image_per_prompt, dim=0
             )
-        elif (
-            batch_size > init_latents.shape[0]
-            and batch_size % init_latents.shape[0] != 0
-        ):
+        elif batch_size > init_latents.shape[0]:
             raise ValueError(
                 f"Cannot duplicate `image` of batch size {init_latents.shape[0]} to {batch_size} text prompts."
             )
@@ -870,11 +869,12 @@ class HardDiffusionPipeline(DiffusionPipeline):
         if output_type == "pil":
             image = self.numpy_to_pil(image)
 
-        if not return_dict:
-            return (image, has_nsfw_concept)
-
-        return StableDiffusionPipelineOutput(
-            images=image, nsfw_content_detected=has_nsfw_concept
+        return (
+            StableDiffusionPipelineOutput(
+                images=image, nsfw_content_detected=has_nsfw_concept
+            )
+            if return_dict
+            else (image, has_nsfw_concept)
         )
 
     def _compare_model_configs(self, dict0, dict1):
@@ -949,22 +949,20 @@ class HardDiffusionPipeline(DiffusionPipeline):
         revision,
     ):
         """Download and cache the models"""
-        cached_folders = []
-        for pretrained_model_name_or_path, config_dict in zip(
-            pretrained_model_name_or_path_list, config_dicts
-        ):
-            cached_folders.append(
-                get_cached_folder(
-                    pretrained_model_name_or_path,
-                    cache_dir,
-                    config_dict,
-                    resume_download,
-                    proxies,
-                    local_files_only,
-                    revision,
-                )
+        return [
+            get_cached_folder(
+                pretrained_model_name_or_path,
+                cache_dir,
+                config_dict,
+                resume_download,
+                proxies,
+                local_files_only,
+                revision,
             )
-        return cached_folders
+            for pretrained_model_name_or_path, config_dict in zip(
+                pretrained_model_name_or_path_list, config_dicts
+            )
+        ]
 
     @staticmethod
     def from_single_model(pretrained_model_name_or_path, **kwargs):
@@ -1206,11 +1204,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
 def get_checkpoint_path(cached_path, attr):
     checkpoint_path = os.path.join(cached_path, attr)
     if os.path.exists(checkpoint_path):
-        files = [
+        if files := [
             *glob.glob(os.path.join(checkpoint_path, "*.safetensors")),
             *glob.glob(os.path.join(checkpoint_path, "*.bin")),
-        ]
-        if files:
+        ]:
             return files[0]
     return None
 
