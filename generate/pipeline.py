@@ -37,6 +37,7 @@ from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 from HardDiffusion.logs import logger
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
+from generate.prompt import duplicate_embeddings, get_embed_from_prompt, get_unconditional_embed
 from generate.schedulers import validate_clip_sample, validate_steps_offset
 from generate.unet_utils import validate_unet_sample_size
 from generate.warnings import SAFETY_CHECKER_WARNING
@@ -45,6 +46,15 @@ if SAFETENSORS_AVAILABLE := is_safetensors_available():
     logger.info("Safetensors is available.")
     import safetensors.torch
 
+if ACCELERATE_AVAILABLE := is_accelerate_available():
+    logger.info("Accelerate is available.")
+    from accelerate import cpu_offload
+else:
+    raise ImportError("Please install accelerate via `pip install accelerate`")
+
+
+# Meta devices hold no data, this should be fine to keep in memory.
+FAKE_DEVICE = torch.device("meta")
 
 def validate_safety_checker(
     pipeline,
@@ -138,28 +148,26 @@ class HardDiffusionPipeline(DiffusionPipeline):
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
-
+        
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.register_to_config(requires_safety_checker=requires_safety_checker)
 
     # Copied from diffusers StableDiffusionPipeline.enable_sequential_cpu_offload
     def enable_sequential_cpu_offload(self, gpu_id=0):
         r"""
-        Offloads all models to CPU using accelerate, significantly reducing memory usage. When called, unet,
-        text_encoder, vae and safety checker have their state dicts saved to CPU and then are moved to a
-        `torch.device('meta') and loaded to GPU only when their specific submodule has its `forward` method called.
+        Offloads all models to CPU using accelerate, significantly reducing memory
+          usage. When called, unet, text_encoder, vae and safety checker have their
+          state dicts saved to CPU and then are moved to a `torch.device('meta') and
+          loaded to GPU only when their specific submodule has its `forward` method
+          called.
         """
-        if is_accelerate_available():
-            from accelerate import cpu_offload
-        else:
-            raise ImportError("Please install accelerate via `pip install accelerate`")
 
         device = torch.device(f"cuda:{gpu_id}")
 
         for cpu_offloaded_model in [self.unet, self.text_encoder, self.vae]:
             cpu_offload(cpu_offloaded_model, device)
 
-        if self.safety_checker is not None:
+        if self.safety_checker:
             cpu_offload(
                 self.safety_checker, execution_device=device, offload_buffers=True
             )
@@ -167,16 +175,17 @@ class HardDiffusionPipeline(DiffusionPipeline):
     @property
     def _execution_device(self):
         r"""
-        Returns the device on which the pipeline's models will be executed. After calling
-        `pipeline.enable_sequential_cpu_offload()` the execution device can only be inferred from Accelerate's module
-        hooks.
+        Returns the device on which the pipeline's models will be executed.
+          After calling `pipeline.enable_sequential_cpu_offload()` the execution
+          device can only be inferred from Accelerate's module hooks.
         """
-        if self.device != torch.device("meta") or not hasattr(self.unet, "_hf_hook"):
+        if self.device != FAKE_DEVICE or not hasattr(self.unet, "_hf_hook"):
             return self.device
+        unet_modules = self.unet.modules()
         return next(
             (
                 torch.device(module._hf_hook.execution_device)
-                for module in self.unet.modules()
+                for module in unet_modules
                 if (
                     hasattr(module, "_hf_hook")
                     and hasattr(module._hf_hook, "execution_device")
@@ -230,120 +239,40 @@ class HardDiffusionPipeline(DiffusionPipeline):
         else:
             batch_size = prompt_embeds.shape[0]
 
+        tokenizer = self.tokenizer
+        text_encoder = self.text_encoder
+
         if prompt_embeds is None:
-            text_inputs = self.tokenizer(
-                prompt,
-                padding="max_length",
-                max_length=self.tokenizer.model_max_length,
-                truncation=True,
-                return_tensors="pt",
+            prompt_embeds = get_embed_from_prompt(
+                tokenizer, text_encoder, prompt, device
             )
-            text_input_ids = text_inputs.input_ids
-            untruncated_ids = self.tokenizer(
-                prompt, padding="longest", return_tensors="pt"
-            ).input_ids
 
-            if untruncated_ids.shape[-1] >= text_input_ids.shape[
-                -1
-            ] and not torch.equal(text_input_ids, untruncated_ids):
-                removed_text = self.tokenizer.batch_decode(
-                    untruncated_ids[:, self.tokenizer.model_max_length - 1 : -1]
-                )
-                logger.warning(
-                    "The following part of your input was truncated because CLIP can only handle sequences up to"
-                    f" {self.tokenizer.model_max_length} tokens: {removed_text}"
-                )
-
-            if (
-                hasattr(self.text_encoder.config, "use_attention_mask")
-                and self.text_encoder.config.use_attention_mask
-            ):
-                attention_mask = text_inputs.attention_mask.to(device)
-            else:
-                attention_mask = None
-
-            prompt_embeds = self.text_encoder(
-                text_input_ids.to(device),
-                attention_mask=attention_mask,
-            )
-            prompt_embeds = prompt_embeds[0]
-
-        prompt_embeds = prompt_embeds.to(dtype=self.text_encoder.dtype, device=device)
-
-        bs_embed, seq_len, _ = prompt_embeds.shape
-        # duplicate text embeddings for each generation per prompt, using mps friendly method
-        prompt_embeds = prompt_embeds.repeat(1, num_images_per_prompt, 1)
-        prompt_embeds = prompt_embeds.view(
-            bs_embed * num_images_per_prompt, seq_len, -1
+        prompt_embeds = duplicate_embeddings(
+            prompt_embeds, text_encoder, prompt_embeds.shape[0],
+            num_images_per_prompt, device
         )
 
         # get unconditional embeddings for classifier free guidance
         if do_classifier_free_guidance and negative_prompt_embeds is None:
-            uncond_tokens: List[str]
-            if negative_prompt is None:
-                uncond_tokens = [""] * batch_size
-            elif type(prompt) is not type(negative_prompt):
-                raise TypeError(
-                    f"`negative_prompt` should be the same type to `prompt`, but got {type(negative_prompt)} !="
-                    f" {type(prompt)}."
-                )
-            elif isinstance(negative_prompt, str):
-                uncond_tokens = [negative_prompt]
-            elif batch_size != len(negative_prompt):
-                raise ValueError(
-                    f"`negative_prompt`: {negative_prompt} has batch size {len(negative_prompt)}, but `prompt`:"
-                    f" {prompt} has batch size {batch_size}. Please make sure that passed `negative_prompt` matches"
-                    " the batch size of `prompt`."
-                )
-            else:
-                uncond_tokens = negative_prompt
-
-            max_length = prompt_embeds.shape[1]
-            uncond_input = self.tokenizer(
-                uncond_tokens,
-                padding="max_length",
-                max_length=max_length,
-                truncation=True,
-                return_tensors="pt",
+            negative_prompt_embeds = get_unconditional_embed(
+                tokenizer, text_encoder, negative_prompt, prompt,
+                prompt_embeds, batch_size, device
             )
-
-            if (
-                hasattr(self.text_encoder.config, "use_attention_mask")
-                and self.text_encoder.config.use_attention_mask
-            ):
-                attention_mask = uncond_input.attention_mask.to(device)
-            else:
-                attention_mask = None
-
-            negative_prompt_embeds = self.text_encoder(
-                uncond_input.input_ids.to(device),
-                attention_mask=attention_mask,
-            )
-            negative_prompt_embeds = negative_prompt_embeds[0]
 
         if do_classifier_free_guidance:
-            # duplicate unconditional embeddings for each generation per prompt, using mps friendly method
-            seq_len = negative_prompt_embeds.shape[1]
-
-            negative_prompt_embeds = negative_prompt_embeds.to(
-                dtype=self.text_encoder.dtype, device=device
-            )
-
-            negative_prompt_embeds = negative_prompt_embeds.repeat(
-                1, num_images_per_prompt, 1
-            )
-            negative_prompt_embeds = negative_prompt_embeds.view(
-                batch_size * num_images_per_prompt, seq_len, -1
+            negative_prompt_embeds = duplicate_embeddings(
+                negative_prompt_embeds, text_encoder, batch_size,
+                num_images_per_prompt, device
             )
 
             # For classifier free guidance, we need to do two forward passes.
-            # Here we concatenate the unconditional and text embeddings into a single batch
-            # to avoid doing two forward passes
+            # Here we concatenate the unconditional and text embeddings into a
+            # single batch to avoid doing two forward passes
             prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds])
 
         return prompt_embeds
-        # Copied from diffusers StableDiffusionPipeline.run_safety_checker
-
+    
+    # Copied from diffusers StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
         if self.safety_checker is not None:
             safety_checker_input = self.feature_extractor(
