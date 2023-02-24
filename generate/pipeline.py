@@ -6,11 +6,10 @@ import os
 from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
-import PIL
 from PIL import Image
 import torch
 from diffusers import DiffusionPipeline, __version__
-from diffusers.configuration_utils import FrozenDict
+from diffusers.configuration_utils import FrozenDict, ConfigMixin
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
@@ -34,16 +33,37 @@ from diffusers.utils import (
     replace_example_docstring,
 )
 from huggingface_hub._snapshot_download import snapshot_download
-from packaging import version
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 from HardDiffusion.logs import logger
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
-from generate.warnings import CLIP_SAMPLE_DEPRECATION_MESSAGE, SAFETY_CHECKER_WARNING, SAMPLE_SIZE_WARNING, STEPS_OFFSET_DEPRECATION_MESSAGE
+from generate.schedulers import validate_clip_sample, validate_steps_offset
+from generate.unet_utils import validate_unet_sample_size
+from generate.warnings import SAFETY_CHECKER_WARNING
 
 if SAFETENSORS_AVAILABLE := is_safetensors_available():
     logger.info("Safetensors is available.")
     import safetensors.torch
+
+
+def validate_safety_checker(
+    pipeline,
+    safety_checker,
+    feature_extractor,
+    requires_safety_checker
+):
+    """Validate the safety checker."""
+    clazz = pipeline.__class__
+    if safety_checker is None and requires_safety_checker:
+        logger.warning(SAFETY_CHECKER_WARNING, clazz)
+
+    if safety_checker is not None and feature_extractor is None:
+        raise ValueError(
+            f"Make sure to define a feature extractor when loading {clazz}"
+            " if you want to use the safety checker."
+            " If you do not want to use the safety checker,"
+            " you can pass `'safety_checker=None'` instead."
+        )
 
 
 def preprocess(image):
@@ -84,7 +104,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
         unet: UNet2DConditionModel,
-        scheduler: Union[KarrasDiffusionSchedulers, SchedulerMixin],
+        scheduler: Union[KarrasDiffusionSchedulers, SchedulerMixin, ConfigMixin],
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
         requires_safety_checker: bool = True,
@@ -92,63 +112,22 @@ class HardDiffusionPipeline(DiffusionPipeline):
         logger.info("HardDiffusionPipeline is being initialized.")
         super().__init__()
 
-        if (
-            hasattr(scheduler.config, "steps_offset")
-            and scheduler.config.steps_offset != 1
-        ):
-            deprecate(
-                "steps_offset!=1",
-                "1.0.0",
-                STEPS_OFFSET_DEPRECATION_MESSAGE.format(
-                    scheduler,
-                    scheduler.config.steps_offset,
-                ),
-                standard_warn=False
-            )
-            new_config = dict(scheduler.config)
-            new_config["steps_offset"] = 1
-            scheduler._internal_dict = FrozenDict(new_config)
+        # Validate the scheduler config
+        scheduler_config = scheduler.config  # type: ignore
+        new_scheduler_config = dict(scheduler_config)
+        validate_steps_offset(scheduler, scheduler_config, new_scheduler_config)
+        validate_clip_sample(scheduler, scheduler_config, new_scheduler_config)
+        scheduler._internal_dict = FrozenDict(new_scheduler_config)  # type: ignore
 
-        if (
-            hasattr(scheduler.config, "clip_sample")
-            and scheduler.config.clip_sample is True
-        ):
-            deprecate(
-                "clip_sample not set",
-                "1.0.0",
-                CLIP_SAMPLE_DEPRECATION_MESSAGE.format(scheduler),
-                standard_warn=False
-            )
-            new_config = dict(scheduler.config)
-            new_config["clip_sample"] = False
-            scheduler._internal_dict = FrozenDict(new_config)
+        # Validate the safety checker
+        validate_safety_checker(self, safety_checker, feature_extractor,
+                                requires_safety_checker)
 
-        if safety_checker is None and requires_safety_checker:
-            logger.warning(SAFETY_CHECKER_WARNING, self.__class__)
-
-        if safety_checker is not None and feature_extractor is None:
-            raise ValueError(
-                "Make sure to define a feature extractor when loading {self.__class__} if you want to use the safety"
-                " checker. If you do not want to use the safety checker, you can pass `'safety_checker=None'` instead."
-            )
-
-        is_unet_version_less_0_9_0 = hasattr(
-            unet.config, "_diffusers_version"
-        ) and version.parse(
-            version.parse(unet.config._diffusers_version).base_version
-        ) < version.parse(
-            "0.9.0.dev0"
-        )
-        is_unet_sample_size_less_64 = (
-            hasattr(unet.config, "sample_size") and unet.config.sample_size < 64
-        )
-        if is_unet_version_less_0_9_0 and is_unet_sample_size_less_64:
-            deprecate(
-                "sample_size<64", "1.0.0", SAMPLE_SIZE_WARNING, standard_warn=False
-            )
-            new_config = dict(unet.config)
-            new_config["sample_size"] = 64
-            unet._internal_dict = FrozenDict(new_config)
+        # Validate the unet config
+        unet_config = unet.config
+        new_unet_config = dict(unet_config)
+        validate_unet_sample_size(unet, unet_config, new_unet_config)
+        unet._internal_dict = FrozenDict(new_unet_config)
 
         self.register_modules(
             vae=vae,
@@ -159,6 +138,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
+
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.register_to_config(requires_safety_checker=requires_safety_checker)
 
@@ -230,16 +210,18 @@ class HardDiffusionPipeline(DiffusionPipeline):
             do_classifier_free_guidance (`bool`):
                 whether to use classifier free guidance or not
             negative_ prompt (`str` or `List[str]`, *optional*):
-                The prompt or prompts not to guide the image generation. If not defined, one has to pass
-                `negative_prompt_embeds`. instead. If not defined, one has to pass `negative_prompt_embeds`. instead.
-                Ignored when not using guidance (i.e., ignored if `guidance_scale` is less than `1`).
+                The prompt or prompts not to guide the image generation.
+                If not defined, one has to pass `negative_prompt_embeds`. instead.
+                Ignored when not using guidance (if `guidance_scale` is less than `1`).
             prompt_embeds (`torch.FloatTensor`, *optional*):
-                Pre-generated text embeddings. Can be used to easily tweak text inputs, *e.g.* prompt weighting. If not
-                provided, text embeddings will be generated from `prompt` input argument.
+                Pre-generated text embeddings. 
+                Can be used to easily tweak text inputs, *e.g.* prompt weighting.
+                If not provided, text embeddings will be generated from the `prompt` arg
             negative_prompt_embeds (`torch.FloatTensor`, *optional*):
-                Pre-generated negative text embeddings. Can be used to easily tweak text inputs, *e.g.* prompt
-                weighting. If not provided, negative_prompt_embeds will be generated from `negative_prompt` input
-                argument.
+                Pre-generated negative text embeddings.
+                Can be used to easily tweak text inputs, *e.g.* prompt weighting.
+                If not provided, negative_prompt_embeds will be generated from
+                 `negative_prompt` input argument.
         """
         if prompt is not None and isinstance(prompt, str):
             batch_size = 1

@@ -1,3 +1,5 @@
+"""The example doc string for the pipeline."""
+
 EXAMPLE_DOC_STRING = """
     Examples:
         ```py
