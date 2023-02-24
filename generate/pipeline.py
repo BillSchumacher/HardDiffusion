@@ -1,3 +1,4 @@
+"""The pipeline module."""
 import glob
 import inspect
 import math
@@ -6,6 +7,7 @@ from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
 import PIL
+from PIL import Image
 import torch
 from diffusers import DiffusionPipeline, __version__
 from diffusers.configuration_utils import FrozenDict
@@ -13,6 +15,9 @@ from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
     StableDiffusionSafetyChecker,
+)
+from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
+    load_pipeline_from_original_stable_diffusion_ckpt,
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers, SchedulerMixin
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
@@ -25,7 +30,6 @@ from diffusers.utils import (
     deprecate,
     is_accelerate_available,
     is_safetensors_available,
-    logging,
     randn_tensor,
     replace_example_docstring,
 )
@@ -33,49 +37,23 @@ from huggingface_hub._snapshot_download import snapshot_download
 from packaging import version
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
-logger = logging.get_logger("HardDiffusion")
+from HardDiffusion.logs import logger
+from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
+from generate.warnings import CLIP_SAMPLE_DEPRECATION_MESSAGE, SAFETY_CHECKER_WARNING, SAMPLE_SIZE_WARNING, STEPS_OFFSET_DEPRECATION_MESSAGE
+
 if SAFETENSORS_AVAILABLE := is_safetensors_available():
     logger.info("Safetensors is available.")
     import safetensors.torch
-
-
-EXAMPLE_DOC_STRING = """
-    Examples:
-        ```py
-        >>> import requests
-        >>> import torch
-        >>> from PIL import Image
-        >>> from io import BytesIO
-
-        >>> from diffusers import StableDiffusionImg2ImgPipeline
-
-        >>> device = "cuda"
-        >>> model_id_or_path = "runwayml/stable-diffusion-v1-5"
-        >>> pipe = StableDiffusionImg2ImgPipeline.from_pretrained(model_id_or_path, torch_dtype=torch.float16)
-        >>> pipe = pipe.to(device)
-
-        >>> url = "https://raw.githubusercontent.com/CompVis/stable-diffusion/main/assets/stable-samples/img2img/sketch-mountains-input.jpg"
-
-        >>> response = requests.get(url)
-        >>> init_image = Image.open(BytesIO(response.content)).convert("RGB")
-        >>> init_image = init_image.resize((768, 512))
-
-        >>> prompt = "A fantasy landscape, trending on artstation"
-
-        >>> images = pipe(prompt=prompt, image=init_image, strength=0.75, guidance_scale=7.5).images
-        >>> images[0].save("fantasy_landscape.png")
-        ```
-"""
 
 
 def preprocess(image):
     """Preprocess the image for the model."""
     if isinstance(image, torch.Tensor):
         return image
-    elif isinstance(image, PIL.Image.Image):
+    elif isinstance(image, Image.Image):
         image = [image]
 
-    if isinstance(image[0], PIL.Image.Image):
+    if isinstance(image[0], Image.Image):
         w, h = image[0].size
         w, h = map(lambda x: x - x % 8, (w, h))  # resize to integer multiple of 8
 
@@ -113,20 +91,19 @@ class HardDiffusionPipeline(DiffusionPipeline):
     ):
         logger.info("HardDiffusionPipeline is being initialized.")
         super().__init__()
+
         if (
             hasattr(scheduler.config, "steps_offset")
             and scheduler.config.steps_offset != 1
         ):
-            deprecation_message = (
-                f"The configuration file of this scheduler: {scheduler} is outdated. `steps_offset`"
-                f" should be set to 1 instead of {scheduler.config.steps_offset}. Please make sure "
-                "to update the config accordingly as leaving `steps_offset` might led to incorrect results"
-                " in future versions. If you have downloaded this checkpoint from the Hugging Face Hub,"
-                " it would be very nice if you could open a Pull request for the `scheduler/scheduler_config.json`"
-                " file"
-            )
             deprecate(
-                "steps_offset!=1", "1.0.0", deprecation_message, standard_warn=False
+                "steps_offset!=1",
+                "1.0.0",
+                STEPS_OFFSET_DEPRECATION_MESSAGE.format(
+                    scheduler,
+                    scheduler.config.steps_offset,
+                ),
+                standard_warn=False
             )
             new_config = dict(scheduler.config)
             new_config["steps_offset"] = 1
@@ -136,29 +113,18 @@ class HardDiffusionPipeline(DiffusionPipeline):
             hasattr(scheduler.config, "clip_sample")
             and scheduler.config.clip_sample is True
         ):
-            deprecation_message = (
-                f"The configuration file of this scheduler: {scheduler} has not set the configuration `clip_sample`."
-                " `clip_sample` should be set to False in the configuration file. Please make sure to update the"
-                " config accordingly as not setting `clip_sample` in the config might lead to incorrect results in"
-                " future versions. If you have downloaded this checkpoint from the Hugging Face Hub, it would be very"
-                " nice if you could open a Pull request for the `scheduler/scheduler_config.json` file"
-            )
             deprecate(
-                "clip_sample not set", "1.0.0", deprecation_message, standard_warn=False
+                "clip_sample not set",
+                "1.0.0",
+                CLIP_SAMPLE_DEPRECATION_MESSAGE.format(scheduler),
+                standard_warn=False
             )
             new_config = dict(scheduler.config)
             new_config["clip_sample"] = False
             scheduler._internal_dict = FrozenDict(new_config)
 
         if safety_checker is None and requires_safety_checker:
-            logger.warning(
-                f"You have disabled the safety checker for {self.__class__} by passing `safety_checker=None`. Ensure"
-                " that you abide to the conditions of the Stable Diffusion license and do not expose unfiltered"
-                " results in services or applications open to the public. Both the diffusers team and Hugging Face"
-                " strongly recommend to keep the safety filter enabled in all public facing circumstances, disabling"
-                " it only for use-cases that involve analyzing network behavior or auditing its results. For more"
-                " information, please have a look at https://github.com/huggingface/diffusers/pull/254 ."
-            )
+            logger.warning(SAFETY_CHECKER_WARNING, self.__class__)
 
         if safety_checker is not None and feature_extractor is None:
             raise ValueError(
@@ -177,19 +143,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
             hasattr(unet.config, "sample_size") and unet.config.sample_size < 64
         )
         if is_unet_version_less_0_9_0 and is_unet_sample_size_less_64:
-            deprecation_message = (
-                "The configuration file of the unet has set the default `sample_size` to smaller than"
-                " 64 which seems highly unlikely. If your checkpoint is a fine-tuned version of any of the"
-                " following: \n- CompVis/stable-diffusion-v1-4 \n- CompVis/stable-diffusion-v1-3 \n-"
-                " CompVis/stable-diffusion-v1-2 \n- CompVis/stable-diffusion-v1-1 \n- runwayml/stable-diffusion-v1-5"
-                " \n- runwayml/stable-diffusion-inpainting \n you should change 'sample_size' to 64 in the"
-                " configuration file. Please make sure to update the config accordingly as leaving `sample_size=32`"
-                " in the config might lead to incorrect results in future versions. If you have downloaded this"
-                " checkpoint from the Hugging Face Hub, it would be very nice if you could open a Pull request for"
-                " the `unet/config.json` file"
-            )
             deprecate(
-                "sample_size<64", "1.0.0", deprecation_message, standard_warn=False
+                "sample_size<64", "1.0.0", SAMPLE_SIZE_WARNING, standard_warn=False
             )
             new_config = dict(unet.config)
             new_config["sample_size"] = 64
@@ -580,7 +535,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         print("batch size", batch_size, "num_images_per_prompt", num_images_per_prompt)
         batch_size = batch_size * num_images_per_prompt
         print("batch size", batch_size)
-        if not isinstance(image, (torch.Tensor, PIL.Image.Image, list)):
+        if not isinstance(image, (torch.Tensor, Image.Image, list)):
             return self._prepare_text_latents(
                 batch_size,
                 num_channels_latents,
@@ -651,7 +606,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
     def __call__(
         self,
         prompt: Union[str, List[str]] = None,
-        image: Union[torch.FloatTensor, PIL.Image.Image] = None,
+        image: Union[torch.FloatTensor, Image.Image] = None,
         strength: float = 0.8,
         width: Optional[int] = 512,
         height: Optional[int] = 512,
@@ -1294,3 +1249,18 @@ def get_cached_folder(
             user_agent=user_agent,
         )
     )
+
+def get_pipeline(model_path_or_name, nsfw):
+    """Get the pipeline for the given model path or name."""
+    if isinstance(model_path_or_name, list):
+        return HardDiffusionPipeline.from_pretrained(model_path_or_name[0])
+    if model_path_or_name.startswith("./") and model_path_or_name.endswith(".ckpt"):
+        return load_pipeline_from_original_stable_diffusion_ckpt(
+            model_path_or_name,
+            model_path_or_name.replace(".ckpt", ".yaml"),
+        )
+    # StableDiffusionPipeline.run_safety_checker = (
+    #     run_safety_checker if nsfw else original_run_safety_checker
+    # )
+    # return StableDiffusionPipeline.from_pretrained(model_path_or_name)
+    return HardDiffusionPipeline.from_single_model(model_path_or_name)
