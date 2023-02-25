@@ -38,6 +38,15 @@ from huggingface_hub._snapshot_download import snapshot_download
 from PIL import Image
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
+from generate.input_validation import (
+    validate_strength_range,
+    validate_width_and_height,
+    validate_prompt_type,
+    validate_callback_steps,
+    validate_prompt_and_embeds,
+    validate_negative_prompt_and_embeds,
+    validate_prompt_and_negative_embeds_shape
+)
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
 from generate.prompt import (
     duplicate_embeddings,
@@ -291,6 +300,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
     # Copied from diffusers StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
+        """run safety checker"""
         if self.safety_checker is not None:
             safety_checker_input = self.feature_extractor(
                 self.numpy_to_pil(image), return_tensors="pt"
@@ -304,20 +314,25 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
     # Copied from diffusers StableDiffusionPipeline.decode_latents
     def decode_latents(self, latents):
+        """decode latents to image"""
         latents = 1 / 0.18215 * latents
         image = self.vae.decode(latents).sample
         image = (image / 2 + 0.5).clamp(0, 1)
-        # we always cast to float32 as this does not cause significant overhead and is compatible with bfloa16
+        # we always cast to float32 as this does not cause significant overhead
+        #  and is compatible with bfloa16
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
         return image
 
     # Copied from diffusers StableDiffusionPipeline.prepare_extra_step_kwargs
     def prepare_extra_step_kwargs(self, generator, eta):
-        # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
-        # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
-        # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
-        # and should be between [0, 1]
-
+        """
+        prepare extra kwargs for the scheduler step, since not all schedulers have
+        the same signature eta (η) is only used with the DDIMScheduler,
+        it will be ignored for other schedulers.
+        
+        eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
+        and should be between [0, 1]
+        """
         accepts_eta = "eta" in set(
             inspect.signature(self.scheduler.step).parameters.keys()
         )
@@ -344,63 +359,14 @@ class HardDiffusionPipeline(DiffusionPipeline):
         prompt_embeds=None,
         negative_prompt_embeds=None,
     ):
-        if height and width and (height % 8 != 0 or width % 8 != 0):
-            raise ValueError(
-                f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
-            )
-
-        if not isinstance(prompt, str) and not isinstance(prompt, list):
-            raise ValueError(
-                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
-            )
-
-        if strength < 0 or strength > 1:
-            raise ValueError(
-                f"The value of strength should in [0.0, 1.0] but is {strength}"
-            )
-
-        if (
-            callback_steps is None
-            or not isinstance(callback_steps, int)
-            or callback_steps <= 0
-        ):
-            raise ValueError(
-                f"`callback_steps` has to be a positive integer but is {callback_steps} of type"
-                f" {type(callback_steps)}."
-            )
-
-        if prompt is not None and prompt_embeds is not None:
-            raise ValueError(
-                f"Cannot forward both `prompt`: {prompt} and `prompt_embeds`: {prompt_embeds}. Please make sure to"
-                " only forward one of the two."
-            )
-        elif prompt is None and prompt_embeds is None:
-            raise ValueError(
-                "Provide either `prompt` or `prompt_embeds`. Cannot leave both `prompt` and `prompt_embeds` undefined."
-            )
-        elif prompt is not None and (
-            not isinstance(prompt, str) and not isinstance(prompt, list)
-        ):
-            raise ValueError(
-                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
-            )
-
-        if negative_prompt is not None and negative_prompt_embeds is not None:
-            raise ValueError(
-                f"Cannot forward both `negative_prompt`: {negative_prompt} and `negative_prompt_embeds`:"
-                f" {negative_prompt_embeds}. Please make sure to only forward one of the two."
-            )
-
-        if (
-            prompt_embeds is not None
-            and negative_prompt_embeds is not None
-            and prompt_embeds.shape != negative_prompt_embeds.shape
-        ):
-            raise ValueError(
-                "`prompt_embeds` and `negative_prompt_embeds` must have the same shape when passed directly, but"
-                f" got: `prompt_embeds` {prompt_embeds.shape} != `negative_prompt_embeds`"
-                f" {negative_prompt_embeds.shape}."
-            )
+        """validate pipeline inputs"""
+        validate_width_and_height(width, height)
+        validate_prompt_type(prompt)
+        validate_strength_range(strength)
+        validate_callback_steps(callback_steps)
+        validate_prompt_and_embeds(prompt, prompt_embeds)
+        validate_negative_prompt_and_embeds(negative_prompt, negative_prompt_embeds)
+        validate_prompt_and_negative_embeds_shape(prompt_embeds, negative_prompt_embeds)
 
     def get_timesteps(self, num_inference_steps, strength, device):
         # get the original timestep using init_timestep
