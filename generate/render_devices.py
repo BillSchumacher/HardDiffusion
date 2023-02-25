@@ -5,7 +5,6 @@ import torch
 
 from generate.models import RenderWorkerDevice
 
-
 HOSTNAME = settings.HOSTNAME
 
 

@@ -21,15 +21,17 @@ def get_embed_from_prompt(tokenizer, text_encoder, prompt, device):
         prompt, padding="longest", return_tensors="pt"
     ).input_ids
 
-    if untruncated_ids.shape[-1] >= text_input_ids.shape[-1] \
-            and not torch.equal(text_input_ids, untruncated_ids):
+    if untruncated_ids.shape[-1] >= text_input_ids.shape[-1] and not torch.equal(
+        text_input_ids, untruncated_ids
+    ):
         removed_text = tokenizer.batch_decode(
             untruncated_ids[:, tokenizer.model_max_length - 1 : -1]
         )
         logger.warning(
             "The following part of your input was truncated because CLIP"
             " can only handle sequences up to %s tokens: %s",
-            tokenizer.model_max_length, removed_text
+            tokenizer.model_max_length,
+            removed_text,
         )
 
     attention_mask = get_attention_mask(text_encoder, text_inputs, device)
@@ -42,8 +44,9 @@ def get_embed_from_prompt(tokenizer, text_encoder, prompt, device):
     return prompt_embeds
 
 
-def get_unconditional_embed(tokenizer, text_encoder, negative_prompt, prompt,
-                            prompt_embeds, batch_size, device):
+def get_unconditional_embed(
+    tokenizer, text_encoder, negative_prompt, prompt, prompt_embeds, batch_size, device
+):
     """Get the embedding from the negative prompt."""
     uncond_tokens: List[str] = []
     if negative_prompt is None:
@@ -101,19 +104,14 @@ def get_embeds_from_text_encoding(text_encoder, text_inputs, attention_mask, dev
     )
 
 
-def duplicate_embeddings(embeds, text_encoder, batch_size,
-                         num_images_per_prompt, device) -> FloatTensor:
+def duplicate_embeddings(
+    embeds, text_encoder, batch_size, num_images_per_prompt, device
+) -> FloatTensor:
     """
-        duplicate embeddings for each generation per prompt,
-        using mps friendly method
+    duplicate embeddings for each generation per prompt,
+    using mps friendly method
     """
     seq_len = embeds.shape[1]
-    embeds = embeds.to(
-        dtype=text_encoder.dtype, device=device
-    )
-    embeds = embeds.repeat(
-        1, num_images_per_prompt, 1
-    )
-    return embeds.view(
-        batch_size * num_images_per_prompt, seq_len, -1
-    )
+    embeds = embeds.to(dtype=text_encoder.dtype, device=device)
+    embeds = embeds.repeat(1, num_images_per_prompt, 1)
+    return embeds.view(batch_size * num_images_per_prompt, seq_len, -1)

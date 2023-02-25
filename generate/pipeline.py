@@ -9,10 +9,9 @@ import os
 from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
-from PIL import Image
 import torch
 from diffusers import DiffusionPipeline, __version__
-from diffusers.configuration_utils import FrozenDict, ConfigMixin
+from diffusers.configuration_utils import ConfigMixin, FrozenDict
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
@@ -36,14 +35,19 @@ from diffusers.utils import (
     replace_example_docstring,
 )
 from huggingface_hub._snapshot_download import snapshot_download
+from PIL import Image
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
-from HardDiffusion.logs import logger
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
-from generate.prompt import duplicate_embeddings, get_embed_from_prompt, get_unconditional_embed
+from generate.prompt import (
+    duplicate_embeddings,
+    get_embed_from_prompt,
+    get_unconditional_embed,
+)
 from generate.schedulers import validate_clip_sample, validate_steps_offset
 from generate.unet_utils import validate_unet_sample_size
 from generate.warnings import SAFETY_CHECKER_WARNING
+from HardDiffusion.logs import logger
 
 if SAFETENSORS_AVAILABLE := is_safetensors_available():
     logger.info("Safetensors is available.")
@@ -61,10 +65,7 @@ FAKE_DEVICE = torch.device("meta")
 
 
 def validate_safety_checker(
-    pipeline,
-    safety_checker,
-    feature_extractor,
-    requires_safety_checker
+    pipeline, safety_checker, feature_extractor, requires_safety_checker
 ):
     """Validate the safety checker."""
     clazz = pipeline.__class__
@@ -134,8 +135,9 @@ class HardDiffusionPipeline(DiffusionPipeline):
         scheduler._internal_dict = FrozenDict(new_scheduler_config)  # type: ignore
 
         # Validate the safety checker
-        validate_safety_checker(self, safety_checker, feature_extractor,
-                                requires_safety_checker)
+        validate_safety_checker(
+            self, safety_checker, feature_extractor, requires_safety_checker
+        )
 
         # Validate the unet config
         unet_config = unet.config
@@ -152,7 +154,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
-        
+
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.register_to_config(requires_safety_checker=requires_safety_checker)
 
@@ -227,7 +229,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 If not defined, one has to pass `negative_prompt_embeds`. instead.
                 Ignored when not using guidance (if `guidance_scale` is less than `1`).
             prompt_embeds (`torch.FloatTensor`, *optional*):
-                Pre-generated text embeddings. 
+                Pre-generated text embeddings.
                 Can be used to easily tweak text inputs, *e.g.* prompt weighting.
                 If not provided, text embeddings will be generated from the `prompt` arg
             negative_prompt_embeds (`torch.FloatTensor`, *optional*):
@@ -252,21 +254,32 @@ class HardDiffusionPipeline(DiffusionPipeline):
             )
 
         prompt_embeds = duplicate_embeddings(
-            prompt_embeds, text_encoder, prompt_embeds.shape[0],
-            num_images_per_prompt, device
+            prompt_embeds,
+            text_encoder,
+            prompt_embeds.shape[0],
+            num_images_per_prompt,
+            device,
         )
 
         # get unconditional embeddings for classifier free guidance
         if do_classifier_free_guidance and negative_prompt_embeds is None:
             negative_prompt_embeds = get_unconditional_embed(
-                tokenizer, text_encoder, negative_prompt, prompt,
-                prompt_embeds, batch_size, device
+                tokenizer,
+                text_encoder,
+                negative_prompt,
+                prompt,
+                prompt_embeds,
+                batch_size,
+                device,
             )
 
         if do_classifier_free_guidance:
             negative_prompt_embeds = duplicate_embeddings(
-                negative_prompt_embeds, text_encoder, batch_size,
-                num_images_per_prompt, device
+                negative_prompt_embeds,
+                text_encoder,
+                batch_size,
+                num_images_per_prompt,
+                device,
             )
 
             # For classifier free guidance, we need to do two forward passes.
@@ -275,7 +288,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
             prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds])
 
         return prompt_embeds
-    
+
     # Copied from diffusers StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
         if self.safety_checker is not None:
@@ -966,14 +979,14 @@ class HardDiffusionPipeline(DiffusionPipeline):
         Returns a new pipeline object of the class 'DiffusionPipeline' with the merged
         checkpoints(weights) of the models passed in the argument
         'pretrained_model_name_or_path_list' as a list.
-        
+
         Parameters:
         -----------
-        
+
          pretrained_model_name_or_path_list : A list of valid pretrained model names
          in the HuggingFace hub or paths to locally stored models in the
          HuggingFace format.
-        
+
          **kwargs:
                 Supports all the default DiffusionPipeline.get_config_dict kwargs viz..
                 cache_dir, resume_download, force_download, proxies, local_files_only,
@@ -1167,6 +1180,7 @@ def get_cached_folder(
             user_agent=user_agent,
         )
     )
+
 
 def get_pipeline(model_path_or_name, nsfw):
     """Get the pipeline for the given model path or name."""

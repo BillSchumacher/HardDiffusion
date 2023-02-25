@@ -35,14 +35,17 @@ release = "0.1"
 # ones.
 
 extensions = [
-    "sphinx.ext.autodoc", 
-    'sphinx.ext.autosummary', "sphinx.ext.coverage",
-    'sphinx.ext.duration',
-    'sphinx.ext.doctest',
-    "sphinx.ext.napoleon", "sphinx.ext.intersphinx", 
-    'myst_parser']
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.duration",
+    "sphinx.ext.doctest",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
+    "myst_parser",
+]
 
-source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 autodoc_mock_imports = ["django"]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,8 +56,11 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["../**/migrations/*", "../manage.py", "../run_pylint.py"]
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3', None), 
-    'django': ('https://docs.djangoproject.com/en/4.1/', 'http://docs.djangoproject.com/en/4.1/_objects/')
+    "python": ("https://docs.python.org/3", None),
+    "django": (
+        "https://docs.djangoproject.com/en/4.1/",
+        "http://docs.djangoproject.com/en/4.1/_objects/",
+    ),
 }
 # -- Options for HTML output -------------------------------------------------
 
@@ -63,12 +69,12 @@ intersphinx_mapping = {
 #
 html_theme = "alabaster"
 html_theme_options = {
-    'show_powered_by': True,
-    'github_user': 'BillSchumacher',
-    'github_repo': 'HardDiffusion',
-    'github_banner': True,
-    'show_related': False,
-    'note_bg': '#FFF59C'
+    "show_powered_by": True,
+    "github_user": "BillSchumacher",
+    "github_repo": "HardDiffusion",
+    "github_banner": True,
+    "show_related": False,
+    "note_bg": "#FFF59C",
 }
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

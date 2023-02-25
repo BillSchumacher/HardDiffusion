@@ -1,8 +1,10 @@
 """Scheduler utilities."""
 from diffusers.utils import deprecate
 
-from generate.warnings import CLIP_SAMPLE_DEPRECATION_MESSAGE, \
-    STEPS_OFFSET_DEPRECATION_MESSAGE
+from generate.warnings import (
+    CLIP_SAMPLE_DEPRECATION_MESSAGE,
+    STEPS_OFFSET_DEPRECATION_MESSAGE,
+)
 
 
 def validate_steps_offset(scheduler, config, new_config):
@@ -19,7 +21,7 @@ def validate_steps_offset(scheduler, config, new_config):
                 scheduler,
                 steps_offset,
             ),
-            standard_warn=False
+            standard_warn=False,
         )
         new_config["steps_offset"] = 1
 
@@ -33,6 +35,6 @@ def validate_clip_sample(scheduler, config, new_config):
             "clip_sample not set",
             "1.0.0",
             CLIP_SAMPLE_DEPRECATION_MESSAGE.format(scheduler),
-            standard_warn=False
+            standard_warn=False,
         )
         new_config["clip_sample"] = False

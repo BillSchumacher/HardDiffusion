@@ -1,9 +1,7 @@
-
 """Utilities for UNet models."""
 
-from packaging import version
-
 from diffusers.utils import deprecate
+from packaging import version
 
 from generate.warnings import SAMPLE_SIZE_WARNING
 
@@ -21,7 +19,5 @@ def validate_unet_sample_size(unet, config, new_config):
         hasattr(unet.config, "sample_size") and unet.config.sample_size < 64
     )
     if is_unet_version_less_0_9_0 and is_unet_sample_size_less_64:
-        deprecate(
-            "sample_size<64", "1.0.0", SAMPLE_SIZE_WARNING, standard_warn=False
-        )
+        deprecate("sample_size<64", "1.0.0", SAMPLE_SIZE_WARNING, standard_warn=False)
         new_config["sample_size"] = 64
