@@ -2,7 +2,6 @@
 The pipeline module.
 """
 
-import glob
 import inspect
 import math
 import os
@@ -10,7 +9,7 @@ from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
 import torch
-from diffusers import DiffusionPipeline, __version__
+from diffusers import DiffusionPipeline
 from diffusers.configuration_utils import ConfigMixin, FrozenDict
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
@@ -21,23 +20,23 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     load_pipeline_from_original_stable_diffusion_ckpt,
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers, SchedulerMixin
-from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils import (
-    CONFIG_NAME,
     DIFFUSERS_CACHE,
-    ONNX_WEIGHTS_NAME,
     PIL_INTERPOLATION,
-    WEIGHTS_NAME,
     deprecate,
     is_accelerate_available,
-    is_safetensors_available,
     randn_tensor,
     replace_example_docstring,
 )
-from huggingface_hub._snapshot_download import snapshot_download
 from PIL import Image
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
+from generate.file_utils import (
+    download_and_cache_models,
+    get_cached_folder,
+    get_checkpoint_path,
+    load_checkpoint,
+)
 from generate.input_validation import (
     validate_callback_steps,
     validate_generator_and_batch_size,
@@ -60,10 +59,6 @@ from generate.schedulers import validate_clip_sample, validate_steps_offset
 from generate.unet_utils import validate_unet_sample_size
 from generate.warnings import SAFETY_CHECKER_WARNING
 from HardDiffusion.logs import logger
-
-if SAFETENSORS_AVAILABLE := is_safetensors_available():
-    logger.info("Safetensors is available.")
-    import safetensors.torch
 
 if ACCELERATE_AVAILABLE := is_accelerate_available():
     logger.info("Accelerate is available.")
@@ -391,7 +386,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         generator,
         latents=None,
     ):
-        """"prepare text-to-image latents"""
+        """ "prepare text-to-image latents"""
         shape = (
             batch_size,
             num_channels_latents,
@@ -400,8 +395,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
         )
         validate_generator_and_batch_size(generator, batch_size)
 
-        latents = latents.to(device) if latents else randn_tensor(
-            shape, generator=generator, device=device, dtype=dtype
+        latents = (
+            latents.to(device)
+            if latents
+            else randn_tensor(shape, generator=generator, device=device, dtype=dtype)
         )
 
         # scale the initial noise by the standard deviation required by the scheduler
@@ -455,7 +452,6 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
         # get latents
         return self.scheduler.add_noise(init_latents, noise, timestep)
-
 
     @torch.no_grad()
     @replace_example_docstring(EXAMPLE_DOC_STRING)
@@ -527,7 +523,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
             negative_prompt (`str` or `List[str]`, *optional*):
                 The prompt or prompts not to guide the image generation.
                 If not defined, one has to pass `negative_prompt_embeds` instead.
-                Ignored when not using guidance 
+                Ignored when not using guidance
                 (i.e., ignored if `guidance_scale` is less than `1`).
 
             num_images_per_prompt (`int`, *optional*, defaults to 1):
@@ -670,10 +666,21 @@ class HardDiffusionPipeline(DiffusionPipeline):
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
-                latents = denoise(self.scheduler, self.unet,
-                    latents, i, t, prompt_embeds, do_classifier_free_guidance,
-                    guidance_scale, extra_step_kwargs, timesteps, num_warmup_steps,
-                    progress_bar, callback, callback_steps
+                latents = denoise(
+                    self.scheduler,
+                    self.unet,
+                    latents,
+                    i,
+                    t,
+                    prompt_embeds,
+                    do_classifier_free_guidance,
+                    guidance_scale,
+                    extra_step_kwargs,
+                    timesteps,
+                    num_warmup_steps,
+                    progress_bar,
+                    callback,
+                    callback_steps,
                 )
 
         # 9. Post-processing
@@ -760,32 +767,6 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 )
         print("Compatible model_index.json files found")
         return config_dicts
-
-    def download_and_cache_models(
-        self,
-        pretrained_model_name_or_path_list,
-        config_dicts,
-        cache_dir,
-        resume_download,
-        proxies,
-        local_files_only,
-        revision,
-    ):
-        """Download and cache the models"""
-        return [
-            get_cached_folder(
-                pretrained_model_name_or_path,
-                cache_dir,
-                config_dict,
-                resume_download,
-                proxies,
-                local_files_only,
-                revision,
-            )
-            for pretrained_model_name_or_path, config_dict in zip(
-                pretrained_model_name_or_path_list, config_dicts
-            )
-        ]
 
     @staticmethod
     def from_single_model(pretrained_model_name_or_path, **kwargs):
@@ -991,7 +972,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         )
         # Step 2: Basic Validation has succeeded.
         # Let's download the models and save them into our local files.
-        cached_folders = self.download_and_cache_models(
+        cached_folders = download_and_cache_models(
             pretrained_model_name_or_path_list,
             config_dicts,
             cache_dir,
@@ -1029,36 +1010,6 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return theta0 + (theta1 - theta2) * (1.0 - alpha)
 
 
-def get_checkpoint_path(cached_path, attr):
-    """Get the checkpoint path for the given attribute."""
-    checkpoint_path = os.path.join(cached_path, attr)
-    if os.path.exists(checkpoint_path):
-        if files := [
-            *glob.glob(os.path.join(checkpoint_path, "*.safetensors")),
-            *glob.glob(os.path.join(checkpoint_path, "*.bin")),
-        ]:
-            return files[0]
-    return None
-
-
-def load_checkpoint(checkpoint_path):
-    """Load the checkpoint from the given path."""
-    return (
-        safetensors.torch.load_file(checkpoint_path, device="cuda")
-        if (SAFETENSORS_AVAILABLE and checkpoint_path.endswith(".safetensors"))
-        else torch.load(checkpoint_path, map_location="cuda")
-    )
-
-
-DEFAULT_NAMES = [
-    WEIGHTS_NAME,
-    SCHEDULER_CONFIG_NAME,
-    CONFIG_NAME,
-    ONNX_WEIGHTS_NAME,
-    DiffusionPipeline.config_name,
-]
-
-
 def get_options_from_kwargs(kwargs):
     """Get the options from the kwargs."""
     cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
@@ -1086,46 +1037,6 @@ def get_options_from_kwargs(kwargs):
         device_map,
         alpha,
         interp,
-    )
-
-
-def get_allowed_patterns(config_dict):
-    """Get the allowed patterns for the given config dict."""
-    folder_names = [k for k in config_dict.keys() if not k.startswith("_")]
-    allow_patterns = [os.path.join(k, "*") for k in folder_names]
-    allow_patterns += DEFAULT_NAMES
-    return allow_patterns
-
-
-def get_cached_folder(
-    pretrained_model_name_or_path,
-    cache_dir,
-    config_dict,
-    resume_download,
-    proxies,
-    local_files_only,
-    revision,
-):
-    """Get the cached folder for the given model."""
-    requested_pipeline_class = config_dict.get("_class_name")
-    user_agent = {
-        "diffusers": __version__,
-        "pipeline_class": requested_pipeline_class,
-    }
-    allow_patterns = get_allowed_patterns(config_dict)
-    return (
-        pretrained_model_name_or_path
-        if os.path.isdir(pretrained_model_name_or_path)
-        else snapshot_download(
-            str(pretrained_model_name_or_path),
-            cache_dir=cache_dir,
-            resume_download=resume_download,
-            proxies=proxies,
-            local_files_only=local_files_only,
-            revision=revision,
-            allow_patterns=allow_patterns,
-            user_agent=user_agent,
-        )
     )
 
 

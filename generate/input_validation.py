@@ -1,7 +1,7 @@
 """Input validation for the pipeline."""
 from typing import Optional, Union
-import torch
 
+import torch
 from diffusers.utils import deprecate
 
 
@@ -103,10 +103,7 @@ def validate_generator_and_batch_size(generator, batch_size):
 
 def validate_initial_image_latents(init_latents, batch_size):
     """Validate that the initial image latents and batch size are valid."""
-    if (
-        batch_size > init_latents.shape[0]
-        and batch_size % init_latents.shape[0] == 0
-    ):
+    if batch_size > init_latents.shape[0] and batch_size % init_latents.shape[0] == 0:
         # expand init_latents for batch_size
         deprecation_message = (
             f"You have passed {batch_size} text prompts (`prompt`),"
@@ -123,9 +120,7 @@ def validate_initial_image_latents(init_latents, batch_size):
             standard_warn=False,
         )
         additional_image_per_prompt = batch_size // init_latents.shape[0]
-        init_latents = torch.cat(
-            [init_latents] * additional_image_per_prompt, dim=0
-        )
+        init_latents = torch.cat([init_latents] * additional_image_per_prompt, dim=0)
     elif batch_size > init_latents.shape[0]:
         raise ValueError(
             f"Cannot duplicate `image` of batch size {init_latents.shape[0]}"
