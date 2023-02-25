@@ -4,11 +4,18 @@ Usage
 Starting the server
 -------------------
 
+Before you start or after you update you might need to collectstatic and migrate:
+
+.. code-block:: bash
+   
+   python manage.py collectstatic
+   python manage.py migrate
+
 You can run the application with:
 
 .. code-block:: bash
    
-   python3 manage.py runserver
+   python manage.py runserver
 
 or install gunicorn or another WSGI server.
 
