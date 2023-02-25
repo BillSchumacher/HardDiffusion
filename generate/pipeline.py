@@ -734,6 +734,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         )
 
     def _compare_model_configs(self, dict0, dict1):
+        """Compares two model configs and returns True if they are the same."""
         if dict0 == dict1:
             return True
         config0, meta_keys0 = self._remove_meta_keys(dict0)
@@ -744,6 +745,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return False
 
     def _remove_meta_keys(self, config_dict: Dict):
+        """Remove the keys starting with '_' from the config dict"""
         meta_keys = []
         temp_dict = config_dict.copy()
         for key in config_dict.keys():
@@ -767,10 +769,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
     ):
         """Validate that the checkpoints can be merged"""
         # Step 1: Load the model config and compare the checkpoints.
-        #  We'll compare the model_index.json first while ignoring the keys starting with '_'
-        config_dicts = []
-        for pretrained_model_name_or_path in pretrained_model_name_or_path_list:
-            config_dict = DiffusionPipeline.load_config(
+        #  We'll compare the model_index.json first while ignoring the keys
+        #  starting with '_'
+        config_dicts = [
+            DiffusionPipeline.load_config(
                 pretrained_model_name_or_path,
                 cache_dir=cache_dir,
                 resume_download=resume_download,
@@ -780,7 +782,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 use_auth_token=use_auth_token,
                 revision=revision,
             )
-            config_dicts.append(config_dict)
+            for pretrained_model_name_or_path in pretrained_model_name_or_path_list
+        ]
 
         comparison_result = True
         for idx in range(1, len(config_dicts)):
@@ -789,7 +792,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
             )
             if not force and comparison_result is False:
                 raise ValueError(
-                    "Incompatible checkpoints. Please check model_index.json for the models."
+                    "Incompatible checkpoints."
+                    " Please check model_index.json for the models."
                 )
         print("Compatible model_index.json files found")
         return config_dicts
