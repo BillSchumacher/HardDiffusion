@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/release' }}
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser
+          pip install sphinx sphinx_rtd_theme myst_parser sphinx-sitemap
           pip install -r requirements.txt
       - name: Sphinx build
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/release' }}

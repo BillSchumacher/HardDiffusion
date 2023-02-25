@@ -42,6 +42,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
+    'sphinx_sitemap',
     "myst_parser",
 ]
 
@@ -63,7 +64,7 @@ intersphinx_mapping = {
     ),
 }
 # -- Options for HTML output -------------------------------------------------
-
+html_baseurl = 'https://billschumacher.github.io/HardDiffusion/'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
