@@ -41,7 +41,7 @@ Goals
 Contribution
 ------------
 
-Feel free to submit a PR!
+See https://billschumacher.github.io/HardDiffusion/contributing.html
 
 Performance
 -----------
