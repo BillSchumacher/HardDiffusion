@@ -1,18 +1,14 @@
 Welcome to HardDiffusion's documentation!
 =========================================
 
-.. automodule:: HardDiffusion
-   :members:
-
-.. automodule:: generate
-   :members:
-
-.. automodule:: train
-   :members:
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
+
+   about.rst
+   installation.rst
+   usage.rst
+   modules.rst
 
 
 Indices and tables

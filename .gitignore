@@ -7,3 +7,4 @@ image_0.jpeg
 sd_models/**/*.yaml
 media/*.png
 out
+_build

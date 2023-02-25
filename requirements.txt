@@ -24,3 +24,4 @@ torchaudio
 git+https://github.com/BillSchumacher/transformers@main#egg=transformers
 triton; sys_platform == 'linux'
 xformers
+# colossalai

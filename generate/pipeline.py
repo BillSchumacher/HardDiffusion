@@ -1,4 +1,7 @@
-"""The pipeline module."""
+"""
+The pipeline module.
+"""
+
 import glob
 import inspect
 import math
@@ -56,6 +59,7 @@ else:
 # Meta devices hold no data, this should be fine to keep in memory.
 FAKE_DEVICE = torch.device("meta")
 
+
 def validate_safety_checker(
     pipeline,
     safety_checker,
@@ -102,9 +106,9 @@ def preprocess(image):
 
 
 class HardDiffusionPipeline(DiffusionPipeline):
-    """
-    HardDiffusionPipeline is a pipeline that can be used to generate images
-      from a given model or models.
+    """HardDiffusionPipeline is a pipeline that can be used to generate images
+    from a given model or models.
+
     Currently a modified version of the custom_merged_pipeline is used.
     """
 
@@ -960,14 +964,17 @@ class HardDiffusionPipeline(DiffusionPipeline):
     ):
         """
         Returns a new pipeline object of the class 'DiffusionPipeline' with the merged
-          checkpoints(weights) of the models passed
-        in the argument 'pretrained_model_name_or_path_list' as a list.
+        checkpoints(weights) of the models passed in the argument
+        'pretrained_model_name_or_path_list' as a list.
+        
         Parameters:
         -----------
-            pretrained_model_name_or_path_list : A list of valid pretrained model names
-              in the HuggingFace hub or paths to locally stored models in the
-              HuggingFace format.
-            **kwargs:
+        
+         pretrained_model_name_or_path_list : A list of valid pretrained model names
+         in the HuggingFace hub or paths to locally stored models in the
+         HuggingFace format.
+        
+         **kwargs:
                 Supports all the default DiffusionPipeline.get_config_dict kwargs viz..
                 cache_dir, resume_download, force_download, proxies, local_files_only,
                   use_auth_token, revision, torch_dtype, device_map.

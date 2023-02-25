@@ -21,7 +21,7 @@ django.setup()
 
 # -- Project information -----------------------------------------------------
 
-project = "HardDiffusion"
+project = "Hard Diffusion"
 copyright = "2023, Bill Schumacher"
 author = "Bill Schumacher"
 
@@ -34,7 +34,15 @@ release = "0.1"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.coverage", "sphinx.ext.napoleon"]
+extensions = [
+    "sphinx.ext.autodoc", 
+    'sphinx.ext.autosummary', "sphinx.ext.coverage",
+    'sphinx.ext.duration',
+    'sphinx.ext.doctest',
+    "sphinx.ext.napoleon", "sphinx.ext.intersphinx", 
+    'myst_parser']
+
+source_suffix = ['.rst', '.md']
 autodoc_mock_imports = ["django"]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -43,8 +51,11 @@ templates_path = ["_templates"]
 # List of patterns, relative to docs directory, that match files and
 # directories to ignore when looking for docs files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
-
+exclude_patterns = ["../**/migrations/*", "../manage.py", "../run_pylint.py"]
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None), 
+    'django': ('https://docs.djangoproject.com/en/4.1/', 'http://docs.djangoproject.com/en/4.1/_objects/')
+}
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -56,3 +67,6 @@ html_theme = "alabaster"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+autosummary_generate = True
+myst_enable_extensions = ["colon_fence"]
