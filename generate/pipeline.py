@@ -40,6 +40,8 @@ from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 from generate.input_validation import (
     validate_callback_steps,
+    validate_generator_and_batch_size,
+    validate_initial_image_latents,
     validate_negative_prompt_and_embeds,
     validate_prompt_and_embeds,
     validate_prompt_and_negative_embeds_shape,
@@ -369,7 +371,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         validate_prompt_and_negative_embeds_shape(prompt_embeds, negative_prompt_embeds)
 
     def get_timesteps(self, num_inference_steps, strength, device):
-        # get the original timestep using init_timestep
+        """get the original timestep using init_timestep"""
         init_timestep = min(int(num_inference_steps * strength), num_inference_steps)
 
         t_start = max(num_inference_steps - init_timestep, 0)
@@ -388,29 +390,21 @@ class HardDiffusionPipeline(DiffusionPipeline):
         generator,
         latents=None,
     ):
-        print("prepare text latents")
+        """"prepare text-to-image latents"""
         shape = (
             batch_size,
             num_channels_latents,
             height // self.vae_scale_factor,
             width // self.vae_scale_factor,
         )
-        if isinstance(generator, list) and len(generator) != batch_size:
-            raise ValueError(
-                f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
-                f" size of {batch_size}. Make sure the batch size matches the length of the generators."
-            )
+        validate_generator_and_batch_size(generator, batch_size)
 
-        if latents is None:
-            latents = randn_tensor(
-                shape, generator=generator, device=device, dtype=dtype
-            )
-        else:
-            latents = latents.to(device)
+        latents = latents.to(device) if latents else randn_tensor(
+            shape, generator=generator, device=device, dtype=dtype
+        )
 
         # scale the initial noise by the standard deviation required by the scheduler
-        latents = latents * self.scheduler.init_noise_sigma
-        return latents
+        return latents * self.scheduler.init_noise_sigma
 
     def prepare_latents(
         self,
@@ -426,9 +420,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
         generator=None,
         latents=None,
     ):
-        print("batch size", batch_size, "num_images_per_prompt", num_images_per_prompt)
+        """prepare latents"""
         batch_size = batch_size * num_images_per_prompt
-        print("batch size", batch_size)
         if not isinstance(image, (torch.Tensor, Image.Image, list)):
             return self._prepare_text_latents(
                 batch_size,
@@ -441,11 +434,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 latents=latents,
             )
         image = image.to(device=device, dtype=dtype)
-        if isinstance(generator, list) and len(generator) != batch_size:
-            raise ValueError(
-                f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
-                f" size of {batch_size}. Make sure the batch size matches the length of the generators."
-            )
+
+        validate_generator_and_batch_size(generator, batch_size)
 
         if isinstance(generator, list):
             init_latents = [
@@ -457,43 +447,13 @@ class HardDiffusionPipeline(DiffusionPipeline):
             init_latents = self.vae.encode(image).latent_dist.sample(generator)
 
         init_latents = 0.18215 * init_latents
-
-        if (
-            batch_size > init_latents.shape[0]
-            and batch_size % init_latents.shape[0] == 0
-        ):
-            # expand init_latents for batch_size
-            deprecation_message = (
-                f"You have passed {batch_size} text prompts (`prompt`), but only {init_latents.shape[0]} initial"
-                " images (`image`). Initial images are now duplicating to match the number of text prompts. Note"
-                " that this behavior is deprecated and will be removed in a version 1.0.0. Please make sure to update"
-                " your script to pass as many initial images as text prompts to suppress this warning."
-            )
-            deprecate(
-                "len(prompt) != len(image)",
-                "1.0.0",
-                deprecation_message,
-                standard_warn=False,
-            )
-            additional_image_per_prompt = batch_size // init_latents.shape[0]
-            init_latents = torch.cat(
-                [init_latents] * additional_image_per_prompt, dim=0
-            )
-        elif batch_size > init_latents.shape[0]:
-            raise ValueError(
-                f"Cannot duplicate `image` of batch size {init_latents.shape[0]} to {batch_size} text prompts."
-            )
-        else:
-            init_latents = torch.cat([init_latents], dim=0)
+        init_latents = validate_initial_image_latents(init_latents, batch_size)
 
         shape = init_latents.shape
         noise = randn_tensor(shape, generator=generator, device=device, dtype=dtype)
 
         # get latents
-        init_latents = self.scheduler.add_noise(init_latents, noise, timestep)
-        latents = init_latents
-
-        return latents
+        return self.scheduler.add_noise(init_latents, noise, timestep)
 
     @torch.no_grad()
     @replace_example_docstring(EXAMPLE_DOC_STRING)

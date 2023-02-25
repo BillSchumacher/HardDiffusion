@@ -1,5 +1,8 @@
 """Input validation for the pipeline."""
 from typing import Optional, Union
+import torch
+
+from diffusers.utils import deprecate
 
 
 def validate_width_and_height(width: Optional[int], height: Optional[int]):
@@ -84,3 +87,50 @@ def validate_prompt_and_negative_embeds_shape(prompt_embeds, negative_prompt_emb
             f"`prompt_embeds` {prompt_embeds.shape} != "
             f"`negative_prompt_embeds` {negative_prompt_embeds.shape}."
         )
+
+
+def validate_generator_and_batch_size(generator, batch_size):
+    """
+    Validate that the generator is a list and has the same length as the batch size.
+    """
+    if isinstance(generator, list) and len(generator) != batch_size:
+        raise ValueError(
+            f"You have passed a list of generators of length {len(generator)},"
+            f" but requested an effective batch size of {batch_size}."
+            " Make sure the batch size matches the length of the generators."
+        )
+
+
+def validate_initial_image_latents(init_latents, batch_size):
+    """Validate that the initial image latents and batch size are valid."""
+    if (
+        batch_size > init_latents.shape[0]
+        and batch_size % init_latents.shape[0] == 0
+    ):
+        # expand init_latents for batch_size
+        deprecation_message = (
+            f"You have passed {batch_size} text prompts (`prompt`),"
+            f" but only {init_latents.shape[0]} initial images (`image`). "
+            "Initial images are now duplicated to match the number of text prompts."
+            " Note that this behavior is deprecated and will be removed in a"
+            " version 1.0.0. Please make sure to update your script to pass "
+            "as many initial images as text prompts to suppress this warning."
+        )
+        deprecate(
+            "len(prompt) != len(image)",
+            "1.0.0",
+            deprecation_message,
+            standard_warn=False,
+        )
+        additional_image_per_prompt = batch_size // init_latents.shape[0]
+        init_latents = torch.cat(
+            [init_latents] * additional_image_per_prompt, dim=0
+        )
+    elif batch_size > init_latents.shape[0]:
+        raise ValueError(
+            f"Cannot duplicate `image` of batch size {init_latents.shape[0]}"
+            f" to {batch_size} text prompts."
+        )
+    else:
+        init_latents = torch.cat([init_latents], dim=0)
+    return init_latents
