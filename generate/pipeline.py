@@ -2,7 +2,6 @@
 The pipeline module.
 """
 
-import glob
 import inspect
 import math
 import os
@@ -10,7 +9,7 @@ from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
 import torch
-from diffusers import DiffusionPipeline, __version__
+from diffusers import DiffusionPipeline
 from diffusers.configuration_utils import ConfigMixin, FrozenDict
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
@@ -21,23 +20,35 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     load_pipeline_from_original_stable_diffusion_ckpt,
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers, SchedulerMixin
-from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils import (
-    CONFIG_NAME,
     DIFFUSERS_CACHE,
-    ONNX_WEIGHTS_NAME,
     PIL_INTERPOLATION,
-    WEIGHTS_NAME,
     deprecate,
     is_accelerate_available,
-    is_safetensors_available,
     randn_tensor,
     replace_example_docstring,
 )
-from huggingface_hub._snapshot_download import snapshot_download
 from PIL import Image
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
+from generate.file_utils import (
+    download_and_cache_models,
+    get_cached_folder,
+    get_checkpoint_path,
+    load_checkpoint,
+)
+from generate.input_validation import (
+    validate_callback_steps,
+    validate_generator_and_batch_size,
+    validate_initial_image_latents,
+    validate_negative_prompt_and_embeds,
+    validate_prompt_and_embeds,
+    validate_prompt_and_negative_embeds_shape,
+    validate_prompt_type,
+    validate_strength_range,
+    validate_width_and_height,
+)
+from generate.noise import denoise
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
 from generate.prompt import (
     duplicate_embeddings,
@@ -48,10 +59,6 @@ from generate.schedulers import validate_clip_sample, validate_steps_offset
 from generate.unet_utils import validate_unet_sample_size
 from generate.warnings import SAFETY_CHECKER_WARNING
 from HardDiffusion.logs import logger
-
-if SAFETENSORS_AVAILABLE := is_safetensors_available():
-    logger.info("Safetensors is available.")
-    import safetensors.torch
 
 if ACCELERATE_AVAILABLE := is_accelerate_available():
     logger.info("Accelerate is available.")
@@ -291,6 +298,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
     # Copied from diffusers StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
+        """run safety checker"""
         if self.safety_checker is not None:
             safety_checker_input = self.feature_extractor(
                 self.numpy_to_pil(image), return_tensors="pt"
@@ -304,20 +312,25 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
     # Copied from diffusers StableDiffusionPipeline.decode_latents
     def decode_latents(self, latents):
+        """decode latents to image"""
         latents = 1 / 0.18215 * latents
         image = self.vae.decode(latents).sample
         image = (image / 2 + 0.5).clamp(0, 1)
-        # we always cast to float32 as this does not cause significant overhead and is compatible with bfloa16
+        # we always cast to float32 as this does not cause significant overhead
+        #  and is compatible with bfloa16
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
         return image
 
     # Copied from diffusers StableDiffusionPipeline.prepare_extra_step_kwargs
     def prepare_extra_step_kwargs(self, generator, eta):
-        # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
-        # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
-        # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
-        # and should be between [0, 1]
+        """
+        prepare extra kwargs for the scheduler step, since not all schedulers have
+        the same signature eta (η) is only used with the DDIMScheduler,
+        it will be ignored for other schedulers.
 
+        eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
+        and should be between [0, 1]
+        """
         accepts_eta = "eta" in set(
             inspect.signature(self.scheduler.step).parameters.keys()
         )
@@ -344,66 +357,17 @@ class HardDiffusionPipeline(DiffusionPipeline):
         prompt_embeds=None,
         negative_prompt_embeds=None,
     ):
-        if height and width and (height % 8 != 0 or width % 8 != 0):
-            raise ValueError(
-                f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
-            )
-
-        if not isinstance(prompt, str) and not isinstance(prompt, list):
-            raise ValueError(
-                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
-            )
-
-        if strength < 0 or strength > 1:
-            raise ValueError(
-                f"The value of strength should in [0.0, 1.0] but is {strength}"
-            )
-
-        if (
-            callback_steps is None
-            or not isinstance(callback_steps, int)
-            or callback_steps <= 0
-        ):
-            raise ValueError(
-                f"`callback_steps` has to be a positive integer but is {callback_steps} of type"
-                f" {type(callback_steps)}."
-            )
-
-        if prompt is not None and prompt_embeds is not None:
-            raise ValueError(
-                f"Cannot forward both `prompt`: {prompt} and `prompt_embeds`: {prompt_embeds}. Please make sure to"
-                " only forward one of the two."
-            )
-        elif prompt is None and prompt_embeds is None:
-            raise ValueError(
-                "Provide either `prompt` or `prompt_embeds`. Cannot leave both `prompt` and `prompt_embeds` undefined."
-            )
-        elif prompt is not None and (
-            not isinstance(prompt, str) and not isinstance(prompt, list)
-        ):
-            raise ValueError(
-                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
-            )
-
-        if negative_prompt is not None and negative_prompt_embeds is not None:
-            raise ValueError(
-                f"Cannot forward both `negative_prompt`: {negative_prompt} and `negative_prompt_embeds`:"
-                f" {negative_prompt_embeds}. Please make sure to only forward one of the two."
-            )
-
-        if (
-            prompt_embeds is not None
-            and negative_prompt_embeds is not None
-            and prompt_embeds.shape != negative_prompt_embeds.shape
-        ):
-            raise ValueError(
-                "`prompt_embeds` and `negative_prompt_embeds` must have the same shape when passed directly, but"
-                f" got: `prompt_embeds` {prompt_embeds.shape} != `negative_prompt_embeds`"
-                f" {negative_prompt_embeds.shape}."
-            )
+        """validate pipeline inputs"""
+        validate_width_and_height(width, height)
+        validate_prompt_type(prompt)
+        validate_strength_range(strength)
+        validate_callback_steps(callback_steps)
+        validate_prompt_and_embeds(prompt, prompt_embeds)
+        validate_negative_prompt_and_embeds(negative_prompt, negative_prompt_embeds)
+        validate_prompt_and_negative_embeds_shape(prompt_embeds, negative_prompt_embeds)
 
     def get_timesteps(self, num_inference_steps, strength, device):
-        # get the original timestep using init_timestep
+        """get the original timestep using init_timestep"""
         init_timestep = min(int(num_inference_steps * strength), num_inference_steps)
 
         t_start = max(num_inference_steps - init_timestep, 0)
@@ -422,29 +386,23 @@ class HardDiffusionPipeline(DiffusionPipeline):
         generator,
         latents=None,
     ):
-        print("prepare text latents")
+        """ "prepare text-to-image latents"""
         shape = (
             batch_size,
             num_channels_latents,
             height // self.vae_scale_factor,
             width // self.vae_scale_factor,
         )
-        if isinstance(generator, list) and len(generator) != batch_size:
-            raise ValueError(
-                f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
-                f" size of {batch_size}. Make sure the batch size matches the length of the generators."
-            )
+        validate_generator_and_batch_size(generator, batch_size)
 
-        if latents is None:
-            latents = randn_tensor(
-                shape, generator=generator, device=device, dtype=dtype
-            )
-        else:
-            latents = latents.to(device)
+        latents = (
+            latents.to(device)
+            if latents
+            else randn_tensor(shape, generator=generator, device=device, dtype=dtype)
+        )
 
         # scale the initial noise by the standard deviation required by the scheduler
-        latents = latents * self.scheduler.init_noise_sigma
-        return latents
+        return latents * self.scheduler.init_noise_sigma
 
     def prepare_latents(
         self,
@@ -460,9 +418,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
         generator=None,
         latents=None,
     ):
-        print("batch size", batch_size, "num_images_per_prompt", num_images_per_prompt)
+        """prepare latents"""
         batch_size = batch_size * num_images_per_prompt
-        print("batch size", batch_size)
         if not isinstance(image, (torch.Tensor, Image.Image, list)):
             return self._prepare_text_latents(
                 batch_size,
@@ -475,11 +432,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 latents=latents,
             )
         image = image.to(device=device, dtype=dtype)
-        if isinstance(generator, list) and len(generator) != batch_size:
-            raise ValueError(
-                f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
-                f" size of {batch_size}. Make sure the batch size matches the length of the generators."
-            )
+
+        validate_generator_and_batch_size(generator, batch_size)
 
         if isinstance(generator, list):
             init_latents = [
@@ -491,43 +445,13 @@ class HardDiffusionPipeline(DiffusionPipeline):
             init_latents = self.vae.encode(image).latent_dist.sample(generator)
 
         init_latents = 0.18215 * init_latents
-
-        if (
-            batch_size > init_latents.shape[0]
-            and batch_size % init_latents.shape[0] == 0
-        ):
-            # expand init_latents for batch_size
-            deprecation_message = (
-                f"You have passed {batch_size} text prompts (`prompt`), but only {init_latents.shape[0]} initial"
-                " images (`image`). Initial images are now duplicating to match the number of text prompts. Note"
-                " that this behavior is deprecated and will be removed in a version 1.0.0. Please make sure to update"
-                " your script to pass as many initial images as text prompts to suppress this warning."
-            )
-            deprecate(
-                "len(prompt) != len(image)",
-                "1.0.0",
-                deprecation_message,
-                standard_warn=False,
-            )
-            additional_image_per_prompt = batch_size // init_latents.shape[0]
-            init_latents = torch.cat(
-                [init_latents] * additional_image_per_prompt, dim=0
-            )
-        elif batch_size > init_latents.shape[0]:
-            raise ValueError(
-                f"Cannot duplicate `image` of batch size {init_latents.shape[0]} to {batch_size} text prompts."
-            )
-        else:
-            init_latents = torch.cat([init_latents], dim=0)
+        init_latents = validate_initial_image_latents(init_latents, batch_size)
 
         shape = init_latents.shape
         noise = randn_tensor(shape, generator=generator, device=device, dtype=dtype)
 
         # get latents
-        init_latents = self.scheduler.add_noise(init_latents, noise, timestep)
-        latents = init_latents
-
-        return latents
+        return self.scheduler.add_noise(init_latents, noise, timestep)
 
     @torch.no_grad()
     @replace_example_docstring(EXAMPLE_DOC_STRING)
@@ -558,67 +482,104 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
         Args:
             prompt (`str` or `List[str]`, *optional*):
-                The prompt or prompts to guide the image generation. If not defined, one has to pass `prompt_embeds`.
-                instead.
+                The prompt or prompts to guide the image generation.
+                If not defined, one has to pass `prompt_embeds`. instead.
+
             image (`torch.FloatTensor` or `PIL.Image.Image`):
-                `Image`, or tensor representing an image batch, that will be used as the starting point for the
-                process.
+                `Image`, or tensor representing an image batch, that will be used as
+                the starting point for the process.
+
             strength (`float`, *optional*, defaults to 0.8):
-                Conceptually, indicates how much to transform the reference `image`. Must be between 0 and 1. `image`
-                will be used as a starting point, adding more noise to it the larger the `strength`. The number of
-                denoising steps depends on the amount of noise initially added. When `strength` is 1, added noise will
-                be maximum and the denoising process will run for the full number of iterations specified in
-                `num_inference_steps`. A value of 1, therefore, essentially ignores `image`.
+                Conceptually, indicates how much to transform the reference `image`.
+                Must be between 0 and 1. `image` will be used as a starting point,
+                 adding more noise to it the larger the `strength`.
+                The number of denoising steps depends on the amount of noise initially
+                 added.
+                When `strength` is 1, added noise will be maximum and the denoising
+                 process will run for the full number of iterations specified in
+                 `num_inference_steps`.
+                A value of 1, therefore, essentially ignores `image`.
 
             width (`int`, *optional*, defaults to 512): output image width
+
             height (`int`, *optional*, defaults to 512): output image height
+
             num_inference_steps (`int`, *optional*, defaults to 50):
-                The number of denoising steps. More denoising steps usually lead to a higher quality image at the
-                expense of slower inference. This parameter will be modulated by `strength`.
+                The number of denoising steps.
+                More denoising steps usually lead to a higher quality image at the
+                 expense of slower inference.
+                This parameter will be modulated by `strength`.
+
             guidance_scale (`float`, *optional*, defaults to 7.5):
-                Guidance scale as defined in [Classifier-Free Diffusion Guidance](https://arxiv.org/abs/2207.12598).
-                `guidance_scale` is defined as `w` of equation 2. of [Imagen
-                Paper](https://arxiv.org/pdf/2205.11487.pdf). Guidance scale is enabled by setting `guidance_scale >
-                1`. Higher guidance scale encourages to generate images that are closely linked to the text `prompt`,
-                usually at the expense of lower image quality.
+                Guidance scale as defined in [Classifier-Free Diffusion Guidance]
+                (https://arxiv.org/abs/2207.12598).
+                `guidance_scale` is defined as `w` of equation 2. of
+                 [Imagen Paper](https://arxiv.org/pdf/2205.11487.pdf).
+                Guidance scale is enabled by setting `guidance_scale > 1`.
+                Higher guidance scale encourages to generate images that are closely
+                 linked to the text `prompt`, usually at the expense of lower image
+                 quality.
+
             negative_prompt (`str` or `List[str]`, *optional*):
-                The prompt or prompts not to guide the image generation. If not defined, one has to pass
-                `negative_prompt_embeds`. instead. Ignored when not using guidance (i.e., ignored if `guidance_scale`
-                is less than `1`).
+                The prompt or prompts not to guide the image generation.
+                If not defined, one has to pass `negative_prompt_embeds` instead.
+                Ignored when not using guidance
+                (i.e., ignored if `guidance_scale` is less than `1`).
+
             num_images_per_prompt (`int`, *optional*, defaults to 1):
                 The number of images to generate per prompt.
+
             eta (`float`, *optional*, defaults to 0.0):
-                Corresponds to parameter eta (η) in the DDIM paper: https://arxiv.org/abs/2010.02502. Only applies to
-                [`schedulers.DDIMScheduler`], will be ignored for others.
+                Corresponds to parameter eta (η) in the DDIM paper:
+                 https://arxiv.org/abs/2010.02502.
+                Only applies to [`schedulers.DDIMScheduler`],
+                 will be ignored for others.
+
             generator (`torch.Generator`, *optional*):
-                One or a list of [torch generator(s)](https://pytorch.org/docs/stable/generated/torch.Generator.html)
+                One or a list of [torch generator(s)]
+                 (https://pytorch.org/docs/stable/generated/torch.Generator.html)
                 to make generation deterministic.
+
             prompt_embeds (`torch.FloatTensor`, *optional*):
-                Pre-generated text embeddings. Can be used to easily tweak text inputs, *e.g.* prompt weighting. If not
-                provided, text embeddings will be generated from `prompt` input argument.
+                Pre-generated text embeddings.
+                Can be used to easily tweak text inputs, *e.g.* prompt weighting.
+                If not provided, text embeddings will be generated from `prompt` input
+                 argument.
+
             negative_prompt_embeds (`torch.FloatTensor`, *optional*):
-                Pre-generated negative text embeddings. Can be used to easily tweak text inputs, *e.g.* prompt
-                weighting. If not provided, negative_prompt_embeds will be generated from `negative_prompt` input
-                argument.
+                Pre-generated negative text embeddings.
+                Can be used to easily tweak text inputs, *e.g.* prompt weighting.
+                If not provided, negative_prompt_embeds will be generated from
+                 `negative_prompt` input argument.
+
             output_type (`str`, *optional*, defaults to `"pil"`):
                 The output format of the generate image. Choose between
-                [PIL](https://pillow.readthedocs.io/en/stable/): `PIL.Image.Image` or `np.array`.
+                 [PIL](https://pillow.readthedocs.io/en/stable/):
+                 `PIL.Image.Image` or `np.array`.
+
             return_dict (`bool`, *optional*, defaults to `True`):
-                Whether or not to return a [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] instead of a
-                plain tuple.
+                Whether or not to return a
+                 [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`]
+                 instead of a plain tuple.
+
             callback (`Callable`, *optional*):
-                A function that will be called every `callback_steps` steps during inference. The function will be
-                called with the following arguments: `callback(step: int, timestep: int, latents: torch.FloatTensor)`.
+                A function that will be called every `callback_steps` steps during
+                 inference. The function will be called with the following arguments:
+                 `callback(step: int, timestep: int, latents: torch.FloatTensor)`.
+
             callback_steps (`int`, *optional*, defaults to 1):
-                The frequency at which the `callback` function will be called. If not specified, the callback will be
-                called at every step.
+                The frequency at which the `callback` function will be called.
+                If not specified, the callback will be called at every step.
+
         Examples:
 
         Returns:
             [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] or `tuple`:
-            [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] if `return_dict` is True, otherwise a `tuple.
-            When returning a tuple, the first element is a list with the generated images, and the second element is a
-            list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
+            [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] if
+             `return_dict` is True, otherwise a `tuple.
+            When returning a tuple, the first element is a list with the generated
+             images, and the second element is a list of `bool`s denoting whether the
+             corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
         message = "Please use `image` instead of `init_image`."
@@ -648,9 +609,9 @@ class HardDiffusionPipeline(DiffusionPipeline):
             batch_size = prompt_embeds.shape[0]
 
         device = self._execution_device
-        # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
-        # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
-        # corresponds to doing no classifier free guidance.
+        # here `guidance_scale` is defined analog to the guidance weight `w` of
+        # equation (2) of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf .
+        # `guidance_scale = 1` corresponds to doing no classifier free guidance.
         do_classifier_free_guidance = guidance_scale > 1.0
 
         # 3. Encode input prompt
@@ -668,22 +629,22 @@ class HardDiffusionPipeline(DiffusionPipeline):
         if image:
             image = preprocess(image)
 
+        scheduler = self.scheduler
         # 5. set timesteps
-        self.scheduler.set_timesteps(num_inference_steps, device=device)
+        scheduler.set_timesteps(num_inference_steps, device=device)
+
+        unet = self.unet
 
         if image:
-            # TODO: This
             timesteps, num_inference_steps = self.get_timesteps(
                 num_inference_steps, strength, device
             )
-            # TODO: This doesn't exist in text-to-image
             num_channels_latents = 0
             latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)
         else:
-            timesteps = self.scheduler.timesteps
+            timesteps = scheduler.timesteps
             latent_timestep = None
-            # TODO: This
-            num_channels_latents = self.unet.in_channels
+            num_channels_latents = unet.in_channels
 
         # 6. Prepare latent variables
         latents = self.prepare_latents(
@@ -692,7 +653,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
             width,
             num_channels_latents,
             latent_timestep,
-            batch_size,  # TODO: Num images per prompt was multiplied here.
+            batch_size,
             num_images_per_prompt,
             prompt_embeds.dtype,
             device,
@@ -700,45 +661,30 @@ class HardDiffusionPipeline(DiffusionPipeline):
             latents,
         )
 
-        # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
+        # 7. Prepare extra step kwargs.
+        # TODO: Logic should ideally just be moved out of the pipeline
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
         # 8. Denoising loop
-        num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
+        num_warmup_steps = len(timesteps) - num_inference_steps * scheduler.order
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
-                # expand the latents if we are doing classifier free guidance
-                latent_model_input = (
-                    torch.cat([latents] * 2) if do_classifier_free_guidance else latents
+                latents = denoise(
+                    scheduler,
+                    unet,
+                    latents,
+                    i,
+                    t,
+                    prompt_embeds,
+                    do_classifier_free_guidance,
+                    guidance_scale,
+                    extra_step_kwargs,
+                    timesteps,
+                    num_warmup_steps,
+                    progress_bar,
+                    callback,
+                    callback_steps,
                 )
-                latent_model_input = self.scheduler.scale_model_input(
-                    latent_model_input, t
-                )
-
-                # predict the noise residual
-                noise_pred = self.unet(
-                    latent_model_input, t, encoder_hidden_states=prompt_embeds
-                ).sample
-
-                # perform guidance
-                if do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (
-                        noise_pred_text - noise_pred_uncond
-                    )
-
-                # compute the previous noisy sample x_t -> x_t-1
-                latents = self.scheduler.step(
-                    noise_pred, t, latents, **extra_step_kwargs
-                ).prev_sample
-
-                # call the callback, if provided
-                if i == len(timesteps) - 1 or (
-                    (i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0
-                ):
-                    progress_bar.update()
-                    if callback is not None and i % callback_steps == 0:
-                        callback(i, t, latents)
 
         # 9. Post-processing
         image = self.decode_latents(latents)
@@ -761,6 +707,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         )
 
     def _compare_model_configs(self, dict0, dict1):
+        """Compares two model configs and returns True if they are the same."""
         if dict0 == dict1:
             return True
         config0, meta_keys0 = self._remove_meta_keys(dict0)
@@ -771,6 +718,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return False
 
     def _remove_meta_keys(self, config_dict: Dict):
+        """Remove the keys starting with '_' from the config dict"""
         meta_keys = []
         temp_dict = config_dict.copy()
         for key in config_dict.keys():
@@ -794,10 +742,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
     ):
         """Validate that the checkpoints can be merged"""
         # Step 1: Load the model config and compare the checkpoints.
-        #  We'll compare the model_index.json first while ignoring the keys starting with '_'
-        config_dicts = []
-        for pretrained_model_name_or_path in pretrained_model_name_or_path_list:
-            config_dict = DiffusionPipeline.load_config(
+        #  We'll compare the model_index.json first while ignoring the keys
+        #  starting with '_'
+        config_dicts = [
+            DiffusionPipeline.load_config(
                 pretrained_model_name_or_path,
                 cache_dir=cache_dir,
                 resume_download=resume_download,
@@ -807,7 +755,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
                 use_auth_token=use_auth_token,
                 revision=revision,
             )
-            config_dicts.append(config_dict)
+            for pretrained_model_name_or_path in pretrained_model_name_or_path_list
+        ]
 
         comparison_result = True
         for idx in range(1, len(config_dicts)):
@@ -816,36 +765,11 @@ class HardDiffusionPipeline(DiffusionPipeline):
             )
             if not force and comparison_result is False:
                 raise ValueError(
-                    "Incompatible checkpoints. Please check model_index.json for the models."
+                    "Incompatible checkpoints."
+                    " Please check model_index.json for the models."
                 )
         print("Compatible model_index.json files found")
         return config_dicts
-
-    def download_and_cache_models(
-        self,
-        pretrained_model_name_or_path_list,
-        config_dicts,
-        cache_dir,
-        resume_download,
-        proxies,
-        local_files_only,
-        revision,
-    ):
-        """Download and cache the models"""
-        return [
-            get_cached_folder(
-                pretrained_model_name_or_path,
-                cache_dir,
-                config_dict,
-                resume_download,
-                proxies,
-                local_files_only,
-                revision,
-            )
-            for pretrained_model_name_or_path, config_dict in zip(
-                pretrained_model_name_or_path_list, config_dicts
-            )
-        ]
 
     @staticmethod
     def from_single_model(pretrained_model_name_or_path, **kwargs):
@@ -1026,16 +950,18 @@ class HardDiffusionPipeline(DiffusionPipeline):
         # Ignore result from model_index_json comparision of the two checkpoints
         force = kwargs.pop("force", False)
 
-        # If less than 2 checkpoints, nothing to merge. If more than 3, not supported for now.
+        # If less than 2 checkpoints, nothing to merge.
+        # If more than 3, not supported for now.
         if checkpoint_count > 3:
             raise ValueError(
-                "Received incorrect number of checkpoints to merge. Ensure that either 2 or 3 checkpoints are being"
-                " passed."
+                "Received incorrect number of checkpoints to merge."
+                " Ensure that either 2 or 3 checkpoints are being passed."
             )
 
-        print("Received the right number of checkpoints")
+        print(f"Received the right number of checkpoints: {checkpoint_count}")
         # chkpt0, chkpt1 = pretrained_model_name_or_path_list[0:2]
-        # chkpt2 = pretrained_model_name_or_path_list[2] if checkpoint_count == 3 else None
+        # chkpt2 = pretrained_model_name_or_path_list[2] \
+        #  if checkpoint_count == 3 else None
         config_dicts = self.validate_mergable_models(
             pretrained_model_name_or_path_list,
             cache_dir,
@@ -1049,7 +975,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         )
         # Step 2: Basic Validation has succeeded.
         # Let's download the models and save them into our local files.
-        cached_folders = self.download_and_cache_models(
+        cached_folders = download_and_cache_models(
             pretrained_model_name_or_path_list,
             config_dicts,
             cache_dir,
@@ -1087,35 +1013,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return theta0 + (theta1 - theta2) * (1.0 - alpha)
 
 
-def get_checkpoint_path(cached_path, attr):
-    checkpoint_path = os.path.join(cached_path, attr)
-    if os.path.exists(checkpoint_path):
-        if files := [
-            *glob.glob(os.path.join(checkpoint_path, "*.safetensors")),
-            *glob.glob(os.path.join(checkpoint_path, "*.bin")),
-        ]:
-            return files[0]
-    return None
-
-
-def load_checkpoint(checkpoint_path):
-    return (
-        safetensors.torch.load_file(checkpoint_path, device="cuda")
-        if (SAFETENSORS_AVAILABLE and checkpoint_path.endswith(".safetensors"))
-        else torch.load(checkpoint_path, map_location="cuda")
-    )
-
-
-DEFAULT_NAMES = [
-    WEIGHTS_NAME,
-    SCHEDULER_CONFIG_NAME,
-    CONFIG_NAME,
-    ONNX_WEIGHTS_NAME,
-    DiffusionPipeline.config_name,
-]
-
-
 def get_options_from_kwargs(kwargs):
+    """Get the options from the kwargs."""
     cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
     resume_download = kwargs.pop("resume_download", False)
     force_download = kwargs.pop("force_download", False)
@@ -1141,44 +1040,6 @@ def get_options_from_kwargs(kwargs):
         device_map,
         alpha,
         interp,
-    )
-
-
-def get_allowed_patterns(config_dict):
-    folder_names = [k for k in config_dict.keys() if not k.startswith("_")]
-    allow_patterns = [os.path.join(k, "*") for k in folder_names]
-    allow_patterns += DEFAULT_NAMES
-    return allow_patterns
-
-
-def get_cached_folder(
-    pretrained_model_name_or_path,
-    cache_dir,
-    config_dict,
-    resume_download,
-    proxies,
-    local_files_only,
-    revision,
-):
-    requested_pipeline_class = config_dict.get("_class_name")
-    user_agent = {
-        "diffusers": __version__,
-        "pipeline_class": requested_pipeline_class,
-    }
-    allow_patterns = get_allowed_patterns(config_dict)
-    return (
-        pretrained_model_name_or_path
-        if os.path.isdir(pretrained_model_name_or_path)
-        else snapshot_download(
-            str(pretrained_model_name_or_path),
-            cache_dir=cache_dir,
-            resume_download=resume_download,
-            proxies=proxies,
-            local_files_only=local_files_only,
-            revision=revision,
-            allow_patterns=allow_patterns,
-            user_agent=user_agent,
-        )
     )
 
 

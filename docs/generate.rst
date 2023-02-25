@@ -33,6 +33,14 @@ generate.apps module
    :undoc-members:
    :show-inheritance:
 
+generate.file\_utils module
+---------------------------
+
+.. automodule:: generate.file_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 generate.image module
 ---------------------
 
@@ -41,10 +49,26 @@ generate.image module
    :undoc-members:
    :show-inheritance:
 
+generate.input\_validation module
+---------------------------------
+
+.. automodule:: generate.input_validation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 generate.models module
 ----------------------
 
 .. automodule:: generate.models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+generate.noise module
+---------------------
+
+.. automodule:: generate.noise
    :members:
    :undoc-members:
    :show-inheritance:
