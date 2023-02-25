@@ -6,6 +6,7 @@ Welcome to HardDiffusion's documentation!
    :caption: Contents:
 
    about.rst
+   screenshots.rst
    installation.rst
    usage.rst
    contributing.rst
