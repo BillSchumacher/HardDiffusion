@@ -121,15 +121,18 @@
                 multiple_models_element.style.display = 'none';
             }
         }
-
-        function toggle_random_seed() {
-            random_seed = !random_seed;
-            localStorage.setItem('random_seed', random_seed ? '1': '0');
+        function set_random_seed_visibility() {
             if (random_seed) {
                 seed_input.style.display = 'none';
             } else {
                 seed_input.style.display = 'block';
             }
+        }
+
+        function toggle_random_seed() {
+            random_seed = !random_seed;
+            localStorage.setItem('random_seed', random_seed ? '1': '0');
+            set_random_seed_visibility();
         }
 
         function toggle_advanced() {
@@ -342,11 +345,14 @@
                 seed_input.value = local_seed;
             }
             const local_random_seed = localStorage.getItem('random_seed');
-            if (local_random_seed == '0' || local_random_seed == null) {
-                toggle_random_seed();
+            if (local_random_seed == '1' || local_random_seed == null) {
+                random_seed = true;
+                random_seed_checkbox.checked = true;
+            } else {
+                random_seed = false;
                 random_seed_checkbox.checked = false;
             }
-
+            set_random_seed_visibility();
         });
 
     </script>
