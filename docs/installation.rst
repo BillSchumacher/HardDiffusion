@@ -9,6 +9,13 @@ Multiple models are loaded into memory, so the more VRAM you have, the more mode
 
 On a 16gb GPU, you can load 3 models at once, maybe.
 
+First clone the repository:
+
+.. code-block:: bash
+
+    git clone git@github.com:BillSchumacher/HardDiffusion.git
+    cd HardDiffusion
+
 
 Redis
 -----

@@ -5,6 +5,7 @@ Inspired by EasyDiffusion
 
 This works, kinda, expect issues.
 
+Docs: https://billschumacher.github.io/HardDiffusion/
 
 Goals
 -----
