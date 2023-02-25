@@ -16,10 +16,9 @@ import random
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
 import sentry_sdk
+from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
-
 
 load_dotenv()
 os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')

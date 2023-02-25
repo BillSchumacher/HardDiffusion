@@ -4,14 +4,12 @@ from typing import Optional, Tuple
 from django.conf import settings
 from django.utils import timezone
 
-from celery import shared_task
-
 import torch
+from celery import shared_task
 
 from generate.image import render_image, save_generated_image
 from generate.models import GeneratedImage, RenderWorkerDevice
 from generate.render_devices import get_render_devices_by_id, update_render_device_stats
-
 
 HOSTNAME = settings.HOSTNAME
 

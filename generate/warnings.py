@@ -1,8 +1,6 @@
 """Deprecation warnings for the generate module."""
 
-CONFIG_FILE_DEPRECATION_MESSAGE = (
-    "The configuration file of this scheduler: %s "
-)
+CONFIG_FILE_DEPRECATION_MESSAGE = "The configuration file of this scheduler: %s "
 DOWNLOADED_CHECKPOINT_MESSAGE = (
     "If you have downloaded this checkpoint from the Hugging Face Hub, it would be very"
     " nice if you could open a PR for the `scheduler/scheduler_config.json` file"

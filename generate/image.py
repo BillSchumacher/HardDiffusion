@@ -3,9 +3,10 @@
 import os
 from random import randint
 
-from diffusers import EulerDiscreteScheduler
 from django.conf import settings
+
 import torch
+from diffusers import EulerDiscreteScheduler
 
 from generate.pipeline import get_pipeline
 

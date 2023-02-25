@@ -21,6 +21,7 @@ jobs:
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/release' }}
         run: |
           sphinx-build docs _build
+          touch _build/.nojekyll 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/release' }}
