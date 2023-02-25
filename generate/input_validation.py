@@ -17,7 +17,7 @@ def validate_prompt_type(prompt: Union[str, list]):
         raise ValueError(
             f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
         )
-    
+
 
 def validate_strength_range(strength: Union[float, int]):
     """Validate that the strength is in the range [0.0, 1.0]."""

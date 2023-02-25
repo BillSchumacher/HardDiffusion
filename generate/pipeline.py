@@ -39,13 +39,13 @@ from PIL import Image
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 from generate.input_validation import (
+    validate_callback_steps,
+    validate_negative_prompt_and_embeds,
+    validate_prompt_and_embeds,
+    validate_prompt_and_negative_embeds_shape,
+    validate_prompt_type,
     validate_strength_range,
     validate_width_and_height,
-    validate_prompt_type,
-    validate_callback_steps,
-    validate_prompt_and_embeds,
-    validate_negative_prompt_and_embeds,
-    validate_prompt_and_negative_embeds_shape
 )
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
 from generate.prompt import (
@@ -329,7 +329,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         prepare extra kwargs for the scheduler step, since not all schedulers have
         the same signature eta (η) is only used with the DDIMScheduler,
         it will be ignored for other schedulers.
-        
+
         eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
         and should be between [0, 1]
         """
