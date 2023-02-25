@@ -629,8 +629,11 @@ class HardDiffusionPipeline(DiffusionPipeline):
         if image:
             image = preprocess(image)
 
+        scheduler = self.scheduler
         # 5. set timesteps
-        self.scheduler.set_timesteps(num_inference_steps, device=device)
+        scheduler.set_timesteps(num_inference_steps, device=device)
+
+        unet = self.unet
 
         if image:
             timesteps, num_inference_steps = self.get_timesteps(
@@ -639,9 +642,9 @@ class HardDiffusionPipeline(DiffusionPipeline):
             num_channels_latents = 0
             latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)
         else:
-            timesteps = self.scheduler.timesteps
+            timesteps = scheduler.timesteps
             latent_timestep = None
-            num_channels_latents = self.unet.in_channels
+            num_channels_latents = unet.in_channels
 
         # 6. Prepare latent variables
         latents = self.prepare_latents(
@@ -663,12 +666,12 @@ class HardDiffusionPipeline(DiffusionPipeline):
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
         # 8. Denoising loop
-        num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
+        num_warmup_steps = len(timesteps) - num_inference_steps * scheduler.order
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
                 latents = denoise(
-                    self.scheduler,
-                    self.unet,
+                    scheduler,
+                    unet,
                     latents,
                     i,
                     t,
