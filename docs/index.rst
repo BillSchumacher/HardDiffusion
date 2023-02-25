@@ -8,6 +8,7 @@ Welcome to HardDiffusion's documentation!
    about.rst
    installation.rst
    usage.rst
+   contributing.rst
    modules.rst
 
 
