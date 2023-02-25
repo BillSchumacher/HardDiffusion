@@ -16,6 +16,7 @@ pydantic
 pylint
 pylint_django
 python-dotenv
+sentry-sdk
 typing-extensions
 --extra-index-url https://download.pytorch.org/whl/cu116
 torch
