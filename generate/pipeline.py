@@ -650,9 +650,9 @@ class HardDiffusionPipeline(DiffusionPipeline):
             batch_size = prompt_embeds.shape[0]
 
         device = self._execution_device
-        # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
-        # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
-        # corresponds to doing no classifier free guidance.
+        # here `guidance_scale` is defined analog to the guidance weight `w` of
+        # equation (2) of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf .
+        # `guidance_scale = 1` corresponds to doing no classifier free guidance.
         do_classifier_free_guidance = guidance_scale > 1.0
 
         # 3. Encode input prompt
@@ -1003,16 +1003,18 @@ class HardDiffusionPipeline(DiffusionPipeline):
         # Ignore result from model_index_json comparision of the two checkpoints
         force = kwargs.pop("force", False)
 
-        # If less than 2 checkpoints, nothing to merge. If more than 3, not supported for now.
+        # If less than 2 checkpoints, nothing to merge.
+        # If more than 3, not supported for now.
         if checkpoint_count > 3:
             raise ValueError(
-                "Received incorrect number of checkpoints to merge. Ensure that either 2 or 3 checkpoints are being"
-                " passed."
+                "Received incorrect number of checkpoints to merge."
+                " Ensure that either 2 or 3 checkpoints are being passed."
             )
 
-        print("Received the right number of checkpoints")
+        print(f"Received the right number of checkpoints: {checkpoint_count}")
         # chkpt0, chkpt1 = pretrained_model_name_or_path_list[0:2]
-        # chkpt2 = pretrained_model_name_or_path_list[2] if checkpoint_count == 3 else None
+        # chkpt2 = pretrained_model_name_or_path_list[2] \
+        #  if checkpoint_count == 3 else None
         config_dicts = self.validate_mergable_models(
             pretrained_model_name_or_path_list,
             cache_dir,
@@ -1065,6 +1067,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
 
 def get_checkpoint_path(cached_path, attr):
+    """Get the checkpoint path for the given attribute."""
     checkpoint_path = os.path.join(cached_path, attr)
     if os.path.exists(checkpoint_path):
         if files := [
@@ -1076,6 +1079,7 @@ def get_checkpoint_path(cached_path, attr):
 
 
 def load_checkpoint(checkpoint_path):
+    """Load the checkpoint from the given path."""
     return (
         safetensors.torch.load_file(checkpoint_path, device="cuda")
         if (SAFETENSORS_AVAILABLE and checkpoint_path.endswith(".safetensors"))
@@ -1093,6 +1097,7 @@ DEFAULT_NAMES = [
 
 
 def get_options_from_kwargs(kwargs):
+    """Get the options from the kwargs."""
     cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
     resume_download = kwargs.pop("resume_download", False)
     force_download = kwargs.pop("force_download", False)
@@ -1122,6 +1127,7 @@ def get_options_from_kwargs(kwargs):
 
 
 def get_allowed_patterns(config_dict):
+    """Get the allowed patterns for the given config dict."""
     folder_names = [k for k in config_dict.keys() if not k.startswith("_")]
     allow_patterns = [os.path.join(k, "*") for k in folder_names]
     allow_patterns += DEFAULT_NAMES
@@ -1137,6 +1143,7 @@ def get_cached_folder(
     local_files_only,
     revision,
 ):
+    """Get the cached folder for the given model."""
     requested_pipeline_class = config_dict.get("_class_name")
     user_agent = {
         "diffusers": __version__,
