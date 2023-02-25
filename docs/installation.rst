@@ -13,7 +13,7 @@ First clone the repository:
 
 .. code-block:: bash
 
-    git clone git@github.com:BillSchumacher/HardDiffusion.git
+    git clone -b release --single-branch git@github.com:BillSchumacher/HardDiffusion.git
     cd HardDiffusion
 
 

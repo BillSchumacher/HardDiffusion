@@ -13,7 +13,7 @@ Goals
 * Feature parity with EasyDiffusion, except installation.
 * Distributed image processing :white_check_mark:
 * Use multiple models :white_check_mark:
-* Documentation
+* Documentation :white_check_mark:
 * Tests
 * Generating objects/characters with alpha background
 * Object-like prompt? less NLP more {'background': 'prompt...', characters: [{...}]}
