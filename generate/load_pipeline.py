@@ -22,7 +22,6 @@
 
 import importlib
 import os
-from packaging import version
 from pathlib import Path
 from typing import Optional, Union
 
@@ -46,6 +45,7 @@ from diffusers.utils import (
     is_transformers_available,
 )
 from huggingface_hub import model_info, snapshot_download
+from packaging import version
 
 from generate.pipeline_configuration import PipelineConfiguration
 from HardDiffusion.logs import logger

@@ -47,6 +47,7 @@ from generate.input_validation import (
     validate_strength_range,
     validate_width_and_height,
 )
+from generate.load_pipeline import from_pretrained
 from generate.noise import denoise
 from generate.pipeline_configuration import PipelineConfiguration
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
@@ -55,7 +56,6 @@ from generate.prompt import (
     get_embed_from_prompt,
     get_unconditional_embed,
 )
-from generate.load_pipeline import from_pretrained
 from generate.schedulers import validate_clip_sample, validate_steps_offset
 from generate.unet_utils import validate_unet_sample_size
 from generate.warnings import SAFETY_CHECKER_WARNING
@@ -806,8 +806,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
         )
 
         pipe = from_pretrained(
-            HardDiffusionPipeline, cached_folder,
-            torch_dtype=config.torch_dtype, device_map=config.device_map
+            HardDiffusionPipeline,
+            cached_folder,
+            torch_dtype=config.torch_dtype,
+            device_map=config.device_map,
         )
         pipe.to("cuda")
         return pipe
@@ -819,8 +821,11 @@ class HardDiffusionPipeline(DiffusionPipeline):
         # Step 3:-
         # Load the first checkpoint as a diffusion pipeline and modify its module
         #  state_dict in place
-        final_pipe = from_pretrained(HardDiffusionPipeline,
-            cached_folders[0], torch_dtype=torch_dtype, device_map=device_map
+        final_pipe = from_pretrained(
+            HardDiffusionPipeline,
+            cached_folders[0],
+            torch_dtype=torch_dtype,
+            device_map=device_map,
         )
         final_pipe.to("cuda")
         cached_folders_len = len(cached_folders)
@@ -977,8 +982,11 @@ class HardDiffusionPipeline(DiffusionPipeline):
             revision,
         )
         return self.create_final_pipeline(
-            cached_folders, config.torch_dtype, config.device_map,
-            config.interp, config.alpha
+            cached_folders,
+            config.torch_dtype,
+            config.device_map,
+            config.interp,
+            config.alpha,
         )
 
     @staticmethod
