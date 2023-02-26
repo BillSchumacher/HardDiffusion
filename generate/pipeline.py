@@ -1,5 +1,13 @@
 """
 The pipeline module.
+
+This module contains the main class for the HardDiffusion pipeline.
+
+The HardDiffusion pipeline is a custom implementation of the DiffusionPipeline
+class from the Diffusers library.
+
+The reason for inheriting from the DiffusionPipeline class is to maintain
+compatibility with the Diffusers library.
 """
 
 import inspect
@@ -322,43 +330,85 @@ class HardDiffusionPipeline(DiffusionPipeline):
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
         return image
 
-    # Copied from diffusers StableDiffusionPipeline.prepare_extra_step_kwargs
-    def prepare_extra_step_kwargs(self, generator, eta):
+    def prepare_extra_step_kwargs(
+        self,
+        generator: torch.Generator,
+        eta: float
+    ) -> dict[str, Union[torch.Generator, float]]:
         """
-        prepare extra kwargs for the scheduler step, since not all schedulers have
+        Prepare extra kwargs for the scheduler step, since not all schedulers have
         the same signature eta (η) is only used with the DDIMScheduler,
         it will be ignored for other schedulers.
 
-        eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
-        and should be between [0, 1]
+        Args:
+            generator (`torch.Generator`):
+                torch generator
+            eta (`float`):
+                η in DDIM paper: https://arxiv.org/abs/2010.02502
+                should be between [0, 1]
+
+        Returns:
+            extra_step_kwargs (`dict`):
+                extra kwargs for the scheduler step
         """
-        accepts_eta = "eta" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()
+        scheduler = self.scheduler  # type: ignore
+        scheduler_step_param_keys = set(
+            inspect.signature(scheduler.step).parameters.keys()
         )
+        accepts_eta = "eta" in scheduler_step_param_keys
+        accepts_generator = "generator" in scheduler_step_param_keys
+
         extra_step_kwargs = {}
         if accepts_eta:
             extra_step_kwargs["eta"] = eta
-
-        # check if the scheduler accepts generator
-        accepts_generator = "generator" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()
-        )
         if accepts_generator:
             extra_step_kwargs["generator"] = generator
         return extra_step_kwargs
 
     def check_inputs(
         self,
-        prompt,
-        strength,
-        callback_steps,
-        height=None,
-        width=None,
-        negative_prompt=None,
-        prompt_embeds=None,
-        negative_prompt_embeds=None,
-    ):
-        """validate pipeline inputs"""
+        prompt: Union[str, List[str]],
+        strength: float,
+        callback_steps: int,
+        height: Optional[int] = None,
+        width: Optional[int] = None,
+        negative_prompt: Optional[Union[str, List[str]]] = None,
+        prompt_embeds: Optional[torch.Tensor] = None,
+        negative_prompt_embeds: Optional[torch.Tensor] = None,
+    ) -> None:
+        """
+        Validate the user supplied pipeline inputs.
+
+        Args:
+            prompt (`str` or `List[str]`):
+                The prompt or prompts to guide the image generation.
+                If not defined, one has to pass `prompt_embeds` instead.
+            strength (`float`):
+                The strength of the prompt. Must be between 0 and 1.
+            callback_steps (`int`):
+                The number of steps between each callback.
+            height (`int`, *optional*):
+                The height of the generated image.
+                If not defined, one has to pass `prompt_embeds` instead.
+            width (`int`, *optional*):
+                The width of the generated image.
+                If not defined, one has to pass `prompt_embeds` instead.
+            negative_prompt (`str` or `List[str]`, *optional*):
+                The negative prompt or prompts to guide the image generation.
+                If not defined, one has to pass `negative_prompt_embeds` instead.
+                Alternatively, it can also be None.
+            prompt_embeds (`torch.Tensor`, *optional*):
+                The prompt embeddings to guide the image generation.
+                If not defined, one has to pass `prompt` instead.
+            negative_prompt_embeds (`torch.Tensor`, *optional*):
+                The negative prompt embeddings to guide the image generation.
+                If not defined, one has to pass `negative_prompt` instead.
+
+        Raises:
+            ValueError: If the inputs are not valid.
+
+        """
+        # sourcery skip: docstring
         validate_width_and_height(width, height)
         validate_prompt_type(prompt)
         validate_strength_range(strength)

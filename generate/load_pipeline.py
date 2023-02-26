@@ -117,7 +117,9 @@ def is_safetensors_compatible(info) -> bool:
 
 
 def from_pretrained(
-    cls, pretrained_model_name_or_path: Union[str, os.PathLike], **kwargs
+    cls: DiffusionPipeline,
+    pretrained_model_name_or_path: Union[str, os.PathLike],
+    **kwargs,
 ):
     r"""
     Instantiate a PyTorch diffusion pipeline from pre-trained pipeline weights.
@@ -338,7 +340,7 @@ def from_pretrained(
         cached_folder = pretrained_model_name_or_path
 
     config_dict = cls.load_config(cached_folder)
-
+    requires_safety_checker = config_dict.get("requires_safety_checker", True)
     custom_pipeline = config.custom_pipeline
     # 2. Load the pipeline class, if using custom module then load it from the hub
     # if we load from explicit class, let's use it
@@ -424,7 +426,7 @@ def from_pretrained(
         )
 
     if config.low_cpu_mem_usage and not is_accelerate_available():
-        low_cpu_mem_usage = False
+        config.low_cpu_mem_usage = False
         logger.warning(
             "Cannot initialize model with low cpu memory usage because `accelerate`"
             " was not found in the environment. Defaulting to"
@@ -592,14 +594,19 @@ def from_pretrained(
         for module in missing_modules:
             init_kwargs[module] = passed_class_obj.get(module, None)
     elif len(missing_modules) > 0:
-        passed_modules = (
-            set(list(init_kwargs.keys()) + list(passed_class_obj.keys()))
-            - optional_kwargs
-        )
-        raise ValueError(
-            f"Pipeline {pipeline_class} expected {expected_modules},"
-            f" but only {passed_modules} were passed."
-        )
+        if (missing_modules == {'feature_extractor', 'safety_checker'} and
+                not requires_safety_checker):
+            init_kwargs['feature_extractor'] = None
+            init_kwargs['safety_checker'] = None
+        else:
+            passed_modules = (
+                set(list(init_kwargs.keys()) + list(passed_class_obj.keys()))
+                - optional_kwargs
+            )
+            raise ValueError(
+                f"Pipeline {pipeline_class} expected {expected_modules},"
+                f" but only {passed_modules} were passed."
+            )
 
     # 5. Instantiate the pipeline
     model = pipeline_class(**init_kwargs)
