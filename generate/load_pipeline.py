@@ -95,13 +95,15 @@ LOADABLE_CLASSES = {
 
 
 ALL_IMPORTABLE_CLASSES = {}
-for library in LOADABLE_CLASSES:
-    ALL_IMPORTABLE_CLASSES.update(LOADABLE_CLASSES[library])
+for value in LOADABLE_CLASSES.values():
+    ALL_IMPORTABLE_CLASSES |= value
 
 
 def is_safetensors_compatible(info) -> bool:
-    filenames = set(sibling.rfilename for sibling in info.siblings)
-    pt_filenames = set(filename for filename in filenames if filename.endswith(".bin"))
+    filenames = {sibling.rfilename for sibling in info.siblings}
+    pt_filenames = {
+        filename for filename in filenames if filename.endswith(".bin")
+    }
     is_safetensors_compatible = any(file.endswith(".safetensors") for file in filenames)
     for pt_filename in pt_filenames:
         prefix, raw = os.path.split(pt_filename)
@@ -408,15 +410,13 @@ def from_pretrained(
 
     # define init kwargs
     init_kwargs = {k: init_dict.pop(k) for k in optional_kwargs if k in init_dict}
-    init_kwargs = {**init_kwargs, **passed_pipe_kwargs}
+    init_kwargs = init_kwargs | passed_pipe_kwargs
 
     # remove `null` components
     def load_module(name, value):
         if value[0] is None:
             return False
-        if name in passed_class_obj and passed_class_obj[name] is None:
-            return False
-        return True
+        return name not in passed_class_obj or passed_class_obj[name] is not None
 
     init_dict = {k: v for k, v in init_dict.items() if load_module(k, v)}
 
@@ -568,11 +568,11 @@ def from_pretrained(
 
                 # if `from_flax` and model is transformer model, can currently not load
                 #  with `low_cpu_mem_usage`
-                if not (config.from_flax and is_transformers_model):
-                    loading_kwargs["low_cpu_mem_usage"] = config.low_cpu_mem_usage
-                else:
-                    loading_kwargs["low_cpu_mem_usage"] = False
-
+                loading_kwargs["low_cpu_mem_usage"] = (
+                    False
+                    if (config.from_flax and is_transformers_model)
+                    else config.low_cpu_mem_usage
+                )
             # check if the module is in a subdirectory
             if os.path.isdir(os.path.join(cached_folder, name)):
                 loaded_sub_model = load_method(
@@ -588,32 +588,29 @@ def from_pretrained(
     missing_modules = set(expected_modules) - set(init_kwargs.keys())
     passed_modules = list(passed_class_obj.keys())
     optional_modules = pipeline_class._optional_components
-    if len(missing_modules) > 0 and missing_modules <= set(
-        passed_modules + optional_modules
-    ):
-        for module in missing_modules:
-            init_kwargs[module] = passed_class_obj.get(module, None)
-    elif len(missing_modules) > 0:
-        if (missing_modules == {'feature_extractor', 'safety_checker'} and
-                not requires_safety_checker):
-            init_kwargs['feature_extractor'] = None
-            init_kwargs['safety_checker'] = None
+    if len(missing_modules) > 0:
+        if missing_modules <= set(passed_modules + optional_modules):
+            for module in missing_modules:
+                init_kwargs[module] = passed_class_obj.get(module)
         else:
-            passed_modules = (
-                set(list(init_kwargs.keys()) + list(passed_class_obj.keys()))
-                - optional_kwargs
-            )
-            raise ValueError(
-                f"Pipeline {pipeline_class} expected {expected_modules},"
-                f" but only {passed_modules} were passed."
-            )
+            if (missing_modules == {'feature_extractor', 'safety_checker'} and
+                    not requires_safety_checker):
+                init_kwargs['feature_extractor'] = None
+                init_kwargs['safety_checker'] = None
+            else:
+                passed_modules = (
+                    set(list(init_kwargs.keys()) + list(passed_class_obj.keys()))
+                    - optional_kwargs
+                )
+                raise ValueError(
+                    f"Pipeline {pipeline_class} expected {expected_modules},"
+                    f" but only {passed_modules} were passed."
+                )
 
     # 5. Instantiate the pipeline
     model = pipeline_class(**init_kwargs)
 
-    if config.return_cached_folder:
-        return model, cached_folder
-    return model
+    return (model, cached_folder) if config.return_cached_folder else model
 
 
 def get_allow_and_ignore_patterns_with_user_agent(
