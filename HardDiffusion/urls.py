@@ -27,4 +27,7 @@ urlpatterns = [
     path("", include("generate.urls")),
     path("train/", include("train.urls")),
     path("model/", include("model.urls")),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+urlpatterns.extend(
+    static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # type: ignore
+)
