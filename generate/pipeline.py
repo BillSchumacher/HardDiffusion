@@ -21,7 +21,6 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers, SchedulerMixin
 from diffusers.utils import (
-    DIFFUSERS_CACHE,
     PIL_INTERPOLATION,
     deprecate,
     is_accelerate_available,
@@ -49,12 +48,14 @@ from generate.input_validation import (
     validate_width_and_height,
 )
 from generate.noise import denoise
+from generate.pipeline_configuration import PipelineConfiguration
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
 from generate.prompt import (
     duplicate_embeddings,
     get_embed_from_prompt,
     get_unconditional_embed,
 )
+from generate.load_pipeline import from_pretrained
 from generate.schedulers import validate_clip_sample, validate_steps_offset
 from generate.unet_utils import validate_unet_sample_size
 from generate.warnings import SAFETY_CHECKER_WARNING
@@ -774,31 +775,26 @@ class HardDiffusionPipeline(DiffusionPipeline):
     @staticmethod
     def from_single_model(pretrained_model_name_or_path, **kwargs):
         """Create a single pipeline"""
+        config = PipelineConfiguration(**kwargs)
+        config.remove_config_keys(kwargs)
 
-        (
-            cache_dir,
-            resume_download,
-            force_download,
-            proxies,
-            local_files_only,
-            use_auth_token,
-            revision,
-            torch_dtype,
-            device_map,
-            _,
-            _,
-        ) = get_options_from_kwargs(kwargs)
+        cache_dir = config.cache_dir
+        resume_download = config.resume_download
+        proxies = config.proxies
+        local_files_only = config.local_files_only
+        revision = config.revision
 
         config_dict = DiffusionPipeline.load_config(
             pretrained_model_name_or_path,
             cache_dir=cache_dir,
             resume_download=resume_download,
-            force_download=force_download,
+            force_download=config.force_download,
             proxies=proxies,
             local_files_only=local_files_only,
-            use_auth_token=use_auth_token,
+            use_auth_token=config.use_auth_token,
             revision=revision,
         )
+
         cached_folder = get_cached_folder(
             pretrained_model_name_or_path,
             cache_dir,
@@ -808,8 +804,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
             local_files_only,
             revision,
         )
-        pipe = HardDiffusionPipeline.from_pretrained(
-            cached_folder, torch_dtype=torch_dtype, device_map=device_map
+
+        pipe = from_pretrained(
+            HardDiffusionPipeline, cached_folder,
+            torch_dtype=config.torch_dtype, device_map=config.device_map
         )
         pipe.to("cuda")
         return pipe
@@ -821,7 +819,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         # Step 3:-
         # Load the first checkpoint as a diffusion pipeline and modify its module
         #  state_dict in place
-        final_pipe = HardDiffusionPipeline.from_pretrained(
+        final_pipe = from_pretrained(HardDiffusionPipeline,
             cached_folders[0], torch_dtype=torch_dtype, device_map=device_map
         )
         final_pipe.to("cuda")
@@ -928,23 +926,11 @@ class HardDiffusionPipeline(DiffusionPipeline):
                     for the current models. Defaults to False.
         """
         # Default kwargs from DiffusionPipeline
-
-        (
-            cache_dir,
-            resume_download,
-            force_download,
-            proxies,
-            local_files_only,
-            use_auth_token,
-            revision,
-            torch_dtype,
-            device_map,
-            alpha,
-            interp,
-        ) = get_options_from_kwargs(kwargs)
+        config = PipelineConfiguration(**kwargs)
+        config.remove_config_keys(kwargs)
 
         print("Received list", pretrained_model_name_or_path_list)
-        print(f"Combining with alpha={alpha}, interpolation mode={interp}")
+        print(f"Combining with alpha={config.alpha},interpolation mode={config.interp}")
 
         checkpoint_count = len(pretrained_model_name_or_path_list)
         # Ignore result from model_index_json comparision of the two checkpoints
@@ -962,14 +948,20 @@ class HardDiffusionPipeline(DiffusionPipeline):
         # chkpt0, chkpt1 = pretrained_model_name_or_path_list[0:2]
         # chkpt2 = pretrained_model_name_or_path_list[2] \
         #  if checkpoint_count == 3 else None
+        cache_dir = config.cache_dir
+        resume_download = config.resume_download
+        proxies = config.proxies
+        local_files_only = config.local_files_only
+        revision = config.revision
+
         config_dicts = self.validate_mergable_models(
             pretrained_model_name_or_path_list,
             cache_dir,
             resume_download,
-            force_download,
+            config.force_download,
             proxies,
             local_files_only,
-            use_auth_token,
+            config.use_auth_token,
             revision,
             force,
         )
@@ -985,7 +977,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
             revision,
         )
         return self.create_final_pipeline(
-            cached_folders, torch_dtype, device_map, interp, alpha
+            cached_folders, config.torch_dtype, config.device_map,
+            config.interp, config.alpha
         )
 
     @staticmethod
@@ -1013,40 +1006,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return theta0 + (theta1 - theta2) * (1.0 - alpha)
 
 
-def get_options_from_kwargs(kwargs):
-    """Get the options from the kwargs."""
-    cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
-    resume_download = kwargs.pop("resume_download", False)
-    force_download = kwargs.pop("force_download", False)
-    proxies = kwargs.pop("proxies", None)
-    local_files_only = kwargs.pop("local_files_only", False)
-    use_auth_token = kwargs.pop("use_auth_token", None)
-    revision = kwargs.pop("revision", None)
-    torch_dtype = kwargs.pop("torch_dtype", None)
-    device_map = kwargs.pop("device_map", None)
-
-    alpha = kwargs.pop("alpha", 0.5)
-    interp = kwargs.pop("interp", None)
-
-    return (
-        cache_dir,
-        resume_download,
-        force_download,
-        proxies,
-        local_files_only,
-        use_auth_token,
-        revision,
-        torch_dtype,
-        device_map,
-        alpha,
-        interp,
-    )
-
-
 def get_pipeline(model_path_or_name, nsfw):
     """Get the pipeline for the given model path or name."""
     if isinstance(model_path_or_name, list):
-        return HardDiffusionPipeline.from_pretrained(model_path_or_name[0])
+        return from_pretrained(HardDiffusionPipeline, model_path_or_name[0])
     if model_path_or_name.startswith("./") and model_path_or_name.endswith(".ckpt"):
         return load_pipeline_from_original_stable_diffusion_ckpt(
             model_path_or_name,
