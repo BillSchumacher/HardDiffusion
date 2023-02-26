@@ -1,5 +1,13 @@
 """
 The pipeline module.
+
+This module contains the main class for the HardDiffusion pipeline.
+
+The HardDiffusion pipeline is a custom implementation of the DiffusionPipeline
+class from the Diffusers library.
+
+The reason for inheriting from the DiffusionPipeline class is to maintain
+compatibility with the Diffusers library.
 """
 
 import inspect
@@ -21,7 +29,6 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers, SchedulerMixin
 from diffusers.utils import (
-    DIFFUSERS_CACHE,
     PIL_INTERPOLATION,
     deprecate,
     is_accelerate_available,
@@ -48,7 +55,9 @@ from generate.input_validation import (
     validate_strength_range,
     validate_width_and_height,
 )
+from generate.load_pipeline import from_pretrained
 from generate.noise import denoise
+from generate.pipeline_configuration import PipelineConfiguration
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
 from generate.prompt import (
     duplicate_embeddings,
@@ -321,43 +330,85 @@ class HardDiffusionPipeline(DiffusionPipeline):
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
         return image
 
-    # Copied from diffusers StableDiffusionPipeline.prepare_extra_step_kwargs
-    def prepare_extra_step_kwargs(self, generator, eta):
+    def prepare_extra_step_kwargs(
+        self,
+        generator: torch.Generator,
+        eta: float
+    ) -> dict[str, Union[torch.Generator, float]]:
         """
-        prepare extra kwargs for the scheduler step, since not all schedulers have
+        Prepare extra kwargs for the scheduler step, since not all schedulers have
         the same signature eta (η) is only used with the DDIMScheduler,
         it will be ignored for other schedulers.
 
-        eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
-        and should be between [0, 1]
+        Args:
+            generator (`torch.Generator`):
+                torch generator
+            eta (`float`):
+                η in DDIM paper: https://arxiv.org/abs/2010.02502
+                should be between [0, 1]
+
+        Returns:
+            extra_step_kwargs (`dict`):
+                extra kwargs for the scheduler step
         """
-        accepts_eta = "eta" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()
+        scheduler = self.scheduler  # type: ignore
+        scheduler_step_param_keys = set(
+            inspect.signature(scheduler.step).parameters.keys()
         )
+        accepts_eta = "eta" in scheduler_step_param_keys
+        accepts_generator = "generator" in scheduler_step_param_keys
+
         extra_step_kwargs = {}
         if accepts_eta:
             extra_step_kwargs["eta"] = eta
-
-        # check if the scheduler accepts generator
-        accepts_generator = "generator" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()
-        )
         if accepts_generator:
             extra_step_kwargs["generator"] = generator
         return extra_step_kwargs
 
     def check_inputs(
         self,
-        prompt,
-        strength,
-        callback_steps,
-        height=None,
-        width=None,
-        negative_prompt=None,
-        prompt_embeds=None,
-        negative_prompt_embeds=None,
-    ):
-        """validate pipeline inputs"""
+        prompt: Union[str, List[str]],
+        strength: float,
+        callback_steps: int,
+        height: Optional[int] = None,
+        width: Optional[int] = None,
+        negative_prompt: Optional[Union[str, List[str]]] = None,
+        prompt_embeds: Optional[torch.Tensor] = None,
+        negative_prompt_embeds: Optional[torch.Tensor] = None,
+    ) -> None:
+        """
+        Validate the user supplied pipeline inputs.
+
+        Args:
+            prompt (`str` or `List[str]`):
+                The prompt or prompts to guide the image generation.
+                If not defined, one has to pass `prompt_embeds` instead.
+            strength (`float`):
+                The strength of the prompt. Must be between 0 and 1.
+            callback_steps (`int`):
+                The number of steps between each callback.
+            height (`int`, *optional*):
+                The height of the generated image.
+                If not defined, one has to pass `prompt_embeds` instead.
+            width (`int`, *optional*):
+                The width of the generated image.
+                If not defined, one has to pass `prompt_embeds` instead.
+            negative_prompt (`str` or `List[str]`, *optional*):
+                The negative prompt or prompts to guide the image generation.
+                If not defined, one has to pass `negative_prompt_embeds` instead.
+                Alternatively, it can also be None.
+            prompt_embeds (`torch.Tensor`, *optional*):
+                The prompt embeddings to guide the image generation.
+                If not defined, one has to pass `prompt` instead.
+            negative_prompt_embeds (`torch.Tensor`, *optional*):
+                The negative prompt embeddings to guide the image generation.
+                If not defined, one has to pass `negative_prompt` instead.
+
+        Raises:
+            ValueError: If the inputs are not valid.
+
+        """
+        # sourcery skip: docstring
         validate_width_and_height(width, height)
         validate_prompt_type(prompt)
         validate_strength_range(strength)
@@ -774,31 +825,26 @@ class HardDiffusionPipeline(DiffusionPipeline):
     @staticmethod
     def from_single_model(pretrained_model_name_or_path, **kwargs):
         """Create a single pipeline"""
+        config = PipelineConfiguration(**kwargs)
+        config.remove_config_keys(kwargs)
 
-        (
-            cache_dir,
-            resume_download,
-            force_download,
-            proxies,
-            local_files_only,
-            use_auth_token,
-            revision,
-            torch_dtype,
-            device_map,
-            _,
-            _,
-        ) = get_options_from_kwargs(kwargs)
+        cache_dir = config.cache_dir
+        resume_download = config.resume_download
+        proxies = config.proxies
+        local_files_only = config.local_files_only
+        revision = config.revision
 
         config_dict = DiffusionPipeline.load_config(
             pretrained_model_name_or_path,
             cache_dir=cache_dir,
             resume_download=resume_download,
-            force_download=force_download,
+            force_download=config.force_download,
             proxies=proxies,
             local_files_only=local_files_only,
-            use_auth_token=use_auth_token,
+            use_auth_token=config.use_auth_token,
             revision=revision,
         )
+
         cached_folder = get_cached_folder(
             pretrained_model_name_or_path,
             cache_dir,
@@ -808,8 +854,12 @@ class HardDiffusionPipeline(DiffusionPipeline):
             local_files_only,
             revision,
         )
-        pipe = HardDiffusionPipeline.from_pretrained(
-            cached_folder, torch_dtype=torch_dtype, device_map=device_map
+
+        pipe = from_pretrained(
+            HardDiffusionPipeline,
+            cached_folder,
+            torch_dtype=config.torch_dtype,
+            device_map=config.device_map,
         )
         pipe.to("cuda")
         return pipe
@@ -821,8 +871,11 @@ class HardDiffusionPipeline(DiffusionPipeline):
         # Step 3:-
         # Load the first checkpoint as a diffusion pipeline and modify its module
         #  state_dict in place
-        final_pipe = HardDiffusionPipeline.from_pretrained(
-            cached_folders[0], torch_dtype=torch_dtype, device_map=device_map
+        final_pipe = from_pretrained(
+            HardDiffusionPipeline,
+            cached_folders[0],
+            torch_dtype=torch_dtype,
+            device_map=device_map,
         )
         final_pipe.to("cuda")
         cached_folders_len = len(cached_folders)
@@ -928,23 +981,11 @@ class HardDiffusionPipeline(DiffusionPipeline):
                     for the current models. Defaults to False.
         """
         # Default kwargs from DiffusionPipeline
-
-        (
-            cache_dir,
-            resume_download,
-            force_download,
-            proxies,
-            local_files_only,
-            use_auth_token,
-            revision,
-            torch_dtype,
-            device_map,
-            alpha,
-            interp,
-        ) = get_options_from_kwargs(kwargs)
+        config = PipelineConfiguration(**kwargs)
+        config.remove_config_keys(kwargs)
 
         print("Received list", pretrained_model_name_or_path_list)
-        print(f"Combining with alpha={alpha}, interpolation mode={interp}")
+        print(f"Combining with alpha={config.alpha},interpolation mode={config.interp}")
 
         checkpoint_count = len(pretrained_model_name_or_path_list)
         # Ignore result from model_index_json comparision of the two checkpoints
@@ -962,14 +1003,20 @@ class HardDiffusionPipeline(DiffusionPipeline):
         # chkpt0, chkpt1 = pretrained_model_name_or_path_list[0:2]
         # chkpt2 = pretrained_model_name_or_path_list[2] \
         #  if checkpoint_count == 3 else None
+        cache_dir = config.cache_dir
+        resume_download = config.resume_download
+        proxies = config.proxies
+        local_files_only = config.local_files_only
+        revision = config.revision
+
         config_dicts = self.validate_mergable_models(
             pretrained_model_name_or_path_list,
             cache_dir,
             resume_download,
-            force_download,
+            config.force_download,
             proxies,
             local_files_only,
-            use_auth_token,
+            config.use_auth_token,
             revision,
             force,
         )
@@ -985,7 +1032,11 @@ class HardDiffusionPipeline(DiffusionPipeline):
             revision,
         )
         return self.create_final_pipeline(
-            cached_folders, torch_dtype, device_map, interp, alpha
+            cached_folders,
+            config.torch_dtype,
+            config.device_map,
+            config.interp,
+            config.alpha,
         )
 
     @staticmethod
@@ -1013,40 +1064,10 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return theta0 + (theta1 - theta2) * (1.0 - alpha)
 
 
-def get_options_from_kwargs(kwargs):
-    """Get the options from the kwargs."""
-    cache_dir = kwargs.pop("cache_dir", DIFFUSERS_CACHE)
-    resume_download = kwargs.pop("resume_download", False)
-    force_download = kwargs.pop("force_download", False)
-    proxies = kwargs.pop("proxies", None)
-    local_files_only = kwargs.pop("local_files_only", False)
-    use_auth_token = kwargs.pop("use_auth_token", None)
-    revision = kwargs.pop("revision", None)
-    torch_dtype = kwargs.pop("torch_dtype", None)
-    device_map = kwargs.pop("device_map", None)
-
-    alpha = kwargs.pop("alpha", 0.5)
-    interp = kwargs.pop("interp", None)
-
-    return (
-        cache_dir,
-        resume_download,
-        force_download,
-        proxies,
-        local_files_only,
-        use_auth_token,
-        revision,
-        torch_dtype,
-        device_map,
-        alpha,
-        interp,
-    )
-
-
 def get_pipeline(model_path_or_name, nsfw):
     """Get the pipeline for the given model path or name."""
     if isinstance(model_path_or_name, list):
-        return HardDiffusionPipeline.from_pretrained(model_path_or_name[0])
+        return from_pretrained(HardDiffusionPipeline, model_path_or_name[0])
     if model_path_or_name.startswith("./") and model_path_or_name.endswith(".ckpt"):
         return load_pipeline_from_original_stable_diffusion_ckpt(
             model_path_or_name,
