@@ -28,7 +28,7 @@ class VerticalSeparator extends StatelessWidget {
                 tileMode: TileMode.mirror,
               ),
             ),
-            width: 20,
+            width: 10,
           ),
         )
       ],

@@ -1,7 +1,16 @@
-
 // Create a Form widget.
 import 'package:flutter/material.dart';
+import 'package:hard_diffusion/forms/fields/advanced_switch.dart';
+import 'package:hard_diffusion/forms/fields/guidance_scale.dart';
+import 'package:hard_diffusion/forms/fields/height.dart';
+import 'package:hard_diffusion/forms/fields/inference_steps.dart';
+import 'package:hard_diffusion/forms/fields/nsfw_switch.dart';
 import 'package:hard_diffusion/forms/fields/prompts.dart';
+import 'package:hard_diffusion/forms/fields/random_seed_switch.dart';
+import 'package:hard_diffusion/forms/fields/seed.dart';
+import 'package:hard_diffusion/forms/fields/use_multiple_models_switch.dart';
+import 'package:hard_diffusion/forms/fields/width.dart';
+import 'package:hard_diffusion/vertical_separator.dart';
 
 class InferTextToImageForm extends StatefulWidget {
   const InferTextToImageForm({super.key});
@@ -27,11 +36,70 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
     // Build a Form widget using the _formKey created above.
     return Form(
       key: _formKey,
-      child: Column(
-        children: [
-          PromptField(),
-          NegativePromptField(),
-        ],
+      child: Flexible(
+        child: Row(
+          children: [
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text("Advanced",
+                          style: Theme.of(context).textTheme.titleLarge),
+                    ),
+                    Row(
+                      children: [
+                        Text("Seed"),
+                        RandomSeedSwitch(),
+                      ],
+                    ),
+                    SeedField(),
+                    Row(
+                      children: [
+                        WidthField(),
+                        HeightField(),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        InferenceStepsField(),
+                        GuidanceScaleField(),
+                      ],
+                    ),
+                    Divider(),
+                    UseMultipleModelsSwitch(),
+                  ],
+                ),
+              ),
+            ),
+            VerticalSeparator(),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text("Generate",
+                          style: Theme.of(context).textTheme.titleLarge),
+                    ),
+                    PromptField(),
+                    NegativePromptField(),
+                    Row(
+                      children: [
+                        AdvancedSwitch(),
+                        NSFWSwitch(),
+                      ],
+                    ),
+                    ElevatedButton(onPressed: null, child: Text('Generate')),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

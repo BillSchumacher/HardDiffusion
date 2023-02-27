@@ -12,11 +12,6 @@ class GeneratePage extends StatelessWidget {
         Flexible(
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Generate",
-                    style: Theme.of(context).textTheme.titleLarge),
-              ),
               InferTextToImageForm(),
             ],
           ),
