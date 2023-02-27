@@ -1,14 +1,3 @@
-__pycache__
-db.sqlite3
-*.pyc
-.env
-*.ckpt
-image_0.jpeg
-sd_models/**/*.yaml
-media/*.png
-out
-_build
-build
 # Miscellaneous
 *.class
 *.log
@@ -20,7 +9,7 @@ build
 .history
 .svn/
 migrate_working_dir/
-.vscode
+
 # IntelliJ related
 *.iml
 *.ipr

@@ -7,3 +7,4 @@ exclude =
     *.pyc,
     venv/*
     node_modules/*
+    hard_diffusion/*
