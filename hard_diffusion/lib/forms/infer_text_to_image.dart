@@ -75,29 +75,40 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
               ),
             ),
             VerticalSeparator(),
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text("Generate",
-                          style: Theme.of(context).textTheme.titleLarge),
-                    ),
-                    PromptField(),
-                    NegativePromptField(),
-                    Row(
-                      children: [
-                        AdvancedSwitch(),
-                        NSFWSwitch(),
-                      ],
-                    ),
-                    ElevatedButton(onPressed: null, child: Text('Generate')),
-                  ],
-                ),
-              ),
+            PromptColumn(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PromptColumn extends StatelessWidget {
+  const PromptColumn({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Generate",
+                  style: Theme.of(context).textTheme.titleLarge),
             ),
+            PromptField(),
+            NegativePromptField(),
+            Row(
+              children: [
+                AdvancedSwitch(),
+                NSFWSwitch(),
+              ],
+            ),
+            ElevatedButton(onPressed: null, child: Text('Generate')),
           ],
         ),
       ),
