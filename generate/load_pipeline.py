@@ -101,9 +101,7 @@ for value in LOADABLE_CLASSES.values():
 
 def is_safetensors_compatible(info) -> bool:
     filenames = {sibling.rfilename for sibling in info.siblings}
-    pt_filenames = {
-        filename for filename in filenames if filename.endswith(".bin")
-    }
+    pt_filenames = {filename for filename in filenames if filename.endswith(".bin")}
     is_safetensors_compatible = any(file.endswith(".safetensors") for file in filenames)
     for pt_filename in pt_filenames:
         prefix, raw = os.path.split(pt_filename)
@@ -593,10 +591,12 @@ def from_pretrained(
             for module in missing_modules:
                 init_kwargs[module] = passed_class_obj.get(module)
         else:
-            if (missing_modules == {'feature_extractor', 'safety_checker'} and
-                    not requires_safety_checker):
-                init_kwargs['feature_extractor'] = None
-                init_kwargs['safety_checker'] = None
+            if (
+                missing_modules == {"feature_extractor", "safety_checker"}
+                and not requires_safety_checker
+            ):
+                init_kwargs["feature_extractor"] = None
+                init_kwargs["safety_checker"] = None
             else:
                 passed_modules = (
                     set(list(init_kwargs.keys()) + list(passed_class_obj.keys()))

@@ -55,7 +55,12 @@ templates_path = ["_templates"]
 # List of patterns, relative to docs directory, that match files and
 # directories to ignore when looking for docs files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["../**/migrations/*", "../manage.py", "../run_pylint.py"]
+exclude_patterns = [
+    "../**/migrations/*",
+    "../manage.py",
+    "../run_pylint.py",
+    "../hard_diffusion/*",
+]
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "django": (

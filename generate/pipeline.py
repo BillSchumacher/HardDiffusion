@@ -331,9 +331,7 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return image
 
     def prepare_extra_step_kwargs(
-        self,
-        generator: torch.Generator,
-        eta: float
+        self, generator: torch.Generator, eta: float
     ) -> dict[str, Union[torch.Generator, float]]:
         """
         Prepare extra kwargs for the scheduler step, since not all schedulers have

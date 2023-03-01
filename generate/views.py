@@ -1,10 +1,19 @@
-"""Views for the generate app."""
+"""Views for the generate app.
+
+    Contains the following views:
+    - index: The main page for the generate app.
+    - queue_prompt: Queue a prompt to be generated.
+    - csrf_form: CSRF endpoint to get the middleware to set the token.
+    - images: Return generated images data as JSON.
+    - renderer_health: Check health of all renderer devices.
+    - renderer_status: The rendered status page.
+"""
 from collections import defaultdict
 from datetime import timedelta
 from typing import Optional
 
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -15,8 +24,16 @@ from generate.tasks import generate_image
 from model.models import TextToImageModel
 
 
-def index(request) -> HttpResponse:
-    """Generate an image."""
+def index(request: HttpRequest) -> HttpResponse:
+    """
+    The endpoint that returns the html UI used to generate images.
+
+    Args:
+        request: The request object.
+
+    Returns:
+        The rendered template.
+    """
     models = TextToImageModel.objects.all().order_by("likes")
 
     context = {
@@ -27,8 +44,17 @@ def index(request) -> HttpResponse:
     return render(request, "generate.html", context)
 
 
-def queue_prompt(request) -> JsonResponse:
-    """Queue a prompt to be generated."""
+def queue_prompt(request: HttpRequest) -> JsonResponse:
+    """Queue a prompt to be generated.
+
+    Parses the request parameters and queues a celery task to generate an image.
+
+    Args:
+        request: The request object.
+
+    Returns:
+        A JSON response with an `error` key and a `task_id` key.
+    """
     if request.method != "POST":
         return JsonResponse({"error": "POST request required", "task_id": None})
     _generate_image: Task = generate_image  # type: ignore
@@ -73,9 +99,39 @@ def queue_prompt(request) -> JsonResponse:
     return JsonResponse({"error": None, "task_id": task_id})
 
 
-def images(request, last: Optional[int] = None) -> JsonResponse:
-    """Show generated images."""
-    generated_images = GeneratedImage.objects.all().order_by("-id")[:10]
+def csrf_form(request: HttpRequest) -> HttpResponse:
+    """CSRF endpoint to get the middleware to set the token.
+
+    Args:
+        request: The request object.
+
+    Returns:
+        The rendered template.
+    """
+    return render(request, "csrf.html", {})
+
+
+def images(
+    request: HttpRequest, last: Optional[int] = None, page_size: int = 10
+) -> JsonResponse:
+    """Return generated images data as JSON.
+
+    Args:
+        request: The request object.
+        last: The last image to return.
+        page_size: The number of images to return.
+
+    Returns:
+        A JSON response with a list of generated image data in the `images` key, 
+        and a `total` key with the total number of images.
+    """
+
+    query = GeneratedImage.objects.all().order_by("-created_at")
+    total = query.count()
+    if last:
+        generated_images = query[last * page_size : last * page_size + page_size]
+    else:
+        generated_images = query[:page_size]
     return JsonResponse(
         {
             "images": [
@@ -102,13 +158,30 @@ def images(request, last: Optional[int] = None) -> JsonResponse:
                     "error": image.error,
                 }
                 for image in generated_images
-            ]
+            ],
+            "total": total,
         }
     )
 
 
-def renderer_health(request) -> HttpResponse:
-    """Check GPU memory"""
+def renderer_health(request: HttpRequest) -> JsonResponse:
+    """Check health of all renderer devices.
+
+    Args:
+        request: The request object.
+
+    Returns:
+        A JSON response with a list of renderer device stats for the currently
+          connected hosts by hostname.
+
+        Each device reports the following stats:
+        - id: The device ID.
+        - name: The device name.
+        - usage: The memory usage.
+        - memory: The total memory.
+        - device_allocated: The allocated memory.
+        - device_cached: The cached memory.
+    """
     render_devices = RenderWorkerDevice.objects.filter(
         last_update_at__gt=timezone.now() - timedelta(seconds=30)
     )
@@ -128,6 +201,14 @@ def renderer_health(request) -> HttpResponse:
     return JsonResponse({"results": results_by_hostname})
 
 
-def renderer_status(request) -> HttpResponse:
-    """Check GPU memory"""
+def renderer_status(request: HttpRequest) -> HttpResponse:
+    """Render the renderer status page.
+
+    Args:
+        request: The request object.
+
+    Returns:
+        The rendered template.
+        Displays a list of renderer devices by hostname.
+    """
     return render(request, "status.html", {})

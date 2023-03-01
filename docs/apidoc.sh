@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sphinx-apidoc -M -f -o . .. "../**/migrations/*" "../manage.py" "../run_pylint.py"
+sphinx-apidoc -M -f -o . .. "../**/migrations/*" "../manage.py" "../run_pylint.py" "../hard_diffusion/*"
