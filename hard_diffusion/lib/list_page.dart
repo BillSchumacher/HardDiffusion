@@ -1,6 +1,3 @@
-import 'package:flutter/foundation.dart';
-
-/// Represents each page returned by a paginated endpoint.
 class ListPage<ItemType> {
   ListPage({
     required this.totalCount,

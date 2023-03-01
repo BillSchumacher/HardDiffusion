@@ -4,7 +4,6 @@ import 'package:hard_diffusion/exception_indicators/empty_list_indicator.dart';
 import 'package:hard_diffusion/exception_indicators/error_indicator.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 
 /*
@@ -59,6 +58,88 @@ class PhotosList extends StatelessWidget {
 }
 */
 
+final Image errorImage = Image.network("http://localhost:8000/error.gif");
+final Image paintingImage = Image.network("http://localhost:8000/painting.gif");
+
+class ImageDetails extends StatefulWidget {
+  const ImageDetails({super.key, required this.item});
+
+  final GeneratedImage item;
+  @override
+  _ImageDetailsState createState() => _ImageDetailsState(item: item);
+}
+
+class _ImageDetailsState extends State<ImageDetails> {
+  _ImageDetailsState({required this.item});
+  final GeneratedImage item;
+  bool showEditButton = false;
+  @override
+  Widget build(BuildContext context) {
+    var image;
+    if (item.error!) {
+      image = errorImage;
+    } else if (item.generatedAt == null) {
+      image = paintingImage;
+    } else {
+      image = CachedNetworkImage(
+        placeholder: (context, url) => const CircularProgressIndicator(),
+        imageUrl: "http://localhost:8000/${item.filename}",
+        imageBuilder: (context, imageProvider) => Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.fill,
+              //colorFilter: ColorFilter.mode(Colors.red, BlendMode.colorBurn)),
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => errorImage,
+      );
+    }
+    return Stack(
+      children: <Widget>[
+        InkWell(
+            onTap: () => setState(() => showEditButton = !showEditButton),
+            child: image),
+        if (showEditButton) ...[
+          Positioned(
+            bottom: 5,
+            left: 5,
+            child: ElevatedButton(
+              child: Text('Copy'),
+              onPressed: () => {},
+            ),
+          ),
+          Positioned(
+            bottom: 5,
+            right: 5,
+            child: ElevatedButton(
+              child: Text('Delete'),
+              onPressed: () => {},
+            ),
+          ),
+          Positioned(
+            top: 5,
+            left: 5,
+            child: ElevatedButton(
+              child: Text('Use as Input'),
+              onPressed: () => {},
+            ),
+          ),
+          Positioned(
+            top: 5,
+            right: 5,
+            child: ElevatedButton(
+              child: Text('Use settings'),
+              onPressed: () => {},
+            ),
+          ),
+        ]
+      ],
+    );
+  }
+}
+
 class GeneratedImageListView extends StatefulWidget {
   @override
   _GeneratedImageListViewState createState() => _GeneratedImageListViewState();
@@ -96,7 +177,7 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
 
   Future<void> _fetchPage(int pageKey) async {
     try {
-      final newPage = await fetchPhotos(http.Client(), pageKey, _pageSize);
+      final newPage = await fetchPhotos(pageKey, _pageSize);
       final previouslyFetchedItemsCount =
           // 2
           _pagingController.itemList?.length ?? 0;
@@ -117,29 +198,8 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
     }
   }
 
-  final Image errorImage = Image.network("http://localhost:8000/error.gif");
-  final Image paintingImage =
-      Image.network("http://localhost:8000/painting.gif");
   Widget getImage(item) {
-    if (item.error) {
-      return errorImage;
-    } else if (item.generatedAt == null) {
-      return paintingImage;
-    }
-    return CachedNetworkImage(
-      placeholder: (context, url) => const CircularProgressIndicator(),
-      imageUrl: "http://localhost:8000/${item.filename}",
-      imageBuilder: (context, imageProvider) => Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: imageProvider,
-            fit: BoxFit.fill,
-            //colorFilter: ColorFilter.mode(Colors.red, BlendMode.colorBurn)),
-          ),
-        ),
-      ),
-      errorWidget: (context, url, error) => errorImage,
-    );
+    return ImageDetails(item: item);
   }
 
   @override
@@ -147,9 +207,6 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
       onRefresh: () => Future.sync(
             () => _pagingController.refresh(),
           ),
-      // Don't worry about displaying progress or error indicators on screen; the
-      // package takes care of that. If you want to customize them, use the
-      // [PagedChildBuilderDelegate] properties.
       child: PagedGridView(
         pagingController: _pagingController,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -163,10 +220,6 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
           ),
           noItemsFoundIndicatorBuilder: (context) => EmptyListIndicator(),
         ),
-        //padding: const EdgeInsets.all(16),
-        //separatorBuilder: (context, index) => const SizedBox(
-        //  height: 16,
-        //),
       ));
 
   @override

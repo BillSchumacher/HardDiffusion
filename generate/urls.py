@@ -11,4 +11,5 @@ urlpatterns = [
     path("queue_prompt", views.queue_prompt, name="queue_prompt"),
     path("renderer_health", views.renderer_health, name="renderer_health"),
     path("status", views.renderer_status, name="status"),
+    path("csrf", views.csrf_form, name="csrf_form"),
 ]

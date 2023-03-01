@@ -1,3 +1,4 @@
+import 'package:hard_diffusion/api/network_service.dart';
 import 'package:hard_diffusion/list_page.dart';
 import 'package:uuid_type/uuid_type.dart';
 import 'package:http/http.dart' as http;
@@ -71,18 +72,16 @@ class GeneratedImage {
   }
 }
 
-Future<ListPage<GeneratedImage>> fetchPhotos(
-    http.Client client, int lastPage, int pageSize) async {
-  final response = await client
-      .get(Uri.parse('http://localhost:8000/images/$lastPage/$pageSize'));
+Future<ListPage<GeneratedImage>> fetchPhotos(int lastPage, int pageSize) async {
+  final response = await NetworkService()
+      .get('http://localhost:8000/images/$lastPage/$pageSize');
 
   // Use the compute function to run parsePhotos in a separate isolate.
-  return compute(parsePhotos, response.body);
+  return compute(parsePhotos, response);
 }
 
 // A function that converts a response body into a List<Photo>.
-ListPage<GeneratedImage> parsePhotos(String responseBody) {
-  final jsonResponse = jsonDecode(responseBody);
+ListPage<GeneratedImage> parsePhotos(dynamic jsonResponse) {
   final images = jsonResponse["images"].cast<Map<String, dynamic>>();
   final parsed_images = images.map<GeneratedImage>((json) {
     return GeneratedImage.fromJson(json);

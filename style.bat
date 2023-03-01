@@ -1,1 +1,1 @@
-isort . & black --exclude=".*\/*(settings|migrations|venv|node_modules|templates|static|test-results|staticfiles)\/*.*" .
+isort . & black --exclude=".*\/*(settings|migrations|venv|node_modules|templates|static|test-results|staticfiles|hard_diffusion)\/*.*" .

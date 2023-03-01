@@ -1,15 +1,8 @@
-// Create a Form widget.
+import 'package:hard_diffusion/forms/advanced_column.dart';
+import 'package:hard_diffusion/forms/prompt_column.dart';
+import 'package:html/parser.dart' show parse;
 import 'package:flutter/material.dart';
-import 'package:hard_diffusion/forms/fields/advanced_switch.dart';
-import 'package:hard_diffusion/forms/fields/guidance_scale.dart';
-import 'package:hard_diffusion/forms/fields/height.dart';
-import 'package:hard_diffusion/forms/fields/inference_steps.dart';
-import 'package:hard_diffusion/forms/fields/nsfw_switch.dart';
-import 'package:hard_diffusion/forms/fields/prompts.dart';
-import 'package:hard_diffusion/forms/fields/random_seed_switch.dart';
-import 'package:hard_diffusion/forms/fields/seed.dart';
-import 'package:hard_diffusion/forms/fields/use_multiple_models_switch.dart';
-import 'package:hard_diffusion/forms/fields/width.dart';
+import 'package:hard_diffusion/api/network_service.dart';
 import 'package:hard_diffusion/vertical_separator.dart';
 
 class InferTextToImageForm extends StatefulWidget {
@@ -91,21 +84,31 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
     guidanceScale = value;
   }
 
-  void generate() {
-    print("clicked generate!");
+  void generate() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      var map = new Map<String, dynamic>();
+      map["prompt"] = prompt;
+      map["negative_prompt"] = negativePrompt;
+      map["use_multiple_models"] = useMultipleModels.toString();
+      map["use_nsfw"] = useNsfw.toString();
+      map["use_random_seed"] = useRandomSeed.toString();
+      map["seed"] = seed.toString();
+      map["width"] = width.toString();
+      map["height"] = height.toString();
+      map["inference_steps"] = inferenceSteps.toString();
+      map["guidance_scale"] = guidanceScale.toString();
+      var ns = NetworkService();
+      var response = await ns.get("http://localhost:8000/csrf");
+      var document = parse(response);
+      var csrf = document.querySelectorAll("input").first.attributes["value"];
+      map["csrfmiddlewaretoken"] = csrf;
+      ns.headers["X-CSRFToken"] = csrf!;
+      response = await ns.post(
+        "http://localhost:8000/queue_prompt",
+        body: map,
+      );
     }
-    print(_formKey.currentState.toString());
-    print(_formKey);
-    print(prompt);
-    print(negativePrompt);
-    print(useRandomSeed);
-    print(width);
-    print(height);
-    print(inferenceSteps);
-    print(guidanceScale);
-    print(useAdvanced);
   }
 
   @override
@@ -150,127 +153,6 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
             ),
           ]
         ]),
-      ),
-    );
-  }
-}
-
-class AdvancedColumn extends StatelessWidget {
-  const AdvancedColumn({
-    super.key,
-    required this.useRandomSeed,
-    required this.seed,
-    required this.width,
-    required this.height,
-    required this.inferenceSteps,
-    required this.guidanceScale,
-    required this.setUseRandomSeed,
-    required this.setSeed,
-    required this.setWidth,
-    required this.setHeight,
-    required this.setInferenceSteps,
-    required this.setGuidanceScale,
-  });
-
-  final Function(bool) setUseRandomSeed;
-  final Function(int) setSeed;
-  final Function(int) setWidth;
-  final Function(int) setHeight;
-  final Function(int) setInferenceSteps;
-  final Function(double) setGuidanceScale;
-  final bool useRandomSeed;
-  final int seed;
-  final int width;
-  final int height;
-  final int inferenceSteps;
-  final double guidanceScale;
-
-  @override
-  Widget build(BuildContext context) {
-    return Flexible(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Advanced",
-                  style: Theme.of(context).textTheme.titleLarge),
-            ),
-            Row(
-              children: [
-                Text("Seed"),
-                RandomSeedSwitch(
-                    value: useRandomSeed, setValue: setUseRandomSeed),
-              ],
-            ),
-            SeedField(value: seed, setValue: setSeed),
-            Row(
-              children: [
-                WidthField(value: width, setValue: setWidth),
-                HeightField(value: height, setValue: setHeight),
-              ],
-            ),
-            Row(
-              children: [
-                InferenceStepsField(
-                    value: inferenceSteps, setValue: setInferenceSteps),
-                GuidanceScaleField(
-                    value: guidanceScale, setValue: setGuidanceScale),
-              ],
-            ),
-            Divider(),
-            UseMultipleModelsSwitch() //value: useMultipleModels),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class PromptColumn extends StatelessWidget {
-  const PromptColumn({
-    super.key,
-    required this.setPrompt,
-    required this.setNegativePrompt,
-    required this.setUseAdvanced,
-    required this.generate,
-    required this.prompt,
-    required this.negativePrompt,
-  });
-
-  final Function(String) setPrompt;
-  final Function(String) setNegativePrompt;
-  final Function(bool) setUseAdvanced;
-  final VoidCallback generate;
-  final String prompt;
-  final String negativePrompt;
-
-  @override
-  Widget build(BuildContext context) {
-    return Flexible(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Generate",
-                  style: Theme.of(context).textTheme.titleLarge),
-            ),
-            PromptField(promptValue: prompt, setPrompt: setPrompt),
-            NegativePromptField(
-                negativePromptValue: negativePrompt,
-                setNegativePrompt: setNegativePrompt),
-            Row(
-              children: [
-                AdvancedSwitch(setValue: setUseAdvanced),
-                NSFWSwitch(),
-              ],
-            ),
-            ElevatedButton(onPressed: generate, child: Text('Generate')),
-          ],
-        ),
       ),
     );
   }
