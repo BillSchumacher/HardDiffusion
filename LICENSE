@@ -6,13 +6,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-This software may or may not use a significant portion of code from EasyDiffusion, if it does cmdr2 license applies, if not it will be removed in the future. 
-
-By using this software you also agree to the use restrictions set by cmdr2 and contributors
-Copyright (c) 2022 cmdr2 and contributors
-
-Use restrictions: https://github.com/easydiffusion/sdkit/blob/main/LICENSE
-
 By using this software you also agree to the use restrictions set by the CreativeML Open RAIL-M dated August 22, 2022.
 
 Copyright (c) 2022 Robin Rombach and Patrick Esser and contributors  
