@@ -17,7 +17,7 @@ class GeneratePage extends StatelessWidget {
           ),
         ),
         VerticalSeparator(),
-        GeneratedImages(),
+        Flexible(child: GeneratedImageListView()),
       ],
     );
   }

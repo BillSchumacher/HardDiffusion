@@ -1,118 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:ffi';
-
-import 'package:english_words/src/word_pair.dart';
+import 'package:hard_diffusion/api/images/generated_image.dart';
+import 'package:hard_diffusion/exception_indicators/empty_list_indicator.dart';
+import 'package:hard_diffusion/exception_indicators/error_indicator.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:hard_diffusion/main.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
-import 'package:uuid_type/uuid_type.dart';
-
-Future<List<GeneratedImage>> fetchPhotos(http.Client client) async {
-  final response = await client.get(Uri.parse('http://localhost:8000/images'));
-
-  // Use the compute function to run parsePhotos in a separate isolate.
-  return compute(parsePhotos, response.body);
-}
-
-// A function that converts a response body into a List<Photo>.
-List<GeneratedImage> parsePhotos(String responseBody) {
-  print(responseBody);
-  final parsed =
-      jsonDecode(responseBody)["images"].cast<Map<String, dynamic>>();
-
-  return parsed
-      .map<GeneratedImage>((json) => GeneratedImage.fromJson(json))
-      .toList();
-}
+import 'package:cached_network_image/cached_network_image.dart';
 
 /*
-            "images": [
-                {
-                    "id": image.id,
-                    "task_id": image.filename[:-4],
-                    "filename": image.filename,
-                    "host": image.host,
-                    "created_at": image.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                    "generated_at": image.generated_at.strftime("%Y-%m-%dT%H:%M:%SZ")
-                    if image.generated_at
-                    else None,
-                    "prompt": image.prompt,
-                    "negative_prompt": image.negative_prompt,
-                    "duration": f"{image.duration:.2f} seconds"
-                    if image.duration
-                    else None,
-                    "seed": image.seed,
-                    "guidance_scale": image.guidance_scale,
-                    "num_inference_steps": image.num_inference_steps,
-                    "height": image.height,
-                    "width": image.width,
-                    "model": image.model,
-                    "error": image.error,
-                }
-                for image in generated_images
-            ]
-*/
-class GeneratedImage {
-  final Uuid taskId;
-  final int id;
-  final String filename;
-  final String host;
-  final DateTime createdAt;
-  final DateTime? generatedAt;
-  final String prompt;
-  final String? negativePrompt;
-  final String? duration;
-  final int? seed;
-  final double? guidanceScale;
-  final int? numInferenceSteps;
-  final int height;
-  final int width;
-  final String model;
-  final bool? error;
-
-  const GeneratedImage(
-      {required this.taskId,
-      required this.id,
-      required this.filename,
-      required this.host,
-      required this.createdAt,
-      this.generatedAt,
-      required this.prompt,
-      this.negativePrompt,
-      this.duration,
-      this.seed,
-      this.guidanceScale,
-      this.numInferenceSteps,
-      required this.height,
-      required this.width,
-      required this.model,
-      this.error});
-
-  factory GeneratedImage.fromJson(Map<String, dynamic> json) {
-    return GeneratedImage(
-      taskId: Uuid.parse(json['task_id']),
-      id: json['id'] as int,
-      filename: json['filename'] as String,
-      host: json['host'] as String,
-      createdAt: DateTime.parse(json['created_at']),
-      generatedAt: DateTime.parse(json['generated_at']),
-      prompt: json['prompt'] as String,
-      negativePrompt: json['negative_prompt'] as String,
-      duration: json['duration'] as String,
-      seed: json['seed'] as int,
-      guidanceScale: json['guidance_scale'] as double,
-      numInferenceSteps: json['num_inference_steps'] as int,
-      height: json['height'] as int,
-      width: json['width'] as int,
-      model: json['model'] as String,
-      error: json['error'] as bool,
-    );
-  }
-}
-
 class GeneratedImages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -126,7 +21,7 @@ class GeneratedImages extends StatelessWidget {
     }*/
     return Flexible(
       child: FutureBuilder<List<GeneratedImage>>(
-        future: fetchPhotos(http.Client()),
+        future: fetchPhotos(http.Client(), 0, 10),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
@@ -144,7 +39,6 @@ class GeneratedImages extends StatelessWidget {
     );
   }
 }
-
 class PhotosList extends StatelessWidget {
   const PhotosList({super.key, required this.photos});
 
@@ -161,5 +55,123 @@ class PhotosList extends StatelessWidget {
         return Image.network("http://localhost:8000/${photos[index].filename}");
       },
     );
+  }
+}
+*/
+
+class GeneratedImageListView extends StatefulWidget {
+  @override
+  _GeneratedImageListViewState createState() => _GeneratedImageListViewState();
+}
+
+class _GeneratedImageListViewState extends State<GeneratedImageListView> {
+  static const _pageSize = 10;
+
+  List<GeneratedImage> _generatedImageList = [];
+  final PagingController<int, GeneratedImage> _pagingController =
+      PagingController(firstPageKey: 0);
+
+  Future<void> insertGeneratedImageList(List<GeneratedImage> platformList) =>
+      Future.microtask(() => _generatedImageList = platformList);
+
+  Future<List<GeneratedImage>> getGeneratedImageList() =>
+      Future.microtask(() => _generatedImageList);
+
+  @override
+  void didUpdateWidget(GeneratedImageListView oldWidget) {
+    // if filters changed...
+    // if (oldWidget.listPreferences != widget.listPreferences) {
+    //  _pagingController.refresh();
+    // }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void initState() {
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
+    });
+    super.initState();
+  }
+
+  Future<void> _fetchPage(int pageKey) async {
+    try {
+      final newPage = await fetchPhotos(http.Client(), pageKey, _pageSize);
+      final previouslyFetchedItemsCount =
+          // 2
+          _pagingController.itemList?.length ?? 0;
+
+      final isLastPage = newPage.isLastPage(previouslyFetchedItemsCount);
+      final newItems = newPage.itemList;
+
+      if (isLastPage) {
+        // 3
+        _pagingController.appendLastPage(newItems);
+      } else {
+        final nextPageKey = pageKey + 1;
+        _pagingController.appendPage(newItems, nextPageKey);
+      }
+    } catch (error) {
+      // 4
+      _pagingController.error = error;
+    }
+  }
+
+  final Image errorImage = Image.network("http://localhost:8000/error.gif");
+  final Image paintingImage =
+      Image.network("http://localhost:8000/painting.gif");
+  Widget getImage(item) {
+    if (item.error) {
+      return errorImage;
+    } else if (item.generatedAt == null) {
+      return paintingImage;
+    }
+    return CachedNetworkImage(
+      placeholder: (context, url) => const CircularProgressIndicator(),
+      imageUrl: "http://localhost:8000/${item.filename}",
+      imageBuilder: (context, imageProvider) => Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: imageProvider,
+            fit: BoxFit.fill,
+            //colorFilter: ColorFilter.mode(Colors.red, BlendMode.colorBurn)),
+          ),
+        ),
+      ),
+      errorWidget: (context, url, error) => errorImage,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => RefreshIndicator(
+      onRefresh: () => Future.sync(
+            () => _pagingController.refresh(),
+          ),
+      // Don't worry about displaying progress or error indicators on screen; the
+      // package takes care of that. If you want to customize them, use the
+      // [PagedChildBuilderDelegate] properties.
+      child: PagedGridView(
+        pagingController: _pagingController,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+        ),
+        builderDelegate: PagedChildBuilderDelegate<GeneratedImage>(
+          itemBuilder: (context, item, index) => getImage(item),
+          firstPageErrorIndicatorBuilder: (context) => ErrorIndicator(
+            error: _pagingController.error,
+            onTryAgain: () => _pagingController.refresh(),
+          ),
+          noItemsFoundIndicatorBuilder: (context) => EmptyListIndicator(),
+        ),
+        //padding: const EdgeInsets.all(16),
+        //separatorBuilder: (context, index) => const SizedBox(
+        //  height: 16,
+        //),
+      ));
+
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 }

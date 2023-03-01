@@ -73,9 +73,15 @@ def queue_prompt(request) -> JsonResponse:
     return JsonResponse({"error": None, "task_id": task_id})
 
 
-def images(request, last: Optional[int] = None) -> JsonResponse:
+def images(request, last: Optional[int] = None, page_size: int = 10) -> JsonResponse:
     """Show generated images."""
-    generated_images = GeneratedImage.objects.all().order_by("-id")[:10]
+
+    query = GeneratedImage.objects.all().order_by("-created_at")
+    total = query.count()
+    if last:
+        generated_images = query[last*page_size:last*page_size+page_size]
+    else:
+        generated_images = query[:page_size]
     return JsonResponse(
         {
             "images": [
@@ -102,7 +108,8 @@ def images(request, last: Optional[int] = None) -> JsonResponse:
                     "error": image.error,
                 }
                 for image in generated_images
-            ]
+            ],
+            "total": total,
         }
     )
 

@@ -131,19 +131,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget page;
+    Widget page = GeneratePage();
     switch (selectedIndex) {
-      case 0:
+      /*case 0:
         page = GeneratorPage();
         break;
       case 1:
         page = FavoritesPage();
-        break;
-      case 2:
+        break;*/
+      case 0:
         page = GeneratePage();
         break;
       default:
-        throw UnimplementedError("no widget for $selectedIndex");
+        print("Nope");
+        break;
+      //throw UnimplementedError("no widget for $selectedIndex");
     }
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
@@ -155,16 +157,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 destinations: [
                   NavigationRailDestination(
                     icon: Icon(Icons.home),
-                    label: Text('Home'),
+                    label: Text('Generate'),
                   ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.settings),
+                    label: Text('Settings'),
+                  ), /*
                   NavigationRailDestination(
                     icon: Icon(Icons.favorite),
                     label: Text('Favorites'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
-                    label: Text('Generate'),
-                  ),
+                  ),*/
                 ],
                 selectedIndex: selectedIndex,
                 onDestinationSelected: (value) {

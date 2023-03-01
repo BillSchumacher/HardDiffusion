@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 
 class AdvancedSwitch extends StatefulWidget {
-  const AdvancedSwitch({super.key});
+  const AdvancedSwitch({super.key, required this.setValue});
 
+  final Function(bool) setValue;
   @override
-  State<AdvancedSwitch> createState() => _AdvancedSwitchState();
+  State<AdvancedSwitch> createState() => _AdvancedSwitchState(
+        setValue: setValue,
+      );
 }
 
 class _AdvancedSwitchState extends State<AdvancedSwitch> {
+  _AdvancedSwitchState({required this.setValue});
   bool light = true;
+
+  Function(bool) setValue;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +32,7 @@ class _AdvancedSwitchState extends State<AdvancedSwitch> {
               setState(() {
                 light = value;
               });
+              setValue(light);
             },
           ),
         ],
