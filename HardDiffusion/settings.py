@@ -68,6 +68,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'generate',
     'train',
     'user',
@@ -109,6 +110,7 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "HardDiffusion.asgi.application"
 WSGI_APPLICATION = 'HardDiffusion.wsgi.application'
 
 
@@ -164,7 +166,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery settings
 REDIS_CONNECTION_STRING = os.getenv(
-    'REDIS_CONNECTION_STRING', 'redis://localhost:6379/5'
+    'REDIS_CONNECTION_STRING', 'redis://127.0.0.1:6379/5'
 )
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
@@ -176,3 +178,12 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 AUTH_USER_MODEL = 'user.User'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}

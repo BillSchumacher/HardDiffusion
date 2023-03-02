@@ -1,6 +1,8 @@
 accelerate
 black
 celery[redis]
+channels["daphne"]
+channels-redis
 diffusers[torch,training]
 django
 django-celery-beat
