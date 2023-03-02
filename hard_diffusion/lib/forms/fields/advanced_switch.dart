@@ -18,25 +18,23 @@ class _AdvancedSwitchState extends State<AdvancedSwitch> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Text('Advanced:'),
-          Switch(
-            // This bool value toggles the switch.
-            value: light,
-            activeColor: Colors.orange,
-            onChanged: (bool value) {
-              // This is called when the user toggles the switch.
-              setState(() {
-                light = value;
-              });
-              setValue(light);
-            },
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Advanced:'),
+        Switch(
+          // This bool value toggles the switch.
+          value: light,
+          activeColor: Colors.orange,
+          onChanged: (bool value) {
+            // This is called when the user toggles the switch.
+            setState(() {
+              light = value;
+            });
+            setValue(light);
+          },
+        ),
+      ],
     );
   }
 }

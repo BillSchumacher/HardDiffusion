@@ -5,5 +5,5 @@ from generate import consumers
 
 
 websocket_urlpatterns = [
-    path("ws/generate/$", consumers.GenerateConsumer.as_asgi()),
+    path("ws/generate/", consumers.GenerateConsumer.as_asgi()),
 ]

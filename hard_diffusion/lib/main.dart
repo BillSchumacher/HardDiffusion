@@ -8,6 +8,7 @@ import 'package:english_words/english_words.dart';
 import 'package:hard_diffusion/generate.dart';
 import 'package:hard_diffusion/vertical_separator.dart';
 import 'package:provider/provider.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
   runApp(const MyApp());
@@ -93,6 +94,19 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
+  WebSocketChannel? channel;
+  bool webSocketConnected = false;
+
+  void connect() {
+    try {
+      channel = WebSocketChannel.connect(
+        Uri.parse('ws://localhost:8000/ws/generate/'),
+      );
+      webSocketConnected = true;
+    } catch (e) {
+      print(e);
+    }
+  }
 
   void getNext() {
     current = WordPair.random();
@@ -108,6 +122,15 @@ class MyAppState extends ChangeNotifier {
       favorites.add(current);
     }
     notifyListeners();
+  }
+
+  void sendMessage(message) {
+    if (channel == null) {
+      connect();
+    }
+    if (webSocketConnected && message != null && message.isNotEmpty) {
+      channel!.sink.add(message);
+    }
   }
 }
 
@@ -130,6 +153,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var channel = appState.channel;
     Widget page = GeneratePage();
     switch (selectedIndex) {
       /*case 0:
@@ -152,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             SafeArea(
               child: NavigationRail(
-                extended: constraints.maxWidth >= 800,
+                //extended: constraints.maxWidth >= 800,
                 destinations: [
                   NavigationRailDestination(
                     icon: Icon(Icons.home),
@@ -162,10 +187,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     icon: Icon(Icons.settings),
                     label: Text('Settings'),
                   ), /*
-                  NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
-                    label: Text('Favorites'),
-                  ),*/
+                    NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text('Favorites'),
+                    ),*/
                 ],
                 selectedIndex: selectedIndex,
                 onDestinationSelected: (value) {
@@ -178,22 +203,22 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             VerticalSeparator(),
             /*
-            FutureBuilder<Album>(
-              future: futureAlbum,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return Text(snapshot.data!.title);
-                } else if (snapshot.hasError) {
-                  return Text('${snapshot.error}');
-                }
-
-                // By default, show a loading spinner.
-                return const CircularProgressIndicator();
-              },
-            ),*/
+              FutureBuilder<Album>(
+                future: futureAlbum,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(snapshot.data!.title);
+                  } else if (snapshot.hasError) {
+                    return Text('${snapshot.error}');
+                  }
+        
+                  // By default, show a loading spinner.
+                  return const CircularProgressIndicator();
+                },
+              ),*/
             Expanded(
               child: Container(
-                color: Theme.of(context).colorScheme.primaryContainer,
+                //color: Theme.of(context).colorScheme.primaryContainer,
                 child: page,
               ),
             ),

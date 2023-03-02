@@ -12,7 +12,6 @@ import os
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.security.websocket import AllowedHostsOriginValidator
 
 from django.core.asgi import get_asgi_application
 
@@ -25,7 +24,9 @@ import generate.routing
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": AllowedHostsOriginValidator(
-            AuthMiddlewareStack(URLRouter(generate.routing.websocket_urlpatterns))
-        ),
+    # Requests from flutter have a parsed origin of None, so we can't
+    # use the AllowedHostsOriginValidator here.
+    "websocket": AuthMiddlewareStack(
+        URLRouter(generate.routing.websocket_urlpatterns)
+    )
 })
