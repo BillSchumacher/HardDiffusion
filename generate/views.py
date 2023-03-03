@@ -7,6 +7,9 @@
     - images: Return generated images data as JSON.
     - renderer_health: Check health of all renderer devices.
     - renderer_status: The rendered status page.
+
+    Also contains the following viewsets:
+    - GeneratedImageViewSet: Viewset for the GeneratedImage model.
 """
 from collections import defaultdict
 from datetime import timedelta
@@ -19,9 +22,37 @@ from django.utils import timezone
 
 from celery import Task
 
+# from rest_framework.decorators import action
+from rest_framework import permissions, viewsets
+
+# from rest_framework.response import Response
 from generate.models import GeneratedImage, RenderWorkerDevice
+from generate.serializers import GeneratedImageSerializer
 from generate.tasks import generate_image
 from model.models import TextToImageModel
+from user.permissions import IsOwnerOrReadOnly
+
+
+class GeneratedImageViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
+
+    Additionally, we will also provide an extra `generate` action in the future.
+    """
+
+    queryset = GeneratedImage.objects.all()
+    serializer_class = GeneratedImageSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    # @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
+    # def generate(self, request, *args, **kwargs):
+    #    generated_image = self.get_object()
+    #    return Response(generated_image.prompt)
+
+    def perform_create(self, serializer: GeneratedImageSerializer) -> None:
+        """Set the owner of the image to the current user."""
+        serializer.save(owner=self.request.user)
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -122,7 +153,7 @@ def images(
         page_size: The number of images to return.
 
     Returns:
-        A JSON response with a list of generated image data in the `images` key, 
+        A JSON response with a list of generated image data in the `images` key,
         and a `total` key with the total number of images.
     """
 

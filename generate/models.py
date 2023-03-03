@@ -1,4 +1,5 @@
 """Models for the generate app."""
+from django.conf import settings
 from django.db import models
 
 
@@ -7,6 +8,7 @@ class GeneratedImage(models.Model):
     """Model for generated images."""
 
     task_id = models.UUIDField()
+    batch_number = models.IntegerField(blank=True, null=True)
     host = models.CharField(max_length=255, blank=True, null=True)
     duration = models.FloatField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,6 +23,12 @@ class GeneratedImage(models.Model):
     model = models.CharField(max_length=255, blank=True, null=True)
     error = models.BooleanField(default=False)
     nsfw = models.BooleanField(default=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="generated_images",
+        on_delete=models.CASCADE,
+        null=True,
+    )
 
     def __str__(self):
         """Return the image path."""
