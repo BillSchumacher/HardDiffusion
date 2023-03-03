@@ -33,6 +33,22 @@ user.models module
    :undoc-members:
    :show-inheritance:
 
+user.permissions module
+-----------------------
+
+.. automodule:: user.permissions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+user.serializers module
+-----------------------
+
+.. automodule:: user.serializers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 user.tests module
 -----------------
 
