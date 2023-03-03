@@ -20,7 +20,9 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
+from asgiref.sync import async_to_sync
 from celery import Task
+from channels.layers import get_channel_layer
 
 # from rest_framework.decorators import action
 from rest_framework import permissions, viewsets
@@ -31,6 +33,8 @@ from generate.serializers import GeneratedImageSerializer
 from generate.tasks import generate_image
 from model.models import TextToImageModel
 from user.permissions import IsOwnerOrReadOnly
+
+channel_layer = get_channel_layer()
 
 
 class GeneratedImageViewSet(viewsets.ModelViewSet):
@@ -126,7 +130,10 @@ def queue_prompt(request: HttpRequest) -> JsonResponse:
         model=model,
         **params,
     ).save()
-
+    async_to_sync(channel_layer.group_send)(
+        "generate",
+        {"type": "event_message", "event": "image_queued", "message": str(task_id)},
+    )
     return JsonResponse({"error": None, "task_id": task_id})
 
 

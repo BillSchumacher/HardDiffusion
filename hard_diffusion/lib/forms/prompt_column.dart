@@ -48,15 +48,7 @@ class PromptColumn extends StatelessWidget {
             Column(
               children: [
                 if (connected && channel != null) ...[
-                  StreamBuilder(
-                    stream: channel.stream,
-                    builder: (context, snapshot) {
-                      return Text(snapshot.hasData ? '${snapshot.data}' : '');
-                    },
-                  ),
-                  ElevatedButton(
-                      onPressed: () => appState.sendMessage("hello world!"),
-                      child: Text("Send message")),
+                  Text("Connected"),
                 ] else ...[
                   Text("Not connected"),
                 ],
