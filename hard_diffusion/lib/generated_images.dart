@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:hard_diffusion/api/images/generated_image.dart';
 import 'package:hard_diffusion/exception_indicators/empty_list_indicator.dart';
 import 'package:hard_diffusion/exception_indicators/error_indicator.dart';
+import 'package:hard_diffusion/main.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
 /*
 class GeneratedImages extends StatelessWidget {
@@ -203,24 +205,31 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
   }
 
   @override
-  Widget build(BuildContext context) => RefreshIndicator(
-      onRefresh: () => Future.sync(
-            () => _pagingController.refresh(),
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    if (appState.needsRefresh) {
+      _pagingController.refresh();
+      appState.didRefresh();
+    }
+    return RefreshIndicator(
+        onRefresh: () => Future.sync(
+              () => _pagingController.refresh(),
+            ),
+        child: PagedGridView(
+          pagingController: _pagingController,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
           ),
-      child: PagedGridView(
-        pagingController: _pagingController,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-        ),
-        builderDelegate: PagedChildBuilderDelegate<GeneratedImage>(
-          itemBuilder: (context, item, index) => getImage(item),
-          firstPageErrorIndicatorBuilder: (context) => ErrorIndicator(
-            error: _pagingController.error,
-            onTryAgain: () => _pagingController.refresh(),
+          builderDelegate: PagedChildBuilderDelegate<GeneratedImage>(
+            itemBuilder: (context, item, index) => getImage(item),
+            firstPageErrorIndicatorBuilder: (context) => ErrorIndicator(
+              error: _pagingController.error,
+              onTryAgain: () => _pagingController.refresh(),
+            ),
+            noItemsFoundIndicatorBuilder: (context) => EmptyListIndicator(),
           ),
-          noItemsFoundIndicatorBuilder: (context) => EmptyListIndicator(),
-        ),
-      ));
+        ));
+  }
 
   @override
   void dispose() {

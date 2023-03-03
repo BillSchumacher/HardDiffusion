@@ -1,11 +1,14 @@
 """Celery tasks for generating images."""
+import json
 from typing import Optional, Tuple
 
 from django.conf import settings
 from django.utils import timezone
 
 import torch
+from asgiref.sync import async_to_sync
 from celery import shared_task
+from channels.layers import get_channel_layer
 
 from generate.image import render_image, save_generated_image
 from generate.models import GeneratedImage, RenderWorkerDevice
@@ -51,6 +54,11 @@ def generate_image(
     end = timezone.now()
     duration = (end - start).total_seconds()
     save_generated_image(generated_image, image, seed, duration, end)
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "generate",
+        {"type": "event_message", "event": "image_generated", "message": str(task_id)},
+    )
     return generated_image.filename, HOSTNAME
 
 

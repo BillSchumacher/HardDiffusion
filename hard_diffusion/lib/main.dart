@@ -96,13 +96,46 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   WebSocketChannel? channel;
   bool webSocketConnected = false;
+  bool needsRefresh = false;
+  int webSocketReconnectAttempts = 0;
+
+  MyAppState() {
+    connect();
+  }
+  void onMessage(message) {
+    print(message);
+    webSocketConnected = true;
+    webSocketReconnectAttempts = 0;
+    needsRefresh = true;
+    notifyListeners();
+  }
+
+  void onDone() async {
+    var delay = 1 + 1 * webSocketReconnectAttempts;
+    if (delay > 10) {
+      delay = 10;
+    }
+    print(
+        "Done, reconnecting in $delay seconds, attempt $webSocketReconnectAttempts ");
+    webSocketConnected = false;
+    channel = null;
+    await Future.delayed(Duration(seconds: delay));
+    connect();
+  }
+
+  void onError(error) {
+    print(error);
+    if (error is WebSocketChannelException) {
+      webSocketReconnectAttempts += 1;
+    }
+  }
 
   void connect() {
     try {
       channel = WebSocketChannel.connect(
         Uri.parse('ws://localhost:8000/ws/generate/'),
       );
-      webSocketConnected = true;
+      channel!.stream.listen(onMessage, onDone: onDone, onError: onError);
     } catch (e) {
       print(e);
     }
@@ -110,6 +143,11 @@ class MyAppState extends ChangeNotifier {
 
   void getNext() {
     current = WordPair.random();
+    notifyListeners();
+  }
+
+  void didRefresh() {
+    needsRefresh = false;
     notifyListeners();
   }
 
