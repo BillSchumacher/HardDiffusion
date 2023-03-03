@@ -8,8 +8,7 @@ class SeedField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+    return Flexible(
       child: TextFormField(
         onSaved: (newValue) => setValue(int.parse(newValue!)),
         initialValue: value.toString(),

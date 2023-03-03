@@ -45,6 +45,7 @@ dependencies:
   uuid_type: ^2.0.0
   cached_network_image: ^3.2.3
   html: ^0.15.1
+  web_socket_channel: ^2.3.0
 
 dev_dependencies:
   flutter_test:

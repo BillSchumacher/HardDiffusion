@@ -49,14 +49,11 @@ class AdvancedColumn extends StatelessWidget {
               child: Text("Advanced",
                   style: Theme.of(context).textTheme.titleLarge),
             ),
-            Row(
-              children: [
-                Text("Seed"),
-                RandomSeedSwitch(
-                    value: useRandomSeed, setValue: setUseRandomSeed),
-              ],
-            ),
+            RandomSeedSwitch(value: useRandomSeed, setValue: setUseRandomSeed),
+
+            Text("Seed"),
             SeedField(value: seed, setValue: setSeed),
+
             Row(
               children: [
                 WidthField(value: width, setValue: setWidth),

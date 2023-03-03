@@ -7,7 +7,7 @@ diffusers[torch,training]
 django
 django-celery-beat
 django-celery-results
-django-restframework
+djangorestframework
 flake8
 ftfy
 huggingface_hub
@@ -15,6 +15,7 @@ isort
 numpy
 psycopg2
 pydantic
+pygments
 pylint
 pylint_django
 python-dotenv

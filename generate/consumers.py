@@ -27,10 +27,10 @@ class GenerateConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data: str) -> None:
         """Called when we get a text frame. Channels will JSON-decode the payload for
-          us and pass it as a dict to this method.
+        us and pass it as a dict to this method.
 
-          Args:
-            text_data (str): The data sent over the websocket
+        Args:
+          text_data (str): The data sent over the websocket
         """
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]

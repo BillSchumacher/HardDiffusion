@@ -20,25 +20,23 @@ class _RandomSeedSwitchState extends State<RandomSeedSwitch> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Text('Random:'),
-          Switch(
-            // This bool value toggles the switch.
-            value: light,
-            activeColor: Colors.orange,
-            onChanged: (bool newValue) {
-              // This is called when the user toggles the switch.
-              setState(() {
-                light = newValue;
-              });
-              setValue(light);
-            },
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Random Seed:'),
+        Switch(
+          // This bool value toggles the switch.
+          value: light,
+          activeColor: Colors.orange,
+          onChanged: (bool newValue) {
+            // This is called when the user toggles the switch.
+            setState(() {
+              light = newValue;
+            });
+            setValue(light);
+          },
+        ),
+      ],
     );
   }
 }

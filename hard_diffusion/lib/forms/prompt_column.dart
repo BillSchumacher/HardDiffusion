@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hard_diffusion/forms/fields/advanced_switch.dart';
 import 'package:hard_diffusion/forms/fields/nsfw_switch.dart';
 import 'package:hard_diffusion/forms/fields/prompts.dart';
+import 'package:hard_diffusion/main.dart';
+import 'package:provider/provider.dart';
 
 class PromptColumn extends StatelessWidget {
   const PromptColumn({
@@ -23,6 +25,9 @@ class PromptColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var channel = appState.channel;
+    var connected = appState.webSocketConnected;
     return Flexible(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -37,13 +42,26 @@ class PromptColumn extends StatelessWidget {
             NegativePromptField(
                 negativePromptValue: negativePrompt,
                 setNegativePrompt: setNegativePrompt),
-            Row(
+            AdvancedSwitch(setValue: setUseAdvanced),
+            NSFWSwitch(),
+            ElevatedButton(onPressed: generate, child: Text('Generate')),
+            Column(
               children: [
-                AdvancedSwitch(setValue: setUseAdvanced),
-                NSFWSwitch(),
+                if (connected && channel != null) ...[
+                  StreamBuilder(
+                    stream: channel.stream,
+                    builder: (context, snapshot) {
+                      return Text(snapshot.hasData ? '${snapshot.data}' : '');
+                    },
+                  ),
+                  ElevatedButton(
+                      onPressed: () => appState.sendMessage("hello world!"),
+                      child: Text("Send message")),
+                ] else ...[
+                  Text("Not connected"),
+                ],
               ],
             ),
-            ElevatedButton(onPressed: generate, child: Text('Generate')),
           ],
         ),
       ),

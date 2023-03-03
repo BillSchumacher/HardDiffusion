@@ -25,8 +25,10 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("generate.urls")),
+    path("api/", include("api.urls")),
     path("train/", include("train.urls")),
     path("model/", include("model.urls")),
+    path("api-auth/", include("rest_framework.urls")),
 ]
 urlpatterns.extend(
     static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # type: ignore
