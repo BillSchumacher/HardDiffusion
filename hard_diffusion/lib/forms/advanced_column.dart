@@ -2,21 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:hard_diffusion/forms/fields/guidance_scale.dart';
 import 'package:hard_diffusion/forms/fields/height.dart';
 import 'package:hard_diffusion/forms/fields/inference_steps.dart';
-import 'package:hard_diffusion/forms/fields/random_seed_switch.dart';
 import 'package:hard_diffusion/forms/fields/seed.dart';
-import 'package:hard_diffusion/forms/fields/use_multiple_models_switch.dart';
+import 'package:hard_diffusion/forms/fields/toggle_switch.dart';
 import 'package:hard_diffusion/forms/fields/width.dart';
 
 class AdvancedColumn extends StatelessWidget {
   const AdvancedColumn({
     super.key,
     required this.useRandomSeed,
+    required this.useMultipleModels,
     required this.seed,
     required this.width,
     required this.height,
     required this.inferenceSteps,
     required this.guidanceScale,
     required this.setUseRandomSeed,
+    required this.setUseMultipleModels,
     required this.setSeed,
     required this.setWidth,
     required this.setHeight,
@@ -25,12 +26,14 @@ class AdvancedColumn extends StatelessWidget {
   });
 
   final Function(bool) setUseRandomSeed;
+  final Function(bool) setUseMultipleModels;
   final Function(int) setSeed;
   final Function(int) setWidth;
   final Function(int) setHeight;
   final Function(int) setInferenceSteps;
   final Function(double) setGuidanceScale;
   final bool useRandomSeed;
+  final bool useMultipleModels;
   final int seed;
   final int width;
   final int height;
@@ -49,11 +52,14 @@ class AdvancedColumn extends StatelessWidget {
               child: Text("Advanced",
                   style: Theme.of(context).textTheme.titleLarge),
             ),
-            RandomSeedSwitch(value: useRandomSeed, setValue: setUseRandomSeed),
-
-            Text("Seed"),
-            SeedField(value: seed, setValue: setSeed),
-
+            ToggleSwitch(setValue: setUseRandomSeed, label: "Random Seed"),
+            if (!useRandomSeed) ...[
+              Text("Seed"),
+              SeedField(
+                value: seed,
+                setValue: setSeed,
+              ),
+            ],
             Row(
               children: [
                 WidthField(value: width, setValue: setWidth),
@@ -69,7 +75,8 @@ class AdvancedColumn extends StatelessWidget {
               ],
             ),
             Divider(),
-            UseMultipleModelsSwitch() //value: useMultipleModels),
+            ToggleSwitch(
+                setValue: setUseMultipleModels, label: "Use Multiple Models")
           ],
         ),
       ),

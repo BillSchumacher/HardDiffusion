@@ -100,6 +100,7 @@ def queue_prompt(request: HttpRequest) -> JsonResponse:
     seed = request.POST.get("seed", None)
     model: str = request.POST.get("model", settings.DEFAULT_TEXT_TO_IMAGE_MODEL)
     nsfw: bool = bool(len(request.POST.get("nsfw", "")))
+    preview = bool(len(request.POST.get("use_preview", "")))
     prompt = request.POST["prompt"]
     negative_prompt = request.POST.get("negative_prompt", None)
     if seed:
@@ -118,6 +119,7 @@ def queue_prompt(request: HttpRequest) -> JsonResponse:
             prompt=prompt,
             negative_prompt=negative_prompt,
             model_path_or_name=models or model,
+            preview_image=preview,
             **params,
         ),
         countdown=2,
