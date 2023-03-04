@@ -81,7 +81,10 @@ class _ImageDetailsState extends State<ImageDetails> {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var previewImage = appState.taskPreview[item.taskId];
+    var currentStep = appState.taskCurrentStep[item.taskId];
     var image;
+    var generating = false;
+    var progress = 0.0;
     if (item.error!) {
       image = errorImage;
     } else if (item.generatedAt == null) {
@@ -91,6 +94,8 @@ class _ImageDetailsState extends State<ImageDetails> {
       } else {
         image = paintingImage;
       }
+      generating = true;
+      progress = currentStep! / item.numInferenceSteps!;
     } else {
       image = CachedNetworkImage(
         placeholder: (context, url) => const CircularProgressIndicator(),
@@ -107,11 +112,29 @@ class _ImageDetailsState extends State<ImageDetails> {
         errorWidget: (context, url, error) => errorImage,
       );
     }
+    var contextSize = MediaQuery.of(context).size;
+    var contextHeight = contextSize.height;
+    var contextWidth = contextSize.width;
+    var aspectRatio = contextWidth / contextHeight;
     return Stack(
       children: <Widget>[
         InkWell(
             onTap: () => setState(() => showEditButton = !showEditButton),
             child: image),
+        if (generating && progress > 0) ...[
+          Positioned(
+            bottom: 0,
+            child: Container(
+              width: contextWidth,
+              height: contextHeight * aspectRatio * 0.069,
+              child: LinearProgressIndicator(
+                value: progress * 0.22,
+                semanticsLabel: 'Progress',
+                minHeight: 1.0,
+              ),
+            ),
+          ),
+        ],
         if (showEditButton) ...[
           Positioned(
             bottom: 5,

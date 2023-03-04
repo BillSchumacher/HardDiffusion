@@ -307,7 +307,17 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
     # Copied from diffusers StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
-        """run safety checker"""
+        """run safety checker
+        
+        Args:
+            image (`np.ndarray`): image to check
+            device (`torch.device`): torch device
+            dtype (`torch.dtype`): torch dtype
+            
+        Returns:
+            image (`np.ndarray`): image after safety check
+            has_nsfw_concept (`bool`): whether the image has nsfw concept
+        """
 
         if self.safety_checker is not None:
             from generate.image import numpy_to_pil
@@ -323,8 +333,15 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return image, has_nsfw_concept
 
     # Copied from diffusers StableDiffusionPipeline.decode_latents
-    def decode_latents(self, latents: torch.FloatTensor):
-        """decode latents to image"""
+    def decode_latents(self, latents: torch.FloatTensor) -> np.ndarray:
+        """Decode latents to image
+        
+        Args:
+            latents (`torch.FloatTensor`): latents to decode
+
+        Returns:
+            image (`np.ndarray`): decoded image
+        """
         return noise_decode_latents(self.vae, latents)
 
     def prepare_extra_step_kwargs(

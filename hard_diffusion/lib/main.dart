@@ -132,6 +132,8 @@ class MyAppState extends ChangeNotifier {
       taskTotalSteps[decodedMessage] = 0;
       taskPreview[decodedMessage] = "";
       needsRefresh = true;
+    } else if (event == "image_errored") {
+      needsRefresh = true;
     }
     print(event);
     notifyListeners();
@@ -175,7 +177,6 @@ class MyAppState extends ChangeNotifier {
 
   void didRefresh() {
     needsRefresh = false;
-    notifyListeners();
   }
 
   var favorites = <WordPair>{};
