@@ -31,16 +31,20 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
   bool useMultipleModels = false;
 
   void setUseMultipleModels(value) {
-    useMultipleModels = value;
+    setState(() {
+      useMultipleModels = value;
+    });
   }
 
   bool useNsfw = false;
 
   void setUseNsfw(value) {
-    useNsfw = value;
+    setState(() {
+      useNsfw = value;
+    });
   }
 
-  bool useAdvanced = true;
+  bool useAdvanced = false;
 
   void setUseAdvanced(value) {
     setState(() {
@@ -48,10 +52,20 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
     });
   }
 
+  bool usePreview = false;
+
+  void setUsePreview(value) {
+    setState(() {
+      usePreview = value;
+    });
+  }
+
   bool useRandomSeed = false;
 
   void setUseRandomSeed(value) {
-    useRandomSeed = value;
+    setState(() {
+      useRandomSeed = value;
+    });
   }
 
   int seed = 0;
@@ -90,9 +104,10 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
       var map = new Map<String, dynamic>();
       map["prompt"] = prompt;
       map["negative_prompt"] = negativePrompt;
-      map["use_multiple_models"] = useMultipleModels.toString();
-      map["use_nsfw"] = useNsfw.toString();
-      map["use_random_seed"] = useRandomSeed.toString();
+      map["use_multiple_models"] = useMultipleModels ? "true" : "";
+      map["use_nsfw"] = useNsfw ? "true" : "";
+      map["use_preview"] = usePreview ? "true" : "";
+      map["use_random_seed"] = useRandomSeed ? "true" : "";
       map["seed"] = seed.toString();
       map["width"] = width.toString();
       map["height"] = height.toString();
@@ -122,12 +137,14 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
           if (useAdvanced) ...[
             AdvancedColumn(
                 useRandomSeed: useRandomSeed,
+                useMultipleModels: useMultipleModels,
                 seed: seed,
                 width: width,
                 height: height,
                 inferenceSteps: inferenceSteps,
                 guidanceScale: guidanceScale,
                 setUseRandomSeed: setUseRandomSeed,
+                setUseMultipleModels: setUseMultipleModels,
                 setSeed: setSeed,
                 setWidth: setWidth,
                 setHeight: setHeight,
@@ -138,6 +155,8 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
               setPrompt: setPrompt,
               setNegativePrompt: setNegativePrompt,
               setUseAdvanced: setUseAdvanced,
+              setUseNSFW: setUseNsfw,
+              setUsePreview: setUsePreview,
               prompt: prompt,
               negativePrompt: negativePrompt,
               generate: generate,
@@ -147,6 +166,8 @@ class InferTextToImageFormState extends State<InferTextToImageForm> {
               setPrompt: setPrompt,
               setNegativePrompt: setNegativePrompt,
               setUseAdvanced: setUseAdvanced,
+              setUseNSFW: setUseNsfw,
+              setUsePreview: setUsePreview,
               prompt: prompt,
               negativePrompt: negativePrompt,
               generate: generate,

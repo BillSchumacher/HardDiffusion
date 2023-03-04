@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:hard_diffusion/main.dart';
-import 'package:provider/provider.dart';
-
+/*
 class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -22,3 +19,4 @@ class FavoritesPage extends StatelessWidget {
     ]);
   }
 }
+*/

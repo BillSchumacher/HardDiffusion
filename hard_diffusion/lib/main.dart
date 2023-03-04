@@ -1,5 +1,3 @@
-// import 'dart:convert';
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -98,7 +96,6 @@ class MyApp extends StatelessWidget {
 final JsonDecoder _decoder = JsonDecoder();
 
 class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
   WebSocketChannel? channel;
   bool webSocketConnected = false;
   bool needsRefresh = false;
@@ -170,24 +167,8 @@ class MyAppState extends ChangeNotifier {
     }
   }
 
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
-
   void didRefresh() {
     needsRefresh = false;
-  }
-
-  var favorites = <WordPair>{};
-
-  void toggleFavorite() {
-    if (favorites.contains(current)) {
-      favorites.remove(current);
-    } else {
-      favorites.add(current);
-    }
-    notifyListeners();
   }
 
   void sendMessage(message) {
@@ -223,12 +204,6 @@ class _MyHomePageState extends State<MyHomePage> {
     var channel = appState.channel;
     Widget page = GeneratePage();
     switch (selectedIndex) {
-      /*case 0:
-        page = GeneratorPage();
-        break;
-      case 1:
-        page = FavoritesPage();
-        break;*/
       case 0:
         page = GeneratePage();
         break;
@@ -292,50 +267,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     });
-  }
-}
-
-class GeneratorPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var pair = appState.current;
-
-    IconData icon;
-    if (appState.favorites.contains(pair)) {
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
-    }
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          BigCard(pair: pair),
-          SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.toggleFavorite();
-                },
-                icon: Icon(icon),
-                label: Text('Like'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  appState.getNext();
-                },
-                child: Text('Next'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }
 
