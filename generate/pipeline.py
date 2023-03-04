@@ -30,7 +30,6 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
 from diffusers.schedulers import KarrasDiffusionSchedulers, SchedulerMixin
 from diffusers.utils import (
     PIL_INTERPOLATION,
-    deprecate,
     is_accelerate_available,
     randn_tensor,
     replace_example_docstring,
@@ -56,6 +55,7 @@ from generate.input_validation import (
     validate_width_and_height,
 )
 from generate.load_pipeline import from_pretrained
+from generate.noise import decode_latents as noise_decode_latents
 from generate.noise import denoise
 from generate.pipeline_configuration import PipelineConfiguration
 from generate.pipeline_doc_example import EXAMPLE_DOC_STRING
@@ -308,9 +308,12 @@ class HardDiffusionPipeline(DiffusionPipeline):
     # Copied from diffusers StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
         """run safety checker"""
+
         if self.safety_checker is not None:
+            from generate.image import numpy_to_pil
+
             safety_checker_input = self.feature_extractor(
-                self.numpy_to_pil(image), return_tensors="pt"
+                numpy_to_pil(image), return_tensors="pt"
             ).to(device)
             image, has_nsfw_concept = self.safety_checker(
                 images=image, clip_input=safety_checker_input.pixel_values.to(dtype)
@@ -320,15 +323,9 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return image, has_nsfw_concept
 
     # Copied from diffusers StableDiffusionPipeline.decode_latents
-    def decode_latents(self, latents):
+    def decode_latents(self, latents: torch.FloatTensor):
         """decode latents to image"""
-        latents = 1 / 0.18215 * latents
-        image = self.vae.decode(latents).sample
-        image = (image / 2 + 0.5).clamp(0, 1)
-        # we always cast to float32 as this does not cause significant overhead
-        #  and is compatible with bfloa16
-        image = image.cpu().permute(0, 2, 3, 1).float().numpy()
-        return image
+        return noise_decode_latents(self.vae, latents)
 
     def prepare_extra_step_kwargs(
         self, generator: torch.Generator, eta: float
@@ -524,6 +521,8 @@ class HardDiffusionPipeline(DiffusionPipeline):
         return_dict: bool = True,
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         callback_steps: Optional[int] = 1,
+        callback_args: Optional[List] = None,
+        callback_kwargs: Optional[Dict] = None,
         **kwargs,
     ):
         r"""
@@ -634,6 +633,12 @@ class HardDiffusionPipeline(DiffusionPipeline):
         if image:
             width = None
             height = None
+        if not callback_steps:
+            callback_steps = 1
+        if not callback_args:
+            callback_args = []
+        if not callback_kwargs:
+            callback_kwargs = {}
         # 1. Check inputs. Raise error if not correct
         self.check_inputs(
             prompt,
@@ -714,13 +719,13 @@ class HardDiffusionPipeline(DiffusionPipeline):
         # 8. Denoising loop
         num_warmup_steps = len(timesteps) - num_inference_steps * scheduler.order
         with self.progress_bar(total=num_inference_steps) as progress_bar:
-            for i, t in enumerate(timesteps):
+            for current_step, timestep in enumerate(timesteps):
                 latents = denoise(
                     scheduler,
                     unet,
                     latents,
-                    i,
-                    t,
+                    current_step,
+                    timestep,
                     prompt_embeds,
                     do_classifier_free_guidance,
                     guidance_scale,
@@ -730,6 +735,9 @@ class HardDiffusionPipeline(DiffusionPipeline):
                     progress_bar,
                     callback,
                     callback_steps,
+                    callback_args,
+                    callback_kwargs,
+                    vae=self.vae,
                 )
 
         # 9. Post-processing
@@ -742,8 +750,9 @@ class HardDiffusionPipeline(DiffusionPipeline):
 
         # 11. Convert to PIL
         if output_type == "pil":
-            image = self.numpy_to_pil(image)
+            from generate.image import numpy_to_pil
 
+            image = numpy_to_pil(image)
         return (
             StableDiffusionPipelineOutput(
                 images=image, nsfw_content_detected=has_nsfw_concept
