@@ -1,5 +1,7 @@
 // import 'dart:convert';
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 //import 'package:flutter_localizations/flutter_localizations.dart';
 //import 'package:http/http.dart' as http;
@@ -8,6 +10,7 @@ import 'package:english_words/english_words.dart';
 import 'package:hard_diffusion/generate.dart';
 import 'package:hard_diffusion/vertical_separator.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid_type/uuid_type.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
@@ -92,21 +95,45 @@ class MyApp extends StatelessWidget {
   }
 }
 
+final JsonDecoder _decoder = JsonDecoder();
+
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   WebSocketChannel? channel;
   bool webSocketConnected = false;
   bool needsRefresh = false;
   int webSocketReconnectAttempts = 0;
+  Map<Uuid, int> taskCurrentStep = {};
+  Map<Uuid, int> taskTotalSteps = {};
+  Map<Uuid, String> taskPreview = {};
 
   MyAppState() {
     connect();
   }
   void onMessage(message) {
-    print(message);
+    var decoded = _decoder.convert(message);
+    var decodedMessage = decoded["message"];
     webSocketConnected = true;
     webSocketReconnectAttempts = 0;
-    needsRefresh = true;
+    var event = decoded["event"];
+    if (event == "image_generated") {
+      needsRefresh = true;
+    } else if (event == "image_generating") {
+      decodedMessage = _decoder.convert(decodedMessage);
+      var task_id = Uuid.parse(decodedMessage["task_id"]);
+      taskCurrentStep[task_id] = decodedMessage["step"];
+      taskTotalSteps[task_id] = decodedMessage["total_steps"];
+      if (decodedMessage["image"] != null) {
+        taskPreview[task_id] = decodedMessage["image"];
+      }
+    } else if (event == "image_queued") {
+      decodedMessage = Uuid.parse(decodedMessage);
+      taskCurrentStep[decodedMessage] = 0;
+      taskTotalSteps[decodedMessage] = 0;
+      taskPreview[decodedMessage] = "";
+      needsRefresh = true;
+    }
+    print(event);
     notifyListeners();
   }
 

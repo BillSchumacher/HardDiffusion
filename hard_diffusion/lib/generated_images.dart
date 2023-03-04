@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:hard_diffusion/api/images/generated_image.dart';
 import 'package:hard_diffusion/exception_indicators/empty_list_indicator.dart';
 import 'package:hard_diffusion/exception_indicators/error_indicator.dart';
@@ -75,13 +76,21 @@ class _ImageDetailsState extends State<ImageDetails> {
   _ImageDetailsState({required this.item});
   final GeneratedImage item;
   bool showEditButton = false;
+
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var previewImage = appState.taskPreview[item.taskId];
     var image;
     if (item.error!) {
       image = errorImage;
     } else if (item.generatedAt == null) {
-      image = paintingImage;
+      if (previewImage != null && previewImage.isNotEmpty) {
+        final decodedBytes = base64Decode(previewImage);
+        image = Image.memory(decodedBytes);
+      } else {
+        image = paintingImage;
+      }
     } else {
       image = CachedNetworkImage(
         placeholder: (context, url) => const CircularProgressIndicator(),
