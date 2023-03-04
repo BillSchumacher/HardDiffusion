@@ -46,6 +46,7 @@ dependencies:
   cached_network_image: ^3.2.3
   html: ^0.15.1
   web_socket_channel: ^2.3.0
+  super_clipboard: ^0.2.3
 
 dev_dependencies:
   flutter_test:

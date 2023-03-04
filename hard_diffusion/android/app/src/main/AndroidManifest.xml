@@ -7,6 +7,12 @@
         <!-- Required to fetch data from the internet. -->
         <uses-permission android:name="android.permission.INTERNET" />
 
+        <provider
+            android:name="com.superlist.super_native_extensions.DataProvider"
+            android:authorities="com.example.hard_diffusion.SuperClipboardDataProvider"
+            android:exported="true"
+            android:grantUriPermissions="true" >
+        </provider>
         <activity
             android:name=".MainActivity"
             android:exported="true"
