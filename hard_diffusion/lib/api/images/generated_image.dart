@@ -78,7 +78,6 @@ Future<ListPage<GeneratedImage>> fetchPhotos(int lastPage, int pageSize) async {
 
 // A function that converts a response body into a List<Photo>.
 ListPage<GeneratedImage> parsePhotos(dynamic jsonResponse) {
-  print(jsonResponse);
   final images = jsonResponse["generated_images"].cast<Map<String, dynamic>>();
   final parsedImages = images.map<GeneratedImage>((json) {
     return GeneratedImage.fromJson(json);
