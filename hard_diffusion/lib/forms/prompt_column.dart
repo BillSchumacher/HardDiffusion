@@ -32,34 +32,40 @@ class PromptColumn extends StatelessWidget {
     var channel = appState.channel;
     var connected = appState.webSocketConnected;
     return Flexible(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Generate",
-                  style: Theme.of(context).textTheme.titleLarge),
-            ),
-            PromptField(promptValue: prompt, setPrompt: setPrompt),
-            NegativePromptField(
-                negativePromptValue: negativePrompt,
-                setNegativePrompt: setNegativePrompt),
-            ToggleSwitch(setValue: setUseAdvanced, label: "Advanced"),
-            ToggleSwitch(setValue: setUsePreview, label: "Preview"),
-            ToggleSwitch(setValue: setUseNSFW, label: "NSFW"),
-            ElevatedButton(onPressed: generate, child: Text('Generate')),
-            Column(
+      child: ListView(
+        shrinkWrap: true,
+        padding: EdgeInsets.all(15.0),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
               children: [
-                if (connected && channel != null) ...[
-                  Text("Connected"),
-                ] else ...[
-                  Text("Not connected"),
-                ],
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Generate",
+                      style: Theme.of(context).textTheme.titleLarge),
+                ),
+                PromptField(promptValue: prompt, setPrompt: setPrompt),
+                NegativePromptField(
+                    negativePromptValue: negativePrompt,
+                    setNegativePrompt: setNegativePrompt),
+                ToggleSwitch(setValue: setUseAdvanced, label: "Advanced"),
+                ToggleSwitch(setValue: setUsePreview, label: "Preview"),
+                ToggleSwitch(setValue: setUseNSFW, label: "NSFW"),
+                ElevatedButton(onPressed: generate, child: Text('Generate')),
+                Column(
+                  children: [
+                    if (connected && channel != null) ...[
+                      Text("Connected"),
+                    ] else ...[
+                      Text("Not connected"),
+                    ],
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

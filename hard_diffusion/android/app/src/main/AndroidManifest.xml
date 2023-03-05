@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.hard_diffusion">
+    <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="hard_diffusion"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!-- Required to fetch data from the internet. -->
-        <uses-permission android:name="android.permission.INTERNET" />
 
         <provider
             android:name="com.superlist.super_native_extensions.DataProvider"
