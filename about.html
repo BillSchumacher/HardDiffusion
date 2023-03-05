@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>About &#8212; Hard Diffusion 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="canonical" href="https://billschumacher.github.io/HardDiffusion/about.html" />
+    <link rel="author" title="About these documents" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Screenshots" href="screenshots.html" />
+    <link rel="prev" title="Welcome to HardDiffusion’s documentation!" href="index.html" />
+
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XMQ0C7G1SN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-XMQ0C7G1SN');
+</script>
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="about">
+<h1>About<a class="headerlink" href="#about" title="Permalink to this heading">¶</a></h1>
+<p>Currently this is a simple web interface that can be used to render images using diffusion.</p>
+<p>Huggingface has a nice API for using their models, so I’ve used that to make it easy to use their models.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is a work in progress, and is not yet ready for production use.</p>
+<p>Not all Huggingface model repos will work correctly and some may not work at all.</p>
+<p>I’m working on making it more robust, but it’s not there yet.</p>
+<p>Error reporting is also lacking, so check your console.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is not a secure application, it is not meant to be used on a public facing server.</p>
+<p>It is meant to be used on a local network, or behind a reverse proxy. Even then beware.</p>
+<p>pickle is used for ckpt models, and it is not secure, I advise against using those models.</p>
+<p>safetensors should be used instead.</p>
+<p>pickle models will be loaded automatically if they are in the model repo and safetensors are not.</p>
+<p>There is no attempt to prevent users from using repo’s with pickle models. You should be aware of this.</p>
+</div>
+<p>The ultimate goal is to be able to render images which can then be turned into 3d models and exported to Blender.</p>
+<p>This uses diffusers for rendering, it was inspired by EasyDiffusion, but is not a fork of it.</p>
+<p>EasyDiffusion is a great tool, but it was not willing to support some features I wanted to add, so I decided to make my own.</p>
+<p>Namely distributed processing across multiple machines.</p>
+<p>If you want to use something that is more stable and easy to setup, use EasyDiffusion:</p>
+<p><a class="reference external" href="https://github.com/cmdr2/stable-diffusion-ui">https://github.com/cmdr2/stable-diffusion-ui</a></p>
+<p>or if you need more features AUTOMATIC1111’s ui:</p>
+<p><a class="reference external" href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">https://github.com/AUTOMATIC1111/stable-diffusion-webui</a></p>
+<p>Both are great projects!</p>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Hard Diffusion</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=BillSchumacher&repo=HardDiffusion&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">HardDiffusion</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to HardDiffusion’s documentation!</a></li>
+      <li>Next: <a href="screenshots.html" title="next chapter">Screenshots</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+      &copy;2023, Bill Schumacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/about.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/BillSchumacher/HardDiffusion" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+<div class="footer">This page uses <a href="https://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+</div>
+
+  </body>
+</html>

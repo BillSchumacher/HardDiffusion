@@ -1,0 +1,860 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>model package &#8212; Hard Diffusion 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="canonical" href="https://billschumacher.github.io/HardDiffusion/model.html" />
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="train package" href="train.html" />
+    <link rel="prev" title="generate.templatetags package" href="generate.templatetags.html" />
+
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XMQ0C7G1SN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-XMQ0C7G1SN');
+</script>
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-model">
+<span id="model-package"></span><h1>model package<a class="headerlink" href="#module-model" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-model.admin">
+<span id="model-admin-module"></span><h2>model.admin module<a class="headerlink" href="#module-model.admin" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-model.apps">
+<span id="model-apps-module"></span><h2>model.apps module<a class="headerlink" href="#module-model.apps" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="model.apps.ModelConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.apps.</span></span><span class="sig-name descname"><span class="pre">ModelConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.apps.ModelConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AppConfig</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.apps.ModelConfig.default_auto_field">
+<span class="sig-name descname"><span class="pre">default_auto_field</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'django.db.models.BigAutoField'</span></em><a class="headerlink" href="#model.apps.ModelConfig.default_auto_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.apps.ModelConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'model'</span></em><a class="headerlink" href="#model.apps.ModelConfig.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-model.models">
+<span id="model-models-module"></span><h2>model.models module<a class="headerlink" href="#module-model.models" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.AudioClassificationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">AudioClassificationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.AudioClassificationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.AudioClassificationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.AudioClassificationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.AudioClassificationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.AudioClassificationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.AudioClassificationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.AudioClassificationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.AudioClassificationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.AudioClassificationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.ConversationalModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">ConversationalModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.ConversationalModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ConversationalModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.ConversationalModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ConversationalModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.ConversationalModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ConversationalModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.ConversationalModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ConversationalModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.ConversationalModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.DepthEstimationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">DepthEstimationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.DepthEstimationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.DepthEstimationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.DepthEstimationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.DepthEstimationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.DepthEstimationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.DepthEstimationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.DepthEstimationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.DepthEstimationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.DepthEstimationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.FeatureExtractionModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">FeatureExtractionModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.FeatureExtractionModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.FeatureExtractionModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.FeatureExtractionModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.FeatureExtractionModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.FeatureExtractionModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.FeatureExtractionModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.FeatureExtractionModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.FeatureExtractionModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.FeatureExtractionModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.ImageClassificationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">ImageClassificationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.ImageClassificationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ImageClassificationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.ImageClassificationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ImageClassificationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.ImageClassificationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ImageClassificationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.ImageClassificationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ImageClassificationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.ImageClassificationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.ImageSegmentationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">ImageSegmentationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.ImageSegmentationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ImageSegmentationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.ImageSegmentationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ImageSegmentationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.ImageSegmentationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ImageSegmentationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.ImageSegmentationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ImageSegmentationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.ImageSegmentationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.ImageToImageModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">ImageToImageModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.ImageToImageModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ImageToImageModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.ImageToImageModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ImageToImageModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.ImageToImageModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ImageToImageModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.ImageToImageModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ImageToImageModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.ImageToImageModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.ImageToTextModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">ImageToTextModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.ImageToTextModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ImageToTextModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.ImageToTextModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ImageToTextModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.ImageToTextModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ImageToTextModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.ImageToTextModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ImageToTextModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.ImageToTextModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.ModelMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">ModelMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.ModelMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Model mixin for common fields.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.ModelMixin.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#model.models.ModelMixin.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ModelMixin.Meta.abstract">
+<span class="sig-name descname"><span class="pre">abstract</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#model.models.ModelMixin.Meta.abstract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ModelMixin.likes">
+<span class="sig-name descname"><span class="pre">likes</span></span><a class="headerlink" href="#model.models.ModelMixin.likes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ModelMixin.model_id">
+<span class="sig-name descname"><span class="pre">model_id</span></span><a class="headerlink" href="#model.models.ModelMixin.model_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.ObjectDetectionModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">ObjectDetectionModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.ObjectDetectionModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ObjectDetectionModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.ObjectDetectionModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.ObjectDetectionModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.ObjectDetectionModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ObjectDetectionModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.ObjectDetectionModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.ObjectDetectionModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.ObjectDetectionModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.TextClassificationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">TextClassificationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.TextClassificationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextClassificationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.TextClassificationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextClassificationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.TextClassificationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextClassificationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.TextClassificationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextClassificationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.TextClassificationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.TextGenerationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">TextGenerationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.TextGenerationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextGenerationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.TextGenerationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextGenerationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.TextGenerationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextGenerationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.TextGenerationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextGenerationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.TextGenerationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.TextToImageModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">TextToImageModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.TextToImageModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextToImageModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.TextToImageModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextToImageModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.TextToImageModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextToImageModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.TextToImageModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextToImageModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.TextToImageModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.TextToSpeechModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">TextToSpeechModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.TextToSpeechModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextToSpeechModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.TextToSpeechModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextToSpeechModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.TextToSpeechModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextToSpeechModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.TextToSpeechModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextToSpeechModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.TextToSpeechModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.TextToTextModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">TextToTextModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.TextToTextModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextToTextModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.TextToTextModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TextToTextModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.TextToTextModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextToTextModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.TextToTextModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TextToTextModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.TextToTextModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.TokenClassificationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">TokenClassificationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.TokenClassificationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TokenClassificationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.TokenClassificationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TokenClassificationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.TokenClassificationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TokenClassificationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.TokenClassificationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TokenClassificationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.TokenClassificationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.TranslationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">TranslationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.TranslationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TranslationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.TranslationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.TranslationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.TranslationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TranslationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.TranslationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.TranslationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.TranslationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.UnconditionalImageGenerationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">UnconditionalImageGenerationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.UnconditionalImageGenerationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.UnconditionalImageGenerationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.UnconditionalImageGenerationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.UnconditionalImageGenerationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.UnconditionalImageGenerationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.UnconditionalImageGenerationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.UnconditionalImageGenerationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.UnconditionalImageGenerationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.UnconditionalImageGenerationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="model.models.VideoClassificationModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">model.models.</span></span><span class="sig-name descname"><span class="pre">VideoClassificationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.models.VideoClassificationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#model.models.ModelMixin" title="model.models.ModelMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.VideoClassificationModel.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#model.models.VideoClassificationModel.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.ObjectDoesNotExist" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectDoesNotExist</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="model.models.VideoClassificationModel.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#model.models.VideoClassificationModel.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/exceptions/#django.core.exceptions.MultipleObjectsReturned" title="(in Django v4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObjectsReturned</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.VideoClassificationModel.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#model.models.VideoClassificationModel.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.models.VideoClassificationModel.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;django.db.models.manager.Manager</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#model.models.VideoClassificationModel.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-model.tests">
+<span id="model-tests-module"></span><h2>model.tests module<a class="headerlink" href="#module-model.tests" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-model.urls">
+<span id="model-urls-module"></span><h2>model.urls module<a class="headerlink" href="#module-model.urls" title="Permalink to this heading">¶</a></h2>
+<p>model URL Configuration</p>
+</section>
+<section id="module-model.views">
+<span id="model-views-module"></span><h2>model.views module<a class="headerlink" href="#module-model.views" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.add_huggingface_model">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">add_huggingface_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HttpResponseRedirect</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HttpResponsePermanentRedirect</span></span></span><a class="headerlink" href="#model.views.add_huggingface_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add object_detection model.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.add_model">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">add_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_class</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.views.add_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add model to database.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.get_hf_filter">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">get_hf_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_tag</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ModelFilter</span></span></span><a class="headerlink" href="#model.views.get_hf_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get filter for pipeline_tag.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.redirect_with_pipeline_tag">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">redirect_with_pipeline_tag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HttpResponseRedirect</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HttpResponsePermanentRedirect</span></span></span><a class="headerlink" href="#model.views.redirect_with_pipeline_tag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirect to search_hugging_face_models with pipeline_tag.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.remove_huggingface_model">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">remove_huggingface_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HttpResponseRedirect</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">HttpResponsePermanentRedirect</span></span></span><a class="headerlink" href="#model.views.remove_huggingface_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove object_detection model.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.remove_model">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">remove_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_class</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.views.remove_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove model from database.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.render_search">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">render_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">models</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline_tag</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HttpResponse</span></span></span><a class="headerlink" href="#model.views.render_search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render search page.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.search_hugging_face_models">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">search_hugging_face_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.views.search_hugging_face_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search models.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="model.views.search_huggingface_models">
+<span class="sig-prename descclassname"><span class="pre">model.views.</span></span><span class="sig-name descname"><span class="pre">search_huggingface_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#model.views.search_huggingface_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search object_detection models.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Hard Diffusion</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=BillSchumacher&repo=HardDiffusion&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">HardDiffusion</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="HardDiffusion.html">HardDiffusion package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html">api package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generate.html">generate package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">model package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-model.admin">model.admin module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-model.apps">model.apps module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#model.apps.ModelConfig"><code class="docutils literal notranslate"><span class="pre">ModelConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-model.models">model.models module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.AudioClassificationModel"><code class="docutils literal notranslate"><span class="pre">AudioClassificationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.ConversationalModel"><code class="docutils literal notranslate"><span class="pre">ConversationalModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.DepthEstimationModel"><code class="docutils literal notranslate"><span class="pre">DepthEstimationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.FeatureExtractionModel"><code class="docutils literal notranslate"><span class="pre">FeatureExtractionModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.ImageClassificationModel"><code class="docutils literal notranslate"><span class="pre">ImageClassificationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.ImageSegmentationModel"><code class="docutils literal notranslate"><span class="pre">ImageSegmentationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.ImageToImageModel"><code class="docutils literal notranslate"><span class="pre">ImageToImageModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.ImageToTextModel"><code class="docutils literal notranslate"><span class="pre">ImageToTextModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.ModelMixin"><code class="docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.ObjectDetectionModel"><code class="docutils literal notranslate"><span class="pre">ObjectDetectionModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.TextClassificationModel"><code class="docutils literal notranslate"><span class="pre">TextClassificationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.TextGenerationModel"><code class="docutils literal notranslate"><span class="pre">TextGenerationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.TextToImageModel"><code class="docutils literal notranslate"><span class="pre">TextToImageModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.TextToSpeechModel"><code class="docutils literal notranslate"><span class="pre">TextToSpeechModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.TextToTextModel"><code class="docutils literal notranslate"><span class="pre">TextToTextModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.TokenClassificationModel"><code class="docutils literal notranslate"><span class="pre">TokenClassificationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.TranslationModel"><code class="docutils literal notranslate"><span class="pre">TranslationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.UnconditionalImageGenerationModel"><code class="docutils literal notranslate"><span class="pre">UnconditionalImageGenerationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.models.VideoClassificationModel"><code class="docutils literal notranslate"><span class="pre">VideoClassificationModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-model.tests">model.tests module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-model.urls">model.urls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-model.views">model.views module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.add_huggingface_model"><code class="docutils literal notranslate"><span class="pre">add_huggingface_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.add_model"><code class="docutils literal notranslate"><span class="pre">add_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.get_hf_filter"><code class="docutils literal notranslate"><span class="pre">get_hf_filter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.redirect_with_pipeline_tag"><code class="docutils literal notranslate"><span class="pre">redirect_with_pipeline_tag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.remove_huggingface_model"><code class="docutils literal notranslate"><span class="pre">remove_huggingface_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.remove_model"><code class="docutils literal notranslate"><span class="pre">remove_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.render_search"><code class="docutils literal notranslate"><span class="pre">render_search()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.search_hugging_face_models"><code class="docutils literal notranslate"><span class="pre">search_hugging_face_models()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#model.views.search_huggingface_models"><code class="docutils literal notranslate"><span class="pre">search_huggingface_models()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="train.html">train package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user.html">user package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">HardDiffusion</a><ul>
+      <li>Previous: <a href="generate.templatetags.html" title="previous chapter">generate.templatetags package</a></li>
+      <li>Next: <a href="train.html" title="next chapter">train package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+      &copy;2023, Bill Schumacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/model.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/BillSchumacher/HardDiffusion" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+<div class="footer">This page uses <a href="https://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+</div>
+
+  </body>
+</html>

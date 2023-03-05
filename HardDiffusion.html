@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>HardDiffusion package &#8212; Hard Diffusion 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="canonical" href="https://billschumacher.github.io/HardDiffusion/HardDiffusion.html" />
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="api package" href="api.html" />
+    <link rel="prev" title="HardDiffusion" href="modules.html" />
+
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XMQ0C7G1SN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-XMQ0C7G1SN');
+</script>
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-HardDiffusion">
+<span id="harddiffusion-package"></span><h1>HardDiffusion package<a class="headerlink" href="#module-HardDiffusion" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-HardDiffusion.asgi">
+<span id="harddiffusion-asgi-module"></span><h2>HardDiffusion.asgi module<a class="headerlink" href="#module-HardDiffusion.asgi" title="Permalink to this heading">¶</a></h2>
+<p>ASGI config for HardDiffusion project.</p>
+<p>It exposes the ASGI callable as a module-level variable named <code class="docutils literal notranslate"><span class="pre">application</span></code>.</p>
+<p>For more information on this file, see
+<a class="reference external" href="https://docs.djangoproject.com/en/4.1/howto/deployment/asgi/">https://docs.djangoproject.com/en/4.1/howto/deployment/asgi/</a></p>
+</section>
+<section id="module-HardDiffusion.celery">
+<span id="harddiffusion-celery-module"></span><h2>HardDiffusion.celery module<a class="headerlink" href="#module-HardDiffusion.celery" title="Permalink to this heading">¶</a></h2>
+<p>celery app for HardDiffusion.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="HardDiffusion.celery.WorkerHealthMonitor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">HardDiffusion.celery.</span></span><span class="sig-name descname"><span class="pre">WorkerHealthMonitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">__</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#HardDiffusion.celery.WorkerHealthMonitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StartStopStep</span></code></p>
+<p>This step registers a timer that runs a health check every 60 seconds.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="HardDiffusion.celery.WorkerHealthMonitor.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HardDiffusion.celery.WorkerHealthMonitor'</span></em><a class="headerlink" href="#HardDiffusion.celery.WorkerHealthMonitor.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="HardDiffusion.celery.WorkerHealthMonitor.requires">
+<span class="sig-name descname"><span class="pre">requires</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'celery.worker.components:Pool',</span> <span class="pre">'celery.worker.components:Timer'}</span></em><a class="headerlink" href="#HardDiffusion.celery.WorkerHealthMonitor.requires" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="HardDiffusion.celery.WorkerHealthMonitor.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#HardDiffusion.celery.WorkerHealthMonitor.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="HardDiffusion.celery.WorkerHealthMonitor.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#HardDiffusion.celery.WorkerHealthMonitor.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="HardDiffusion.celery.schedule_health_check">
+<span class="sig-prename descclassname"><span class="pre">HardDiffusion.celery.</span></span><span class="sig-name descname"><span class="pre">schedule_health_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">worker</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#HardDiffusion.celery.schedule_health_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedule a health check to be run in the render worker pool.</p>
+</dd></dl>
+
+</section>
+<section id="module-HardDiffusion.logs">
+<span id="harddiffusion-logs-module"></span><h2>HardDiffusion.logs module<a class="headerlink" href="#module-HardDiffusion.logs" title="Permalink to this heading">¶</a></h2>
+<p>Logging configuration for HardDiffusion.</p>
+</section>
+<section id="module-HardDiffusion.redthis">
+<span id="harddiffusion-redthis-module"></span><h2>HardDiffusion.redthis module<a class="headerlink" href="#module-HardDiffusion.redthis" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-HardDiffusion.settings">
+<span id="harddiffusion-settings-module"></span><h2>HardDiffusion.settings module<a class="headerlink" href="#module-HardDiffusion.settings" title="Permalink to this heading">¶</a></h2>
+<p>Django settings for HardDiffusion project.</p>
+<p>Generated by ‘django-admin startproject’ using Django 4.1.6.</p>
+<p>For more information on this file, see
+<a class="reference external" href="https://docs.djangoproject.com/en/4.1/topics/settings/">https://docs.djangoproject.com/en/4.1/topics/settings/</a></p>
+<p>For the full list of settings and their values, see
+<a class="reference external" href="https://docs.djangoproject.com/en/4.1/ref/settings/">https://docs.djangoproject.com/en/4.1/ref/settings/</a></p>
+<dl class="py function">
+<dt class="sig sig-object py" id="HardDiffusion.settings.dumps">
+<span class="sig-prename descclassname"><span class="pre">HardDiffusion.settings.</span></span><span class="sig-name descname"><span class="pre">dumps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#HardDiffusion.settings.dumps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="HardDiffusion.settings.loads">
+<span class="sig-prename descclassname"><span class="pre">HardDiffusion.settings.</span></span><span class="sig-name descname"><span class="pre">loads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#HardDiffusion.settings.loads" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-HardDiffusion.urls">
+<span id="harddiffusion-urls-module"></span><h2>HardDiffusion.urls module<a class="headerlink" href="#module-HardDiffusion.urls" title="Permalink to this heading">¶</a></h2>
+<p>HardDiffusion URL Configuration</p>
+<p>The <cite>urlpatterns</cite> list routes URLs to views.</p>
+<p>For more information please see:
+<a class="reference external" href="https://docs.djangoproject.com/en/4.1/topics/http/urls/">https://docs.djangoproject.com/en/4.1/topics/http/urls/</a></p>
+<p class="rubric">Examples</p>
+<dl class="simple">
+<dt>Function views</dt><dd><ol class="arabic simple">
+<li><p>Add an import:  from my_app import views</p></li>
+<li><p>Add a URL to urlpatterns:  path(‘’, views.home, name=’home’)</p></li>
+</ol>
+</dd>
+<dt>Class-based views</dt><dd><ol class="arabic simple">
+<li><p>Add an import:  from other_app.views import Home</p></li>
+<li><p>Add a URL to urlpatterns:  path(‘’, Home.as_view(), name=’home’)</p></li>
+</ol>
+</dd>
+<dt>Including another URLconf</dt><dd><ol class="arabic simple">
+<li><p>Import the include() function: from django.urls import include, path</p></li>
+<li><p>Add a URL to urlpatterns:  path(‘blog/’, include(‘blog.urls’))</p></li>
+</ol>
+</dd>
+</dl>
+</section>
+<section id="module-HardDiffusion.wsgi">
+<span id="harddiffusion-wsgi-module"></span><h2>HardDiffusion.wsgi module<a class="headerlink" href="#module-HardDiffusion.wsgi" title="Permalink to this heading">¶</a></h2>
+<p>WSGI config for HardDiffusion project.</p>
+<p>It exposes the WSGI callable as a module-level variable named <code class="docutils literal notranslate"><span class="pre">application</span></code>.</p>
+<p>For more information on this file, see
+<a class="reference external" href="https://docs.djangoproject.com/en/4.1/howto/deployment/wsgi/">https://docs.djangoproject.com/en/4.1/howto/deployment/wsgi/</a></p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Hard Diffusion</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=BillSchumacher&repo=HardDiffusion&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">HardDiffusion</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">HardDiffusion package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-HardDiffusion.asgi">HardDiffusion.asgi module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-HardDiffusion.celery">HardDiffusion.celery module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#HardDiffusion.celery.WorkerHealthMonitor"><code class="docutils literal notranslate"><span class="pre">WorkerHealthMonitor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#HardDiffusion.celery.schedule_health_check"><code class="docutils literal notranslate"><span class="pre">schedule_health_check()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-HardDiffusion.logs">HardDiffusion.logs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-HardDiffusion.redthis">HardDiffusion.redthis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-HardDiffusion.settings">HardDiffusion.settings module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#HardDiffusion.settings.dumps"><code class="docutils literal notranslate"><span class="pre">dumps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#HardDiffusion.settings.loads"><code class="docutils literal notranslate"><span class="pre">loads()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-HardDiffusion.urls">HardDiffusion.urls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-HardDiffusion.wsgi">HardDiffusion.wsgi module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html">api package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generate.html">generate package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html">model package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="train.html">train package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user.html">user package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">HardDiffusion</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">HardDiffusion</a></li>
+      <li>Next: <a href="api.html" title="next chapter">api package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+      &copy;2023, Bill Schumacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/HardDiffusion.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/BillSchumacher/HardDiffusion" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+<div class="footer">This page uses <a href="https://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+</div>
+
+  </body>
+</html>

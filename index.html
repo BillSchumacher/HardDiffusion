@@ -1,0 +1,425 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Welcome to HardDiffusion’s documentation! &#8212; Hard Diffusion 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="canonical" href="https://billschumacher.github.io/HardDiffusion/index.html" />
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="About" href="about.html" />
+
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XMQ0C7G1SN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-XMQ0C7G1SN');
+</script>
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="welcome-to-harddiffusion-s-documentation">
+<h1>Welcome to HardDiffusion’s documentation!<a class="headerlink" href="#welcome-to-harddiffusion-s-documentation" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="screenshots.html#flutter-ui">Flutter UI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="screenshots.html#generate-page">Generate Page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="screenshots.html#model-selection-page">Model Selection Page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="screenshots.html#status-page">Status Page</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#redis">Redis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#python">Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#database">Database</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#starting-the-server">Starting the server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#shutting-down-celery">Shutting down Celery</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#style-guide">Style Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#tests">Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#pull-requests">Pull Requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#issues">Issues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">HardDiffusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="HardDiffusion.html">HardDiffusion package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="HardDiffusion.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HardDiffusion.html#module-HardDiffusion.asgi">HardDiffusion.asgi module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HardDiffusion.html#module-HardDiffusion.celery">HardDiffusion.celery module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="HardDiffusion.html#HardDiffusion.celery.WorkerHealthMonitor"><code class="docutils literal notranslate"><span class="pre">WorkerHealthMonitor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="HardDiffusion.html#HardDiffusion.celery.schedule_health_check"><code class="docutils literal notranslate"><span class="pre">schedule_health_check()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="HardDiffusion.html#module-HardDiffusion.logs">HardDiffusion.logs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HardDiffusion.html#module-HardDiffusion.redthis">HardDiffusion.redthis module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HardDiffusion.html#module-HardDiffusion.settings">HardDiffusion.settings module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="HardDiffusion.html#HardDiffusion.settings.dumps"><code class="docutils literal notranslate"><span class="pre">dumps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="HardDiffusion.html#HardDiffusion.settings.loads"><code class="docutils literal notranslate"><span class="pre">loads()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="HardDiffusion.html#module-HardDiffusion.urls">HardDiffusion.urls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HardDiffusion.html#module-HardDiffusion.wsgi">HardDiffusion.wsgi module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html">api package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-api.admin">api.admin module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-api.apps">api.apps module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api.html#api.apps.ApiConfig"><code class="docutils literal notranslate"><span class="pre">ApiConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-api.models">api.models module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-api.tests">api.tests module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-api.urls">api.urls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-api.views">api.views module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generate.html">generate package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.templatetags.html">generate.templatetags package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.admin">generate.admin module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.apps">generate.apps module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.apps.GenerateConfig"><code class="docutils literal notranslate"><span class="pre">GenerateConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.consumers">generate.consumers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.consumers.GenerateConsumer"><code class="docutils literal notranslate"><span class="pre">GenerateConsumer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.file_utils">generate.file_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.file_utils.download_and_cache_models"><code class="docutils literal notranslate"><span class="pre">download_and_cache_models()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.file_utils.get_allowed_patterns"><code class="docutils literal notranslate"><span class="pre">get_allowed_patterns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.file_utils.get_cached_folder"><code class="docutils literal notranslate"><span class="pre">get_cached_folder()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.file_utils.get_checkpoint_path"><code class="docutils literal notranslate"><span class="pre">get_checkpoint_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.file_utils.load_checkpoint"><code class="docutils literal notranslate"><span class="pre">load_checkpoint()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.image">generate.image module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.image.generate_image_status"><code class="docutils literal notranslate"><span class="pre">generate_image_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.image.get_generator"><code class="docutils literal notranslate"><span class="pre">get_generator()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.image.numpy_to_pil"><code class="docutils literal notranslate"><span class="pre">numpy_to_pil()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.image.render_image"><code class="docutils literal notranslate"><span class="pre">render_image()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.image.save_error"><code class="docutils literal notranslate"><span class="pre">save_error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.image.save_generated_image"><code class="docutils literal notranslate"><span class="pre">save_generated_image()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.input_validation">generate.input_validation module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_callback_steps"><code class="docutils literal notranslate"><span class="pre">validate_callback_steps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_generator_and_batch_size"><code class="docutils literal notranslate"><span class="pre">validate_generator_and_batch_size()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_initial_image_latents"><code class="docutils literal notranslate"><span class="pre">validate_initial_image_latents()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_negative_prompt_and_embeds"><code class="docutils literal notranslate"><span class="pre">validate_negative_prompt_and_embeds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_prompt_and_embeds"><code class="docutils literal notranslate"><span class="pre">validate_prompt_and_embeds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_prompt_and_negative_embeds_shape"><code class="docutils literal notranslate"><span class="pre">validate_prompt_and_negative_embeds_shape()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_prompt_type"><code class="docutils literal notranslate"><span class="pre">validate_prompt_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_strength_range"><code class="docutils literal notranslate"><span class="pre">validate_strength_range()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.input_validation.validate_width_and_height"><code class="docutils literal notranslate"><span class="pre">validate_width_and_height()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.load_pipeline">generate.load_pipeline module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.load_pipeline.from_pretrained"><code class="docutils literal notranslate"><span class="pre">from_pretrained()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.load_pipeline.get_allow_and_ignore_patterns_with_user_agent"><code class="docutils literal notranslate"><span class="pre">get_allow_and_ignore_patterns_with_user_agent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.load_pipeline.is_safetensors_compatible"><code class="docutils literal notranslate"><span class="pre">is_safetensors_compatible()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.models">generate.models module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.models.GeneratedImage"><code class="docutils literal notranslate"><span class="pre">GeneratedImage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.models.RenderWorkerDevice"><code class="docutils literal notranslate"><span class="pre">RenderWorkerDevice</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.noise">generate.noise module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.noise.decode_latents"><code class="docutils literal notranslate"><span class="pre">decode_latents()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.noise.denoise"><code class="docutils literal notranslate"><span class="pre">denoise()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.pipeline">generate.pipeline module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.pipeline.HardDiffusionPipeline"><code class="docutils literal notranslate"><span class="pre">HardDiffusionPipeline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.pipeline.get_pipeline"><code class="docutils literal notranslate"><span class="pre">get_pipeline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.pipeline.preprocess"><code class="docutils literal notranslate"><span class="pre">preprocess()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.pipeline.validate_safety_checker"><code class="docutils literal notranslate"><span class="pre">validate_safety_checker()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.pipeline_configuration">generate.pipeline_configuration module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.pipeline_configuration.PipelineConfiguration"><code class="docutils literal notranslate"><span class="pre">PipelineConfiguration</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.pipeline_doc_example">generate.pipeline_doc_example module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.prompt">generate.prompt module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.prompt.duplicate_embeddings"><code class="docutils literal notranslate"><span class="pre">duplicate_embeddings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.prompt.get_attention_mask"><code class="docutils literal notranslate"><span class="pre">get_attention_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.prompt.get_embed_from_prompt"><code class="docutils literal notranslate"><span class="pre">get_embed_from_prompt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.prompt.get_embeds_from_text_encoding"><code class="docutils literal notranslate"><span class="pre">get_embeds_from_text_encoding()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.prompt.get_unconditional_embed"><code class="docutils literal notranslate"><span class="pre">get_unconditional_embed()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.render_devices">generate.render_devices module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.render_devices.get_render_devices_by_id"><code class="docutils literal notranslate"><span class="pre">get_render_devices_by_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.render_devices.update_render_device_stats"><code class="docutils literal notranslate"><span class="pre">update_render_device_stats()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.routing">generate.routing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.schedulers">generate.schedulers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.schedulers.validate_clip_sample"><code class="docutils literal notranslate"><span class="pre">validate_clip_sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.schedulers.validate_steps_offset"><code class="docutils literal notranslate"><span class="pre">validate_steps_offset()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.serializers">generate.serializers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.serializers.GeneratedImageSerializer"><code class="docutils literal notranslate"><span class="pre">GeneratedImageSerializer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.tasks">generate.tasks module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.tasks.ensure_model_name"><code class="docutils literal notranslate"><span class="pre">ensure_model_name()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.tests">generate.tests module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.tests.TestGeneratedImage"><code class="docutils literal notranslate"><span class="pre">TestGeneratedImage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.tests.image_diff"><code class="docutils literal notranslate"><span class="pre">image_diff()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.unet_utils">generate.unet_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.unet_utils.validate_unet_sample_size"><code class="docutils literal notranslate"><span class="pre">validate_unet_sample_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.urls">generate.urls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.views">generate.views module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.views.GeneratedImageViewSet"><code class="docutils literal notranslate"><span class="pre">GeneratedImageViewSet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.views.csrf_form"><code class="docutils literal notranslate"><span class="pre">csrf_form()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.views.images"><code class="docutils literal notranslate"><span class="pre">images()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.views.index"><code class="docutils literal notranslate"><span class="pre">index()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.views.queue_prompt"><code class="docutils literal notranslate"><span class="pre">queue_prompt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.views.renderer_health"><code class="docutils literal notranslate"><span class="pre">renderer_health()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="generate.html#generate.views.renderer_status"><code class="docutils literal notranslate"><span class="pre">renderer_status()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="generate.html#module-generate.warnings">generate.warnings module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="model.html">model package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="model.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="model.html#module-model.admin">model.admin module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="model.html#module-model.apps">model.apps module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.apps.ModelConfig"><code class="docutils literal notranslate"><span class="pre">ModelConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="model.html#module-model.models">model.models module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.AudioClassificationModel"><code class="docutils literal notranslate"><span class="pre">AudioClassificationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.ConversationalModel"><code class="docutils literal notranslate"><span class="pre">ConversationalModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.DepthEstimationModel"><code class="docutils literal notranslate"><span class="pre">DepthEstimationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.FeatureExtractionModel"><code class="docutils literal notranslate"><span class="pre">FeatureExtractionModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.ImageClassificationModel"><code class="docutils literal notranslate"><span class="pre">ImageClassificationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.ImageSegmentationModel"><code class="docutils literal notranslate"><span class="pre">ImageSegmentationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.ImageToImageModel"><code class="docutils literal notranslate"><span class="pre">ImageToImageModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.ImageToTextModel"><code class="docutils literal notranslate"><span class="pre">ImageToTextModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.ModelMixin"><code class="docutils literal notranslate"><span class="pre">ModelMixin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.ObjectDetectionModel"><code class="docutils literal notranslate"><span class="pre">ObjectDetectionModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.TextClassificationModel"><code class="docutils literal notranslate"><span class="pre">TextClassificationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.TextGenerationModel"><code class="docutils literal notranslate"><span class="pre">TextGenerationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.TextToImageModel"><code class="docutils literal notranslate"><span class="pre">TextToImageModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.TextToSpeechModel"><code class="docutils literal notranslate"><span class="pre">TextToSpeechModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.TextToTextModel"><code class="docutils literal notranslate"><span class="pre">TextToTextModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.TokenClassificationModel"><code class="docutils literal notranslate"><span class="pre">TokenClassificationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.TranslationModel"><code class="docutils literal notranslate"><span class="pre">TranslationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.UnconditionalImageGenerationModel"><code class="docutils literal notranslate"><span class="pre">UnconditionalImageGenerationModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.models.VideoClassificationModel"><code class="docutils literal notranslate"><span class="pre">VideoClassificationModel</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="model.html#module-model.tests">model.tests module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="model.html#module-model.urls">model.urls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="model.html#module-model.views">model.views module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.add_huggingface_model"><code class="docutils literal notranslate"><span class="pre">add_huggingface_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.add_model"><code class="docutils literal notranslate"><span class="pre">add_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.get_hf_filter"><code class="docutils literal notranslate"><span class="pre">get_hf_filter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.redirect_with_pipeline_tag"><code class="docutils literal notranslate"><span class="pre">redirect_with_pipeline_tag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.remove_huggingface_model"><code class="docutils literal notranslate"><span class="pre">remove_huggingface_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.remove_model"><code class="docutils literal notranslate"><span class="pre">remove_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.render_search"><code class="docutils literal notranslate"><span class="pre">render_search()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.search_hugging_face_models"><code class="docutils literal notranslate"><span class="pre">search_hugging_face_models()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="model.html#model.views.search_huggingface_models"><code class="docutils literal notranslate"><span class="pre">search_huggingface_models()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="train.html">train package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="train.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train.html#module-train.admin">train.admin module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train.html#module-train.apps">train.apps module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="train.html#train.apps.TrainConfig"><code class="docutils literal notranslate"><span class="pre">TrainConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="train.html#module-train.models">train.models module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train.html#module-train.tests">train.tests module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train.html#module-train.urls">train.urls module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train.html#module-train.views">train.views module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="train.html#train.views.index"><code class="docutils literal notranslate"><span class="pre">index()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user.html">user package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user.html#module-user.admin">user.admin module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user.html#module-user.apps">user.apps module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user.html#user.apps.UserConfig"><code class="docutils literal notranslate"><span class="pre">UserConfig</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user.html#module-user.models">user.models module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user.html#user.models.User"><code class="docutils literal notranslate"><span class="pre">User</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user.html#module-user.permissions">user.permissions module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user.html#user.permissions.HasOwner"><code class="docutils literal notranslate"><span class="pre">HasOwner</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="user.html#user.permissions.IsOwnerOrReadOnly"><code class="docutils literal notranslate"><span class="pre">IsOwnerOrReadOnly</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user.html#module-user.serializers">user.serializers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user.html#user.serializers.UserSerializer"><code class="docutils literal notranslate"><span class="pre">UserSerializer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="user.html#module-user.tests">user.tests module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user.html#module-user.views">user.views module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="user.html#user.views.UserViewSet"><code class="docutils literal notranslate"><span class="pre">UserViewSet</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Hard Diffusion</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=BillSchumacher&repo=HardDiffusion&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">HardDiffusion</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="about.html" title="next chapter">About</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+      &copy;2023, Bill Schumacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/BillSchumacher/HardDiffusion" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+<div class="footer">This page uses <a href="https://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+</div>
+
+  </body>
+</html>
