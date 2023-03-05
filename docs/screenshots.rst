@@ -1,6 +1,13 @@
 Screenshots
 ===========
 
+Flutter UI
+-------------
+
+.. image:: https://raw.githubusercontent.com/BillSchumacher/HardDiffusion/release/screenshots/new_generate_flutter.png
+   :alt: Generate Page
+   :width: 600px
+   :align: center
 
 Generate Page
 -------------

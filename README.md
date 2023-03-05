@@ -7,6 +7,23 @@ This works, kinda, expect issues.
 
 Docs: https://billschumacher.github.io/HardDiffusion/
 
+New Flutter UI:
+
+![New Flutter UI](https://raw.githubusercontent.com/BillSchumacher/HardDiffusion/release/screenshots/new_generate_flutter.png)
+
+
+Generate:
+
+![Generate UI](https://raw.githubusercontent.com/BillSchumacher/HardDiffusion/release/screenshots/generate.png)
+
+Model Installation:
+
+![Models UI](https://raw.githubusercontent.com/BillSchumacher/HardDiffusion/release/screenshots/models.png)
+
+Status: 
+
+![Status UI](https://raw.githubusercontent.com/BillSchumacher/HardDiffusion/release/screenshots/status.png)
+
 Goals
 -----
 
@@ -19,8 +36,8 @@ Goals
 * Object-like prompt? less NLP more {'background': 'prompt...', characters: [{...}]}
 * UI Improvements
 * Better renderer status
-* Better error reporting
-* An efficient way to load and display historical results.
+* Better error reporting :white_check_mark:
+* An efficient way to load and display historical results. :white_check_mark:
 * Custom VAE / Unets
 * Textual Inversion inference
 * Checkpoint Training

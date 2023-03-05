@@ -256,7 +256,6 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
     } catch (error) {
       // 4
       _pagingController.error = error;
-      print(error);
     }
   }
 
