@@ -1,36 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:hard_diffusion/forms/fields/prompts.dart';
 import 'package:hard_diffusion/forms/fields/toggle_switch.dart';
-import 'package:hard_diffusion/main.dart';
+import 'package:hard_diffusion/state/app.dart';
 import 'package:provider/provider.dart';
 
 class PromptColumn extends StatelessWidget {
   const PromptColumn({
     super.key,
-    required this.setPrompt,
-    required this.setNegativePrompt,
-    required this.setUseAdvanced,
-    required this.setUseNSFW,
-    required this.setUsePreview,
-    required this.generate,
-    required this.prompt,
-    required this.negativePrompt,
   });
-
-  final Function(String) setPrompt;
-  final Function(String) setNegativePrompt;
-  final Function(bool) setUseAdvanced;
-  final Function(bool) setUseNSFW;
-  final Function(bool) setUsePreview;
-  final Function() generate;
-  final String prompt;
-  final String negativePrompt;
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var channel = appState.channel;
     var connected = appState.webSocketConnected;
+    var prompt = appState.prompt;
+    var negativePrompt = appState.negativePrompt;
     return Flexible(
       child: ListView(
         shrinkWrap: true,
@@ -45,14 +30,17 @@ class PromptColumn extends StatelessWidget {
                   child: Text("Generate",
                       style: Theme.of(context).textTheme.titleLarge),
                 ),
-                PromptField(promptValue: prompt, setPrompt: setPrompt),
+                PromptField(promptValue: prompt, setPrompt: appState.setPrompt),
                 NegativePromptField(
                     negativePromptValue: negativePrompt,
-                    setNegativePrompt: setNegativePrompt),
-                ToggleSwitch(setValue: setUseAdvanced, label: "Advanced"),
-                ToggleSwitch(setValue: setUsePreview, label: "Preview"),
-                ToggleSwitch(setValue: setUseNSFW, label: "NSFW"),
-                ElevatedButton(onPressed: generate, child: Text('Generate')),
+                    setNegativePrompt: appState.setNegativePrompt),
+                ToggleSwitch(
+                    setValue: appState.setUseAdvanced, label: "Advanced"),
+                ToggleSwitch(
+                    setValue: appState.setUsePreview, label: "Preview"),
+                ToggleSwitch(setValue: appState.setUseNsfw, label: "NSFW"),
+                ElevatedButton(
+                    onPressed: appState.generate, child: Text('Generate')),
                 Column(
                   children: [
                     if (connected && channel != null) ...[

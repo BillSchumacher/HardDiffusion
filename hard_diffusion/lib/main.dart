@@ -1,15 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 //import 'package:flutter_localizations/flutter_localizations.dart';
 //import 'package:http/http.dart' as http;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:english_words/english_words.dart';
 import 'package:hard_diffusion/generate.dart';
+import 'package:hard_diffusion/state/app.dart';
 import 'package:hard_diffusion/vertical_separator.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid_type/uuid_type.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
   runApp(const MyApp());
@@ -90,94 +87,6 @@ class MyApp extends StatelessWidget {
           // const MyHomePage(title: 'Hard Diffusion'),
           ),
     );
-  }
-}
-
-final JsonDecoder _decoder = JsonDecoder();
-
-class MyAppState extends ChangeNotifier {
-  WebSocketChannel? channel;
-  bool webSocketConnected = false;
-  bool needsRefresh = false;
-  int webSocketReconnectAttempts = 0;
-  Map<Uuid, int> taskCurrentStep = {};
-  Map<Uuid, int> taskTotalSteps = {};
-  Map<Uuid, String> taskPreview = {};
-
-  MyAppState() {
-    connect();
-  }
-  void onMessage(message) {
-    var decoded = _decoder.convert(message);
-    var decodedMessage = decoded["message"];
-    webSocketConnected = true;
-    webSocketReconnectAttempts = 0;
-    var event = decoded["event"];
-    if (event == "image_generated") {
-      needsRefresh = true;
-    } else if (event == "image_generating") {
-      decodedMessage = _decoder.convert(decodedMessage);
-      var task_id = Uuid.parse(decodedMessage["task_id"]);
-      taskCurrentStep[task_id] = decodedMessage["step"];
-      taskTotalSteps[task_id] = decodedMessage["total_steps"];
-      if (decodedMessage["image"] != null) {
-        taskPreview[task_id] = decodedMessage["image"];
-      }
-    } else if (event == "image_queued") {
-      decodedMessage = Uuid.parse(decodedMessage);
-      taskCurrentStep[decodedMessage] = 0;
-      taskTotalSteps[decodedMessage] = 0;
-      taskPreview[decodedMessage] = "";
-      needsRefresh = true;
-    } else if (event == "image_errored") {
-      needsRefresh = true;
-    }
-    print(event);
-    notifyListeners();
-  }
-
-  void onDone() async {
-    var delay = 1 + 1 * webSocketReconnectAttempts;
-    if (delay > 10) {
-      delay = 10;
-    }
-    print(
-        "Done, reconnecting in $delay seconds, attempt $webSocketReconnectAttempts ");
-    webSocketConnected = false;
-    channel = null;
-    await Future.delayed(Duration(seconds: delay));
-    connect();
-  }
-
-  void onError(error) {
-    print(error);
-    if (error is WebSocketChannelException) {
-      webSocketReconnectAttempts += 1;
-    }
-  }
-
-  void connect() {
-    try {
-      channel = WebSocketChannel.connect(
-        Uri.parse('ws://localhost:8000/ws/generate/'),
-      );
-      channel!.stream.listen(onMessage, onDone: onDone, onError: onError);
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  void didRefresh() {
-    needsRefresh = false;
-  }
-
-  void sendMessage(message) {
-    if (channel == null) {
-      connect();
-    }
-    if (webSocketConnected && message != null && message.isNotEmpty) {
-      channel!.sink.add(message);
-    }
   }
 }
 

@@ -5,43 +5,25 @@ import 'package:hard_diffusion/forms/fields/inference_steps.dart';
 import 'package:hard_diffusion/forms/fields/seed.dart';
 import 'package:hard_diffusion/forms/fields/toggle_switch.dart';
 import 'package:hard_diffusion/forms/fields/width.dart';
+import 'package:hard_diffusion/state/app.dart';
+import 'package:provider/provider.dart';
 
 class AdvancedColumn extends StatelessWidget {
   const AdvancedColumn({
     super.key,
-    required this.useRandomSeed,
-    required this.useMultipleModels,
-    required this.seed,
-    required this.width,
-    required this.height,
-    required this.inferenceSteps,
-    required this.guidanceScale,
-    required this.setUseRandomSeed,
-    required this.setUseMultipleModels,
-    required this.setSeed,
-    required this.setWidth,
-    required this.setHeight,
-    required this.setInferenceSteps,
-    required this.setGuidanceScale,
   });
-
-  final Function(bool) setUseRandomSeed;
-  final Function(bool) setUseMultipleModels;
-  final Function(int) setSeed;
-  final Function(int) setWidth;
-  final Function(int) setHeight;
-  final Function(int) setInferenceSteps;
-  final Function(double) setGuidanceScale;
-  final bool useRandomSeed;
-  final bool useMultipleModels;
-  final int seed;
-  final int width;
-  final int height;
-  final int inferenceSteps;
-  final double guidanceScale;
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var useRandomSeed = appState.useRandomSeed;
+    var seed = appState.seed;
+    var width = appState.width;
+    var height = appState.height;
+    var inferenceSteps = appState.inferenceSteps;
+    var guidanceScale = appState.guidanceScale;
+    //var useMultipleModels = appState.useMultipleModels;
+
     return Flexible(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -52,31 +34,34 @@ class AdvancedColumn extends StatelessWidget {
               child: Text("Advanced",
                   style: Theme.of(context).textTheme.titleLarge),
             ),
-            ToggleSwitch(setValue: setUseRandomSeed, label: "Random Seed"),
+            ToggleSwitch(
+                setValue: appState.setUseRandomSeed, label: "Random Seed"),
             if (!useRandomSeed) ...[
               Text("Seed"),
               SeedField(
                 value: seed,
-                setValue: setSeed,
+                setValue: appState.setSeed,
               ),
             ],
             Row(
               children: [
-                WidthField(value: width, setValue: setWidth),
-                HeightField(value: height, setValue: setHeight),
+                WidthField(value: width, setValue: appState.setWidth),
+                HeightField(value: height, setValue: appState.setHeight),
               ],
             ),
             Row(
               children: [
                 InferenceStepsField(
-                    value: inferenceSteps, setValue: setInferenceSteps),
+                    value: inferenceSteps,
+                    setValue: appState.setInferenceSteps),
                 GuidanceScaleField(
-                    value: guidanceScale, setValue: setGuidanceScale),
+                    value: guidanceScale, setValue: appState.setGuidanceScale),
               ],
             ),
             Divider(),
             ToggleSwitch(
-                setValue: setUseMultipleModels, label: "Use Multiple Models")
+                setValue: appState.setUseMultipleModels,
+                label: "Use Multiple Models")
           ],
         ),
       ),
