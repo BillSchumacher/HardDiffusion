@@ -25,8 +25,8 @@ from celery import Task
 from channels.layers import get_channel_layer
 
 # from rest_framework.decorators import action
-from rest_framework import permissions, viewsets
-
+from rest_framework import permissions
+from dynamic_rest.viewsets import DynamicModelViewSet
 # from rest_framework.response import Response
 from generate.models import GeneratedImage, RenderWorkerDevice
 from generate.serializers import GeneratedImageSerializer
@@ -34,10 +34,11 @@ from generate.tasks import generate_image
 from model.models import TextToImageModel
 from user.permissions import IsOwnerOrReadOnly
 
+
 channel_layer = get_channel_layer()
 
 
-class GeneratedImageViewSet(viewsets.ModelViewSet):
+class GeneratedImageViewSet(DynamicModelViewSet):
     """
     This viewset automatically provides `list`, `create`, `retrieve`,
     `update` and `destroy` actions.

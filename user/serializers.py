@@ -2,17 +2,13 @@
 
 from django.contrib.auth import get_user_model
 
-from rest_framework import serializers
+from dynamic_rest.serializers import DynamicModelSerializer
+from dynamic_rest.fields import DynamicRelationField
 
-from generate.models import GeneratedImage
 
-
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(DynamicModelSerializer):
     """Serializer for User model."""
-
-    generated_images = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=GeneratedImage.objects.all()
-    )
+    generated_images = DynamicRelationField('GeneratedImageSerializer', many=True)
 
     class Meta:
         """Meta class for UserSerializer."""

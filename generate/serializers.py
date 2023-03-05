@@ -2,32 +2,20 @@
 """
 from typing import Any, Dict
 
+from dynamic_rest.serializers import DynamicModelSerializer
 from rest_framework import serializers
-
 from generate.models import GeneratedImage
 
 
-class GeneratedImageSerializer(serializers.Serializer):
+class GeneratedImageSerializer(DynamicModelSerializer):
     """Serializer for GeneratedImage model."""
+    filename = serializers.ReadOnlyField()
 
-    id = serializers.IntegerField(read_only=True)
-    task_id = serializers.UUIDField()
-    batch_number = serializers.IntegerField(required=False)
-    host = serializers.CharField(max_length=255, required=False)
-    duration = serializers.FloatField(required=False)
-    created_at = serializers.DateTimeField(required=False)
-    generated_at = serializers.DateTimeField(required=False)
-    prompt = serializers.CharField(max_length=255, required=False)
-    negative_prompt = serializers.CharField(max_length=255, required=False)
-    seed = serializers.IntegerField(required=False)
-    guidance_scale = serializers.FloatField(required=False)
-    num_inference_steps = serializers.IntegerField(required=False)
-    height = serializers.IntegerField(required=False)
-    width = serializers.IntegerField(required=False)
-    model = serializers.CharField(max_length=255, required=False)
-    error = serializers.BooleanField(required=False)
-    nsfw = serializers.BooleanField(required=False)
-    owner = serializers.ReadOnlyField(source="owner.username")
+    class Meta:
+        """Meta class for GeneratedImageSerializer."""
+        model = GeneratedImage
+        name = "generated_image"
+        exclude = []
 
     def create(self, validated_data: Dict[str, Any]) -> GeneratedImage:
         """

@@ -1,9 +1,7 @@
 import 'package:hard_diffusion/api/network_service.dart';
 import 'package:hard_diffusion/list_page.dart';
 import 'package:uuid_type/uuid_type.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'dart:convert';
 
 class GeneratedImage {
   final Uuid taskId;
@@ -14,7 +12,7 @@ class GeneratedImage {
   final DateTime? generatedAt;
   final String prompt;
   final String? negativePrompt;
-  final String? duration;
+  final double? duration;
   final int? seed;
   final double? guidanceScale;
   final int? numInferenceSteps;
@@ -48,9 +46,7 @@ class GeneratedImage {
       generatedAt = DateTime.parse(generatedAt);
     }
     var model = json['model'];
-    if (model == null) {
-      model = 'CompVis/StableDiffusion-1.4';
-    }
+    model ??= 'CompVis/StableDiffusion-1.4';
     return GeneratedImage(
       taskId: Uuid.parse(json['task_id']),
       id: json['id'] as int,
@@ -73,8 +69,8 @@ class GeneratedImage {
 }
 
 Future<ListPage<GeneratedImage>> fetchPhotos(int lastPage, int pageSize) async {
-  final response = await NetworkService()
-      .get('http://localhost:8000/images/$lastPage/$pageSize');
+  final response = await NetworkService().get(
+      'http://localhost:8000/api/images/?format=json&sort[]=-created_at&&page=$lastPage&page_size=$pageSize');
 
   // Use the compute function to run parsePhotos in a separate isolate.
   return compute(parsePhotos, response);
@@ -82,11 +78,12 @@ Future<ListPage<GeneratedImage>> fetchPhotos(int lastPage, int pageSize) async {
 
 // A function that converts a response body into a List<Photo>.
 ListPage<GeneratedImage> parsePhotos(dynamic jsonResponse) {
-  final images = jsonResponse["images"].cast<Map<String, dynamic>>();
-  final parsed_images = images.map<GeneratedImage>((json) {
+  print(jsonResponse);
+  final images = jsonResponse["generated_images"].cast<Map<String, dynamic>>();
+  final parsedImages = images.map<GeneratedImage>((json) {
     return GeneratedImage.fromJson(json);
   }).toList();
-  final parsed_total_count = jsonResponse["total"] as int;
+  final parsedTotalTount = jsonResponse["meta"]["total_results"] as int;
   return ListPage<GeneratedImage>(
-      itemList: parsed_images, totalCount: parsed_total_count);
+      itemList: parsedImages, totalCount: parsedTotalTount);
 }
