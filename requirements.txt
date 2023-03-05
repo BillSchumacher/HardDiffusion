@@ -8,11 +8,14 @@ django
 django-celery-beat
 django-celery-results
 djangorestframework
+drf_orjson_renderer
+dynamic-rest
 flake8
 ftfy
 huggingface_hub
 isort
 numpy
+orjson
 psycopg2
 pydantic
 pygments

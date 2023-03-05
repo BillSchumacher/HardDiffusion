@@ -14,8 +14,10 @@ import os
 import platform
 import random
 import sys
-from pathlib import Path
 
+from kombu.serialization import register
+import orjson
+from pathlib import Path
 import sentry_sdk
 from dotenv import load_dotenv
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -51,6 +53,7 @@ USE_LOCALHOST = sys.argv == ['manage.py', 'runserver'] or \
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 DEFAULT_TEXT_TO_IMAGE_MODEL = os.getenv('DEFAULT_TEXT_TO_IMAGE_MODEL', 'CompVis/stable-diffusion-v1-4')
 
 # Quick-start development settings - unsuitable for production
@@ -70,6 +73,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "daphne",
     'rest_framework',
+    'dynamic_rest',
     'api',
     'generate',
     'train',
@@ -159,7 +163,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    # '/var/www/static/',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -170,14 +177,33 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REDIS_CONNECTION_STRING = os.getenv(
     'REDIS_CONNECTION_STRING', 'redis://127.0.0.1:6379/5'
 )
+
+
+def dumps(obj):
+    return orjson.dumps(obj, option=orjson.OPT_SERIALIZE_NUMPY)
+
+
+def loads (obj):
+    return orjson.loads(obj)
+
+
+register('orjson', dumps, loads,
+         content_type='application/x-orjson',
+         content_encoding='utf-8')
+
+CELERY_RESULT_ACCEPT_CONTENT = ['application/x-orjson']
+CELERY_ACCEPT_CONTENT = ['application/x-orjson']
+ACCEPT_CONTENT = ['application/x-orjson']
+RESULT_ACCEPT_CONTENT = ['orjson']
+CELERY_TASK_SERIALIZER = 'orjson'
+TASK_SERIALIZER = 'orjson'
+CELERY_RESULT_SERIALIZER = 'orjson'
+RESULT_SERIALIZER = 'orjson'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_CACHE_BACKEND = REDIS_CONNECTION_STRING
 CELERY_BROKER_URL = REDIS_CONNECTION_STRING
 CELERY_RESULT_BACKEND = REDIS_CONNECTION_STRING
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 AUTH_USER_MODEL = 'user.User'
 
@@ -192,5 +218,22 @@ CHANNEL_LAYERS = {
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10.,
+    'DEFAULT_RENDERER_CLASSES': [
+        # 'rest_framework.renderers.JSONRenderer',
+        "drf_orjson_renderer.renderers.ORJSONRenderer",
+        # 'rest_framework.renderers.BrowsableAPIRenderer',
+        'dynamic_rest.renderers.DynamicBrowsableAPIRenderer',
+    ],
+    "ORJSON_RENDERER_OPTIONS": (
+        # orjson.OPT_NON_STR_KEYS,
+        # orjson.OPT_SERIALIZE_DATACLASS,
+        # orjson.OPT_SERIALIZE_NUMPY,
+        # orjson.OPT_APPEND_NEWLINE,
+        # orjson.OPT_SERIALIZE_UUID,
+        # orjson.OPT_INDENT_2,
+    ),
+    "DEFAULT_PARSER_CLASSES": (
+        "drf_orjson_renderer.parsers.ORJSONParser",
+    ),
 }

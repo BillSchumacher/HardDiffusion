@@ -100,7 +100,8 @@ class _ImageDetailsState extends State<ImageDetails> {
         image = paintingImage;
       }
       generating = true;
-      progress = currentStep! / item.numInferenceSteps!;
+      currentStep ??= 0;
+      progress = currentStep / item.numInferenceSteps!;
     } else {
       image = CachedNetworkImage(
         placeholder: (context, url) => const CircularProgressIndicator(),
@@ -110,9 +111,9 @@ class _ImageDetailsState extends State<ImageDetails> {
               .obtainKey(createLocalImageConfiguration(context))
               .then((value) {
             imageProvider.load(value, (bytes,
-                {allowUpscaling: true,
-                cacheHeight: 200,
-                cacheWidth: 200}) async {
+                {allowUpscaling = true,
+                cacheHeight = 200,
+                cacheWidth = 200}) async {
               imageBytes = bytes.buffer.asUint8List();
               return instantiateImageCodec(imageBytes);
             });
@@ -210,7 +211,7 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
 
   List<GeneratedImage> _generatedImageList = [];
   final PagingController<int, GeneratedImage> _pagingController =
-      PagingController(firstPageKey: 0);
+      PagingController(firstPageKey: 1);
 
   Future<void> insertGeneratedImageList(List<GeneratedImage> platformList) =>
       Future.microtask(() => _generatedImageList = platformList);
@@ -255,6 +256,7 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
     } catch (error) {
       // 4
       _pagingController.error = error;
+      print(error);
     }
   }
 
