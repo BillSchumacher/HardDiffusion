@@ -58,6 +58,8 @@ class ExceptionIndicator extends StatelessWidget {
             children: [
               Image.asset(
                 assetName,
+                width: 100,
+                height: 100,
               ),
               const SizedBox(
                 height: 32,

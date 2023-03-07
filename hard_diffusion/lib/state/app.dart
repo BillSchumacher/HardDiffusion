@@ -1,19 +1,53 @@
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hard_diffusion/api/network_service.dart';
 import 'package:html/parser.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid_type/uuid_type.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 final JsonDecoder _decoder = JsonDecoder();
 
 class MyAppState extends ChangeNotifier {
+  MyAppState() {
+    () async {
+      prefs = await SharedPreferences.getInstance();
+      remoteHost = prefs.getString("remoteHost") ?? "harddiffusion.com";
+      secureHost = prefs.getBool("secureHost") ?? true;
+      devMode = prefs.getBool("devMode") ?? false;
+      username = prefs.getString("username") ?? "";
+      prompt = prefs.getString("prompt") ?? "";
+      negativePrompt = prefs.getString("negativePrompt") ?? "";
+      seed = prefs.getInt("seed") ?? 0;
+      useAdvanced = prefs.getBool("useAdvanced") ?? false;
+      useMultipleModels = prefs.getBool("useMultipleModels") ?? false;
+      useNsfw = prefs.getBool("useNsfw") ?? false;
+      usePreview = prefs.getBool("usePreview") ?? false;
+      useRandomSeed = prefs.getBool("useRandomSeed") ?? false;
+      width = prefs.getInt("width") ?? 512;
+      height = prefs.getInt("height") ?? 512;
+      inferenceSteps = prefs.getInt("inferenceSteps") ?? 50;
+      guidanceScale = prefs.getDouble("guidanceScale") ?? 7.5;
+
+      notifyListeners();
+    }();
+    //connect();
+  }
+
+  late SharedPreferences prefs;
   WebSocketChannel? channel;
   bool webSocketConnected = false;
   bool needsRefresh = false;
   int webSocketReconnectAttempts = 0;
+  bool secureHost = false;
+  bool devMode = false;
+  String officialHost = "harddiffusion.com";
+  String devHost = "localhost:8000";
+  String remoteHost = "";
+  String authenticationToken = "";
+  String username = "";
+  String password = "";
   Map<Uuid, int> taskCurrentStep = {};
   Map<Uuid, int> taskTotalSteps = {};
   Map<Uuid, String> taskPreview = {};
@@ -32,63 +66,102 @@ class MyAppState extends ChangeNotifier {
   int inferenceSteps = 50;
   double guidanceScale = 7.5;
 
+  void toggleDevMode() {
+    devMode = !devMode;
+    if (devMode) {
+      secureHost = false;
+      remoteHost = devHost;
+    } else {
+      secureHost = true;
+      remoteHost = officialHost;
+    }
+    prefs.setBool("devMode", devMode);
+    prefs.setBool("secureHost", secureHost);
+    prefs.setString("remoteHost", remoteHost);
+    notifyListeners();
+  }
+
+  void toggleSecureHost() {
+    secureHost = !secureHost;
+    prefs.setBool("secureHost", secureHost);
+    notifyListeners();
+  }
+
+  void setRemoteHost(value) {
+    remoteHost = value;
+    prefs.setString("remoteHost", remoteHost);
+    notifyListeners();
+  }
+
   void setPrompt(value) {
     prompt = value;
+    prefs.setString("prompt", prompt);
     notifyListeners();
   }
 
   void setNegativePrompt(value) {
     negativePrompt = value;
+    prefs.setString("negativePrompt", negativePrompt);
     notifyListeners();
   }
 
   void setUseMultipleModels(value) {
     useMultipleModels = value;
+    prefs.setBool("useMultipleModels", useMultipleModels);
     notifyListeners();
   }
 
   void setUseNsfw(value) {
     useNsfw = value;
+    prefs.setBool("useNsfw", useNsfw);
     notifyListeners();
   }
 
   void setUseAdvanced(value) {
     useAdvanced = value;
+    prefs.setBool("useAdvanced", useAdvanced);
     notifyListeners();
   }
 
   void setUsePreview(value) {
     usePreview = value;
+    prefs.setBool("usePreview", usePreview);
     notifyListeners();
   }
 
   void setUseRandomSeed(value) {
     useRandomSeed = value;
+    prefs.setBool("useRandomSeed", useRandomSeed);
     notifyListeners();
   }
 
   void setSeed(value) {
     seed = value;
+    prefs.setInt("seed", seed);
     notifyListeners();
   }
 
   void setWidth(value) {
     width = value;
+    prefs.setInt("width", width);
     notifyListeners();
   }
 
   void setHeight(value) {
     height = value;
+    prefs.setInt("height", height);
     notifyListeners();
   }
 
   void setInferenceSteps(value) {
     inferenceSteps = value;
+    prefs.setInt("inferenceSteps", inferenceSteps);
     notifyListeners();
   }
 
   void setGuidanceScale(value) {
     guidanceScale = value;
+    prefs.setDouble("guidanceScale", guidanceScale);
     notifyListeners();
   }
 
@@ -119,9 +192,6 @@ class MyAppState extends ChangeNotifier {
     }
   }
 
-  MyAppState() {
-    connect();
-  }
   void onMessage(message) {
     var decoded = _decoder.convert(message);
     var decodedMessage = decoded["message"];

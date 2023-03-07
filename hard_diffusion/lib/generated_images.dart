@@ -130,23 +130,24 @@ class _GeneratedImageListViewState extends State<GeneratedImageListView> {
       appState.didRefresh();
     }
     return RefreshIndicator(
-        onRefresh: () => Future.sync(
-              () => _pagingController.refresh(),
-            ),
-        child: PagedGridView(
-          pagingController: _pagingController,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
+      onRefresh: () => Future.sync(
+        () => _pagingController.refresh(),
+      ),
+      child: PagedGridView(
+        pagingController: _pagingController,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+        ),
+        builderDelegate: PagedChildBuilderDelegate<GeneratedImage>(
+          itemBuilder: (context, item, index) => getImage(item),
+          firstPageErrorIndicatorBuilder: (context) => ErrorIndicator(
+            error: _pagingController.error,
+            onTryAgain: () => _pagingController.refresh(),
           ),
-          builderDelegate: PagedChildBuilderDelegate<GeneratedImage>(
-            itemBuilder: (context, item, index) => getImage(item),
-            firstPageErrorIndicatorBuilder: (context) => ErrorIndicator(
-              error: _pagingController.error,
-              onTryAgain: () => _pagingController.refresh(),
-            ),
-            noItemsFoundIndicatorBuilder: (context) => EmptyListIndicator(),
-          ),
-        ));
+          noItemsFoundIndicatorBuilder: (context) => EmptyListIndicator(),
+        ),
+      ),
+    );
   }
 
   @override

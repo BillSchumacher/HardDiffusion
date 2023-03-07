@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 //import 'package:http/http.dart' as http;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:english_words/english_words.dart';
-import 'package:hard_diffusion/generate.dart';
+import 'package:hard_diffusion/forms/infer_text_to_image.dart';
+import 'package:hard_diffusion/generated_images.dart';
 import 'package:hard_diffusion/state/app.dart';
-import 'package:hard_diffusion/vertical_separator.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -106,11 +106,17 @@ class _MyHomePageState extends State<MyHomePage> {
     futureAlbum = fetchAlbum();
   }
   */
+  void setSelectedIndex(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var channel = appState.channel;
+    /*
     Widget page = GeneratePage();
     switch (selectedIndex) {
       case 0:
@@ -120,14 +126,187 @@ class _MyHomePageState extends State<MyHomePage> {
         print("Nope");
         break;
       //throw UnimplementedError("no widget for $selectedIndex");
-    }
+    }*/
     return LayoutBuilder(builder: (context, constraints) {
-      return Scaffold(
-        body: Row(
+      var contextSize = MediaQuery.of(context).size;
+      print(contextSize);
+      print(constraints);
+      final double screenHeight = contextSize.height;
+      final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+      return SafeArea(
+          child: Scaffold(
+              resizeToAvoidBottomInset: false,
+              appBar: AppBar(toolbarHeight: 30, title: Text("Hard Diffusion")),
+              body: SizedBox(
+                width: constraints.maxWidth,
+                height: screenHeight - keyboardHeight - 30,
+                child: OrientationBuilder(builder: (context, orientation) {
+                  if (orientation == Orientation.landscape) {
+                    return LandscapeView(
+                        setSelectedIndex: setSelectedIndex,
+                        selectedIndex: selectedIndex,
+                        constraints: constraints);
+                  }
+                  return PortraitView(
+                      setSelectedIndex: setSelectedIndex,
+                      selectedIndex: selectedIndex,
+                      constraints: constraints);
+                }),
+              )));
+    });
+  }
+}
+
+class LandscapeView extends StatelessWidget {
+  const LandscapeView({
+    super.key,
+    required this.setSelectedIndex,
+    required this.selectedIndex,
+    required this.constraints,
+  });
+  final Function(int) setSelectedIndex;
+  final int selectedIndex;
+  final BoxConstraints constraints;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment(0.8, 1),
+            colors: <Color>[
+              Color(0xff1f005c),
+              Color(0xff5b0060),
+              Color(0xff870160),
+              Color(0xffac255e),
+              Color(0xffca485c),
+              Color(0xffe16b5c),
+              Color(0xfff39060),
+              Color(0xffffb56b),
+            ], // Gradient from https://learnui.design/tools/gradient-generator.html
+            tileMode: TileMode.mirror,
+          ),
+        ),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              NavigationRail(
+                extended: constraints.maxWidth >= 800,
+                destinations: [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home),
+                    label: Text('Generate'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.settings),
+                    label: Text('Settings'),
+                  ),
+                ],
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (value) {
+                  setSelectedIndex(value);
+                },
+              ),
+              Expanded(
+                child: Card(
+                  elevation: 5,
+                  child: InferTextToImageForm(
+                    landscape: true,
+                  ),
+                ),
+              ),
+              Expanded(
+                  child: Card(elevation: 5, child: GeneratedImageListView()))
+            ]),
+      )
+    ]);
+  }
+}
+
+class PortraitView extends StatelessWidget {
+  const PortraitView({
+    super.key,
+    required this.setSelectedIndex,
+    required this.selectedIndex,
+    required this.constraints,
+  });
+  final Function(int) setSelectedIndex;
+  final int selectedIndex;
+  final BoxConstraints constraints;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(children: [
+      Column(children: [
+        NavigationBar(
+          height: 55,
+          destinations: [
+            NavigationDestination(
+              icon: Icon(Icons.home),
+              label: 'Generate',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings),
+              label: 'Settings',
+            ),
+          ],
+          selectedIndex: selectedIndex,
+          onDestinationSelected: (value) {
+            setSelectedIndex(value);
+          },
+        ),
+        Flexible(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment(0.8, 1),
+                colors: <Color>[
+                  Color(0xff1f005c),
+                  Color(0xff5b0060),
+                  Color(0xff870160),
+                  Color(0xffac255e),
+                  Color(0xffca485c),
+                  Color(0xffe16b5c),
+                  Color(0xfff39060),
+                  Color(0xffffb56b),
+                ], // Gradient from https://learnui.design/tools/gradient-generator.html
+                tileMode: TileMode.mirror,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Card(
+                    elevation: 5,
+                    child: InferTextToImageForm(
+                      landscape: false,
+                    ),
+                  ),
+                ),
+                Expanded(
+                    child: Card(
+                        elevation: 5,
+                        child: Flexible(child: GeneratedImageListView())))
+              ],
+            ),
+          ),
+        )
+      ])
+    ]);
+  }
+}
+/*
+          Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SafeArea(
               child: NavigationRail(
-                //extended: constraints.maxWidth >= 800,
+                extended: constraints.maxWidth >= 800,
                 destinations: [
                   NavigationRailDestination(
                     icon: Icon(Icons.home),
@@ -152,32 +331,15 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             VerticalSeparator(),
-            /*
-              FutureBuilder<Album>(
-                future: futureAlbum,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Text(snapshot.data!.title);
-                  } else if (snapshot.hasError) {
-                    return Text('${snapshot.error}');
-                  }
-        
-                  // By default, show a loading spinner.
-                  return const CircularProgressIndicator();
-                },
-              ),*/
+
+  */
+/*
             Expanded(
               child: Container(
                 //color: Theme.of(context).colorScheme.primaryContainer,
                 child: page,
               ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-}
+            ),*/
 
 class BigCard extends StatelessWidget {
   const BigCard({
