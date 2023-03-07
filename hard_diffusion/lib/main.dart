@@ -7,9 +7,29 @@ import 'package:hard_diffusion/forms/infer_text_to_image.dart';
 import 'package:hard_diffusion/generated_images.dart';
 import 'package:hard_diffusion/state/app.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'package:hard_diffusion/account.dart';
+import 'package:hard_diffusion/login.dart';
+import 'package:hard_diffusion/splash_screen.dart';
+import 'dart:io';
+import 'package:url_protocol/url_protocol.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  registerProtocolHandler('io.supabase.hard_diffusion://login-callback/',
+      arguments: ['-url', '%s']);
+  print("registered");
+
+  await Supabase.initialize(
+      url: 'https://dhedbyqmsgjkienhmoid.supabase.co',
+      //authCallbackUrlHostname: 'io.supabase.hard_diffusion',
+      anonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoZWRieXFtc2dqa2llbmhtb2lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzgyMTQ2MDksImV4cCI6MTk5Mzc5MDYwOX0.Kiqoq8C-NZckPjs-X1xhqonSq3k-t2EnIdrch3AD55Y');
+  runApp(MyApp());
+
+  //unregisterProtocolHandler('http://localhost:3000');
+  print("unregistered");
 }
 
 /*
@@ -63,29 +83,34 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-          onGenerateTitle: (context) =>
-              AppLocalizations.of(context)!.helloWorld,
-          title: 'Hard Diffusion',
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: ThemeData(
-            // This is the theme of your application.
-            //
-            // Try running your application with "flutter run". You'll see the
-            // application has a blue toolbar. Then, without quitting the app, try
-            // changing the primarySwatch below to Colors.green and then invoke
-            // "hot reload" (press "r" in the console where you ran "flutter run",
-            // or simply save your changes to "hot reload" in a Flutter IDE).
-            // Notice that the counter didn't reset back to zero; the application
-            // is not restarted.
-            primarySwatch: Colors.lightGreen,
-            //primarySwatch: null,
-            //colorSchemeSeed: Colors.deepOrange,
-            //colorScheme: ColorScheme.fromSeed(seedColor: Colors.grey),
+        onGenerateTitle: (context) => AppLocalizations.of(context)!.helloWorld,
+        title: 'Hard Diffusion',
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: ThemeData.dark().copyWith(
+          primaryColor: Colors.green,
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.green,
+            ),
           ),
-          home: MyHomePage()
-          // const MyHomePage(title: 'Hard Diffusion'),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green,
+            ),
           ),
+        ),
+        initialRoute: '/',
+        routes: <String, WidgetBuilder>{
+          '/': (_) => const SplashPage(),
+          '/login': (_) => const LoginPage(),
+          '/account': (_) => const AccountPage(),
+          '/generate': (_) => MyHomePage(),
+        },
+        //home: MyHomePage()
+        // const MyHomePage(title: 'Hard Diffusion'),
+      ),
     );
   }
 }
@@ -213,8 +238,11 @@ class LandscapeView extends StatelessWidget {
               Expanded(
                 child: Card(
                   elevation: 5,
-                  child: InferTextToImageForm(
-                    landscape: true,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: InferTextToImageForm(
+                      landscape: true,
+                    ),
                   ),
                 ),
               ),
@@ -282,8 +310,11 @@ class PortraitView extends StatelessWidget {
                 Expanded(
                   child: Card(
                     elevation: 5,
-                    child: InferTextToImageForm(
-                      landscape: false,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: InferTextToImageForm(
+                        landscape: false,
+                      ),
                     ),
                   ),
                 ),
