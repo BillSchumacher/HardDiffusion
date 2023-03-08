@@ -1,4 +1,3 @@
-accelerate
 black
 celery[redis]
 channels[daphne]
@@ -26,11 +25,3 @@ pylint_django
 python-dotenv
 sentry-sdk
 typing-extensions
---extra-index-url https://download.pytorch.org/whl/cu116
-torch
-torchvision
-torchaudio
-git+https://github.com/BillSchumacher/transformers@main#egg=transformers
-triton; sys_platform == 'linux'
-xformers
-# colossalai

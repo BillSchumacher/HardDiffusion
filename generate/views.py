@@ -21,7 +21,6 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from asgiref.sync import async_to_sync
-from celery import Task
 from channels.layers import get_channel_layer
 
 # from rest_framework.decorators import action
@@ -30,7 +29,6 @@ from dynamic_rest.viewsets import DynamicModelViewSet
 # from rest_framework.response import Response
 from generate.models import GeneratedImage, RenderWorkerDevice
 from generate.serializers import GeneratedImageSerializer
-from generate.tasks import generate_image
 from model.models import TextToImageModel
 from user.permissions import IsOwnerOrReadOnly
 
@@ -93,7 +91,7 @@ def queue_prompt(request: HttpRequest) -> JsonResponse:
     """
     if request.method != "POST":
         return JsonResponse({"error": "POST request required", "task_id": None})
-    _generate_image: Task = generate_image  # type: ignore
+    # _generate_image: Task = generate_image  # type: ignore
     guidance_scale = float(request.POST.get("guidance_scale", 7.5))
     inference_steps = int(request.POST.get("inference_steps", 50))
     height = int(request.POST.get("height", 512))
@@ -101,7 +99,7 @@ def queue_prompt(request: HttpRequest) -> JsonResponse:
     seed = request.POST.get("seed", None)
     model: str = request.POST.get("model", settings.DEFAULT_TEXT_TO_IMAGE_MODEL)
     nsfw: bool = bool(len(request.POST.get("nsfw", "")))
-    preview = bool(len(request.POST.get("use_preview", "")))
+    # preview = bool(len(request.POST.get("use_preview", "")))
     prompt = request.POST["prompt"]
     negative_prompt = request.POST.get("negative_prompt", None)
     if seed:
@@ -114,30 +112,30 @@ def queue_prompt(request: HttpRequest) -> JsonResponse:
         "seed": seed,
         "nsfw": nsfw,
     }
-    models = model.split(";") if ";" in model else None
-    result = _generate_image.apply_async(
-        kwargs=dict(
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            model_path_or_name=models or model,
-            preview_image=preview,
-            **params,
-        ),
-        countdown=2,
-    )
-    task_id = result.id
-    GeneratedImage(
+    # models = model.split(";") if ";" in model else None
+    # result = _generate_image.apply_async(
+    #    kwargs=dict(
+    #        prompt=prompt,
+    #        negative_prompt=negative_prompt,
+    #        model_path_or_name=models or model,
+    #        preview_image=preview,
+    #        **params,
+    #    ),
+    #    countdown=2,
+    # )
+    image = GeneratedImage(
         prompt=prompt,
         negative_prompt=negative_prompt,
-        task_id=task_id,
         model=model,
         **params,
-    ).save()
+    )
+    image.save()
+    image_id = image.id
     async_to_sync(channel_layer.group_send)(
         "generate",
-        {"type": "event_message", "event": "image_queued", "message": str(task_id)},
+        {"type": "event_message", "event": "image_queued", "message": str(image_id)},
     )
-    return JsonResponse({"error": None, "task_id": task_id})
+    return JsonResponse({"error": None, "image_id": image_id})
 
 
 def csrf_form(request: HttpRequest) -> HttpResponse:

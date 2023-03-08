@@ -7,7 +7,7 @@ from django.db import models
 class GeneratedImage(models.Model):
     """Model for generated images."""
 
-    task_id = models.UUIDField()
+    task_id = models.UUIDField(null=True)
     batch_number = models.IntegerField(blank=True, null=True)
     host = models.CharField(max_length=255, blank=True, null=True)
     duration = models.FloatField(null=True)
