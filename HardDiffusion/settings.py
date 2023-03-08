@@ -14,12 +14,12 @@ import os
 import platform
 import random
 import sys
-
-from kombu.serialization import register
-import orjson
 from pathlib import Path
+
+import orjson
 import sentry_sdk
 from dotenv import load_dotenv
+from kombu.serialization import register
 from sentry_sdk.integrations.django import DjangoIntegration
 
 load_dotenv()

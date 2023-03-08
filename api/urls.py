@@ -2,6 +2,7 @@
 from django.urls import include, path
 
 from dynamic_rest.routers import DynamicRouter
+
 from generate import views as generate_views
 from user import views as user_views
 

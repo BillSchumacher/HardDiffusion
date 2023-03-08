@@ -1,1 +1,1 @@
-celery -A HardDiffusion worker -l INFO --concurrency=1
+celery -A HardDiffusion worker -l INFO --concurrency=1 -Q image_progress

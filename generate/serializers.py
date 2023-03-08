@@ -4,15 +4,18 @@ from typing import Any, Dict
 
 from dynamic_rest.serializers import DynamicModelSerializer
 from rest_framework import serializers
+
 from generate.models import GeneratedImage
 
 
 class GeneratedImageSerializer(DynamicModelSerializer):
     """Serializer for GeneratedImage model."""
+
     filename = serializers.ReadOnlyField()
 
     class Meta:
         """Meta class for GeneratedImageSerializer."""
+
         model = GeneratedImage
         name = "generated_image"
         exclude = []
