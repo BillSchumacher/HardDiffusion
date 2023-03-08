@@ -73,6 +73,8 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "daphne",
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_registration',
     'dynamic_rest',
     'api',
     'generate',
@@ -217,6 +219,9 @@ CHANNEL_LAYERS = {
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10.,
     'DEFAULT_RENDERER_CLASSES': [
@@ -236,4 +241,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PARSER_CLASSES": (
         "drf_orjson_renderer.parsers.ORJSONParser",
     ),
+}
+REGISTRATION_FRONTEND_URL = os.getenv('REGISTRATION_FRONTEND_URL', 'http://localhost:8000/')
+DEFAULT_EMAIL_SENDER = os.getenv('DEFAULT_EMAIL_SENDER', 'no-reply@example.com')
+REST_REGISTRATION = {
+    'REGISTER_VERIFICATION_ENABLED': True,
+    'REGISTER_EMAIL_VERIFICATION_ENABLED': True,
+    'RESET_PASSWORD_VERIFICATION_ENABLED': True,
+    'REGISTER_VERIFICATION_URL': f'{REGISTRATION_FRONTEND_URL}verify-user/',
+    'RESET_PASSWORD_VERIFICATION_URL': f'{REGISTRATION_FRONTEND_URL}reset-password/',
+    'REGISTER_EMAIL_VERIFICATION_URL': f'{REGISTRATION_FRONTEND_URL}verify-email/',
+    'VERIFICATION_FROM_EMAIL': DEFAULT_EMAIL_SENDER,
 }

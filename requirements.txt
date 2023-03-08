@@ -8,6 +8,8 @@ django
 django-celery-beat
 django-celery-results
 djangorestframework
+djangorestframework-simplejwt[crypto]
+django-rest-registration
 drf_orjson_renderer
 dynamic-rest
 flake8

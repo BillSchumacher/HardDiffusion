@@ -21,15 +21,31 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
+
+
+api_urlpatterns = [
+    path("", include("api.urls")),
+    path('accounts/', include('rest_registration.api.urls')),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path("auth/", include("rest_framework.urls")),
+]
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("generate.urls")),
-    path("api/", include("api.urls")),
+    path('api/v1/', include(api_urlpatterns)),
     path("train/", include("train.urls")),
     path("model/", include("model.urls")),
-    path("api-auth/", include("rest_framework.urls")),
 ]
+
 urlpatterns.extend(
     static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # type: ignore
 )

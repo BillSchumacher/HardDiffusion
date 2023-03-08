@@ -7,6 +7,15 @@ This works, kinda, expect issues.
 
 Docs: https://billschumacher.github.io/HardDiffusion/
 
+
+*Moving to organization and spliting repos*
+
+Backend: https://github.com/HardDiffusion/HardDiffusion
+
+Frontend (Flutter): https://github.com/HardDiffusion/HardDiffusionFrontend
+
+Rendering: https://github.com/HardDiffusion/HardDiffusionRendering
+
 New Flutter UI:
 
 ![New Flutter UI](https://raw.githubusercontent.com/BillSchumacher/HardDiffusion/release/screenshots/new_generate_flutter.png)
