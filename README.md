@@ -8,13 +8,13 @@ This works, kinda, expect issues.
 Docs: https://billschumacher.github.io/HardDiffusion/
 
 
-*Moving to organization and spliting repos*
+*Moved to organization and split the monorepo*
 
-Backend: https://github.com/HardDiffusion/HardDiffusion
+Backend (Django Rest Framework): https://github.com/HardDiffusion/HardDiffusionBackend
 
 Frontend (Flutter): https://github.com/HardDiffusion/HardDiffusionFrontend
 
-Rendering: https://github.com/HardDiffusion/HardDiffusionRendering
+Rendering (Diffusers & Celery): https://github.com/HardDiffusion/HardDiffusionRenderer
 
 New Flutter UI:
 
@@ -40,6 +40,7 @@ Goals
 * Distributed image processing :white_check_mark:
 * Use multiple models :white_check_mark:
 * Documentation :white_check_mark:
+* Update Documentation for multi repo setup.
 * Tests
 * Generating objects/characters with alpha background
 * Object-like prompt? less NLP more {'background': 'prompt...', characters: [{...}]}
