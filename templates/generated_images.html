@@ -8,6 +8,7 @@
 
 <script>
     const use_localhost = {{ use_localhost }};
+    const static_host = "{{ static_host }}";
     const durations = ['years', 'months', 'days', 'hours', 'minutes', 'seconds'];
     let last_generated = null;
     function timeSince(timestamp) {
@@ -36,10 +37,10 @@
     function get_image_src(image) {
         let image_src = '';
         const image_filename = image.generated_at ? image.filename : 'painting.gif';
-        return use_localhost ? `http://localhost:8000/${image_filename}` : `http://${image.host}/${image_filename}`;
+        return use_localhost ? `http://localhost:8000/${image_filename}` : `https://${image.host}/${image_filename}`;
     }
     function get_image_error_src(image) {
-        return use_localhost ? `http://localhost:8000/error.gif` : `http://${image.host}/error.gif`;
+        return use_localhost ? `http://localhost:8000/error.gif` : `https://${static_host}/error.gif`;
     }
     function create_image_element(image) {
         const element = document.createElement("img");

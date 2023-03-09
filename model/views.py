@@ -7,6 +7,7 @@ from django.http import (
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
 )
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -81,6 +82,8 @@ def redirect_with_pipeline_tag(
     return redirect(f"{redirect_url}?pipeline_tag={pipeline_tag}")
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def add_model(request, model_class):
     """Add model to database."""
     model_id = request.GET.get("model_id")
@@ -90,6 +93,8 @@ def add_model(request, model_class):
         model.save()
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def remove_model(request, model_class):
     """Remove model from database."""
     if model_id := request.GET.get("model_id"):
@@ -97,6 +102,8 @@ def remove_model(request, model_class):
             model.delete()
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def add_huggingface_model(
     request,
 ) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect]:
@@ -106,6 +113,8 @@ def add_huggingface_model(
     return redirect_with_pipeline_tag(pipeline_tag)
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def remove_huggingface_model(
     request,
 ) -> Union[HttpResponseRedirect, HttpResponsePermanentRedirect]:
@@ -115,6 +124,7 @@ def remove_huggingface_model(
     return redirect_with_pipeline_tag(pipeline_tag)
 
 
+@login_required
 def search_huggingface_models(request):
     """Search object_detection models."""
     pipeline_tag = request.GET.get("pipeline_tag", "Text_to_Image")
@@ -129,6 +139,8 @@ def get_hf_filter(pipeline_tag) -> ModelFilter:
     return ModelFilter(task=getattr(args.pipeline_tag, pipeline_tag))
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def render_search(request, models, pipeline_tag) -> HttpResponse:
     """Render search page."""
     return render(
@@ -144,6 +156,8 @@ def render_search(request, models, pipeline_tag) -> HttpResponse:
     )
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def search_hugging_face_models(request, model_class, pipeline_tag):
     """Search models."""
     now = timezone.now()

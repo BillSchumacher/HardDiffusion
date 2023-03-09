@@ -23,6 +23,8 @@ class GeneratedImage(models.Model):
     model = models.CharField(max_length=255, blank=True, null=True)
     error = models.BooleanField(default=False)
     nsfw = models.BooleanField(default=False)
+    private = models.BooleanField(default=False)
+
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="generated_images",

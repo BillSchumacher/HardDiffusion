@@ -9,7 +9,7 @@ from dynamic_rest.serializers import DynamicModelSerializer
 class UserSerializer(DynamicModelSerializer):
     """Serializer for User model."""
 
-    generated_images = DynamicRelationField("GeneratedImageSerializer", many=True)
+    generated_images = DynamicRelationField("generate.serializers.GeneratedImageSerializer", many=True)
 
     class Meta:
         """Meta class for UserSerializer."""

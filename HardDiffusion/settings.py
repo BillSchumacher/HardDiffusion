@@ -15,7 +15,7 @@ import platform
 import random
 import sys
 from pathlib import Path
-
+import dj_database_url
 import orjson
 import sentry_sdk
 from dotenv import load_dotenv
@@ -24,9 +24,9 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 load_dotenv()
 os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
-
+SENTRY_DSN = os.getenv('SENTRY_DSN', "https://33009b0658104b1ba13167fd3c56da0d@o348660.ingest.sentry.io/4504739432693760")
 sentry_sdk.init(
-    dsn="https://33009b0658104b1ba13167fd3c56da0d@o348660.ingest.sentry.io/4504739432693760",
+    dsn=SENTRY_DSN,
     integrations=[
         DjangoIntegration(),
     ],
@@ -41,15 +41,19 @@ sentry_sdk.init(
     send_default_pii=False
 )
 
-hostname = os.getenv(
+_hostname = os.getenv(
     'HOSTNAME',
     os.getenv('COMPUTERNAME', platform.node())
 )
-if '.' in hostname:
-    hostname = hostname.split('.')[0]
-HOSTNAME = hostname
-USE_LOCALHOST = sys.argv == ['manage.py', 'runserver'] or \
-    os.getenv('USE_LOCALHOST', '0') == '1'
+if '.' in _hostname:
+    _hostname = _hostname.split('.')[0]
+HOSTNAME = _hostname
+LOGIN_URL = "/api/v1/auth/login/"
+
+STATIC_HOST = os.getenv('STATIC_HOST', 'localhost:8000')
+# Uses http instead of https.
+USE_LOCALHOST = STATIC_HOST == "localhost:8000" or \
+    os.getenv('USE_LOCALHOST', 'false').lower() == 'true'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -124,12 +128,10 @@ WSGI_APPLICATION = 'HardDiffusion.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{ BASE_DIR / 'db.sqlite3'}"
+    )
 }
 
 
@@ -141,6 +143,7 @@ AUTH_PASSWORD_CLASSES = [
     'CommonPasswordValidator',
     'NumericPasswordValidator'
 ]
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': f"django.contrib.auth.password_validation.{clazz}"}
     for clazz in AUTH_PASSWORD_CLASSES
@@ -163,7 +166,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
-
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
@@ -220,6 +222,8 @@ CHANNEL_LAYERS = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',

@@ -2,13 +2,13 @@ black
 celery[redis]
 channels[daphne]
 channels-redis
-diffusers[torch,training]
 django
 django-celery-beat
 django-celery-results
 djangorestframework
 djangorestframework-simplejwt[crypto]
 django-rest-registration
+dj-database-url
 drf_orjson_renderer
 dynamic-rest
 flake8

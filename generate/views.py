@@ -19,10 +19,14 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
+from django.db.models import Q
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from dynamic_rest.viewsets import DynamicModelViewSet
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
 
 # from rest_framework.decorators import action
 from rest_framework import permissions
@@ -58,6 +62,14 @@ class GeneratedImageViewSet(DynamicModelViewSet):
         serializer.save(owner=self.request.user)
 
 
+    def get_queryset(self, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return GeneratedImage.objects.all()
+        else:
+            return GeneratedImage.objects.filter(Q(owner_id=self.request.user.id) |  Q(private=False))
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def index(request: HttpRequest) -> HttpResponse:
     """
     The endpoint that returns the html UI used to generate images.
@@ -74,10 +86,13 @@ def index(request: HttpRequest) -> HttpResponse:
         "use_localhost": "true" if settings.USE_LOCALHOST else "false",
         "models": models,
         "default_model": settings.DEFAULT_TEXT_TO_IMAGE_MODEL,
+        "static_host": settings.STATIC_HOST,
     }
     return render(request, "generate.html", context)
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def queue_prompt(request: HttpRequest) -> JsonResponse:
     """Queue a prompt to be generated.
 
@@ -152,6 +167,8 @@ def csrf_form(request: HttpRequest) -> HttpResponse:
     return render(request, "csrf.html", {})
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def images(
     request: HttpRequest, last: Optional[int] = None, page_size: int = 10
 ) -> JsonResponse:
@@ -205,6 +222,8 @@ def images(
     )
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def renderer_health(request: HttpRequest) -> JsonResponse:
     """Check health of all renderer devices.
 
@@ -242,6 +261,8 @@ def renderer_health(request: HttpRequest) -> JsonResponse:
     return JsonResponse({"results": results_by_hostname})
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def renderer_status(request: HttpRequest) -> HttpResponse:
     """Render the renderer status page.
 
