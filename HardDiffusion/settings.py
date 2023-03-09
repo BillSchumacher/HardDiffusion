@@ -15,6 +15,7 @@ import platform
 import random
 import sys
 from pathlib import Path
+
 import dj_database_url
 import orjson
 import sentry_sdk
@@ -242,9 +243,9 @@ REST_FRAMEWORK = {
         # orjson.OPT_SERIALIZE_UUID,
         # orjson.OPT_INDENT_2,
     ),
-    "DEFAULT_PARSER_CLASSES": (
-        "drf_orjson_renderer.parsers.ORJSONParser",
-    ),
+    # "DEFAULT_PARSER_CLASSES": (
+    #    "drf_orjson_renderer.parsers.ORJSONParser",
+    # ),
 }
 REGISTRATION_FRONTEND_URL = os.getenv('REGISTRATION_FRONTEND_URL', 'http://localhost:8000/')
 DEFAULT_EMAIL_SENDER = os.getenv('DEFAULT_EMAIL_SENDER', 'no-reply@example.com')

@@ -2,12 +2,12 @@ import json
 from datetime import datetime, timedelta
 from typing import Union
 
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import (
     HttpResponse,
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
 )
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone

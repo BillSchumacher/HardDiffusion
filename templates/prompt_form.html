@@ -175,9 +175,10 @@
             localStorage.setItem("height", height);
             localStorage.setItem("inference_steps", inference_steps);
             localStorage.setItem("guidance_scale", guidance_scale);
-            
+            let post_data = {"prompt": prompt, "negative_prompt": negative_prompt, "seed": seed, "width": width, "height": height, "inference_steps": inference_steps, "guidance_scale": guidance_scale};
             if (nsfw_input.checked) {
                 data.set("nsfw", "true");
+                post_data["nsfw"] = true;
                 localStorage.setItem("nsfw", "1");
             } else {
                 localStorage.setItem("nsfw", "0");
@@ -186,21 +187,35 @@
             if (!random_seed_checkbox.checked) {
                 localStorage.setItem("random_seed", "0");
                 data.set("seed", seed);
+                post_data["seed"] = seed;
             } else {
                 localStorage.setItem("random_seed", "1");
+                post_data["seed"] = 0
             }
 
             if (width != "") {
                 data.set("width", width);
+                post_data["width"] = width;
+            } else {
+                post_data["width"] = 512;
             }
             if (height != "") {
                 data.set("height", height);
+                post_data["height"] = height;
+            } else {
+                post_data["height"] = 512;
             }
             if (inference_steps != "") {
                 data.set("inference_steps", inference_steps);
+                post_data["num_inference_steps"] = inference_steps;
+            } else {
+                post_data["num_inference_steps"] = 50;
             }
             if (guidance_scale != "") {
                 data.set("guidance_scale", guidance_scale);
+                post_data["guidance_scale"] = guidance_scale;
+            } else {
+                post_data["guidance_scale"] = 7.5;
             }
 
             let model_value = null;
@@ -227,11 +242,13 @@
                     model_value = "";
                 }
             }
-
+            post_data["model"] = model_value;
+            post_data["csrfmiddlewaretoken"] = data.get("csrfmiddlewaretoken")
+            const csrf_token = post_data["csrfmiddlewaretoken"];
             localStorage.setItem("model", model_value);
             data.set('model', model_value);
             
-            fetch("{% url 'queue_prompt' %}", { method: "post", body: data })
+            fetch("{% url 'image-list' %}", { method: "post", body: JSON.stringify(post_data), headers: {'Content-Type': "application/json", "X-CSRFToken": csrf_token} })
             .then(res => res.json())
             .then(data => {
                 //console.log(data);

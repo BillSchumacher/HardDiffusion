@@ -2,16 +2,28 @@
 """
 from typing import Any, Dict
 
+from django.conf import settings
+
 from dynamic_rest.serializers import DynamicModelSerializer
 from rest_framework import serializers
 
 from generate.models import GeneratedImage
+from model.models import ImageToImageModel, TextToImageModel
 
 
 class GeneratedImageSerializer(DynamicModelSerializer):
     """Serializer for GeneratedImage model."""
 
     filename = serializers.ReadOnlyField()
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    width = serializers.ChoiceField(
+        choices=[(128, "128"), (256, "256"), (512, "512"), (768, "768"), (1024, "1024")]
+    )
+    height = serializers.ChoiceField(
+        choices=[(128, "128"), (256, "256"), (512, "512"), (768, "768"), (1024, "1024")]
+    )
+    num_inference_steps = serializers.IntegerField(min_value=5, max_value=50)
+    guidance_scale = serializers.FloatField(min_value=0.0, max_value=20.0)
 
     class Meta:
         """Meta class for GeneratedImageSerializer."""
@@ -19,6 +31,30 @@ class GeneratedImageSerializer(DynamicModelSerializer):
         model = GeneratedImage
         name = "generated_image"
         exclude = []
+
+    def validate_model(self, value: str) -> str:
+        """Validate the model field.
+
+        Args:
+            value: (str) - the model repo id.
+
+        Raises:
+            ValidationError
+
+        Returns:
+            value: (str)
+        """
+        if not value:
+            value = settings.DEFAULT_TEXT_TO_IMAGE_MODEL
+        models = value.split(";") if ";" in value else []
+        model_qs = TextToImageModel.objects
+        if models:
+            model_qs = model_qs.filter(model_id__in=models).all()
+        else:
+            model_qs = model_qs.filter(model_id=value).first()
+        if not model_qs:
+            raise serializers.ValidationError("Invalid model")
+        return value
 
     def create(self, validated_data: Dict[str, Any]) -> GeneratedImage:
         """
@@ -30,6 +66,7 @@ class GeneratedImageSerializer(DynamicModelSerializer):
         Returns:
             GeneratedImage: The new GeneratedImage instance.
         """
+
         return GeneratedImage.objects.create(**validated_data)
 
     def update(

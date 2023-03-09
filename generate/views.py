@@ -16,17 +16,15 @@ from datetime import timedelta
 from typing import Optional
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
-from django.db.models import Q
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from dynamic_rest.viewsets import DynamicModelViewSet
-
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import user_passes_test
 
 # from rest_framework.decorators import action
 from rest_framework import permissions
@@ -34,6 +32,7 @@ from rest_framework import permissions
 # from rest_framework.response import Response
 from generate.models import GeneratedImage, RenderWorkerDevice
 from generate.serializers import GeneratedImageSerializer
+from generate.tasks import generate_image as _generate_image
 from model.models import TextToImageModel
 from user.permissions import IsOwnerOrReadOnly
 
@@ -59,14 +58,50 @@ class GeneratedImageViewSet(DynamicModelViewSet):
 
     def perform_create(self, serializer: GeneratedImageSerializer) -> None:
         """Set the owner of the image to the current user."""
-        serializer.save(owner=self.request.user)
-
+        model = serializer.validated_data.get('model')
+        if not model:
+            serializer.validated_data['model'] = settings.DEFAULT_TEXT_TO_IMAGE_MODEL
+        obj = serializer.save(owner=self.request.user)
+        model = obj.model
+        models = model.split(";") if ";" in model else None
+        image_id = obj.id
+        preview = serializer.data.get("preview")
+        params = {
+            "guidance_scale": obj.guidance_scale,
+            "num_inference_steps": obj.num_inference_steps,
+            "height": obj.height,
+            "width": obj.width,
+            "seed": obj.seed,
+            "nsfw": obj.nsfw,
+        }
+        result = _generate_image.apply_async(
+            kwargs=dict(
+                image_id=image_id,
+                prompt=obj.prompt,
+                negative_prompt=obj.negative_prompt,
+                model_path_or_name=models or model,
+                preview_image=preview,
+                **params,
+            ),
+            countdown=2,
+        )
+        async_to_sync(channel_layer.group_send)(
+            "generate",
+            {
+                "type": "event_message",
+                "event": "image_queued",
+                "message": str(result.id),
+            },
+        )
 
     def get_queryset(self, *args, **kwargs):
         if self.request.user.is_superuser:
             return GeneratedImage.objects.all()
         else:
-            return GeneratedImage.objects.filter(Q(owner_id=self.request.user.id) |  Q(private=False))
+            return GeneratedImage.objects.filter(
+                Q(owner_id=self.request.user.id) | Q(private=False)
+            )
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -89,70 +124,6 @@ def index(request: HttpRequest) -> HttpResponse:
         "static_host": settings.STATIC_HOST,
     }
     return render(request, "generate.html", context)
-
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def queue_prompt(request: HttpRequest) -> JsonResponse:
-    """Queue a prompt to be generated.
-
-    Parses the request parameters and queues a celery task to generate an image.
-
-    Args:
-        request: The request object.
-
-    Returns:
-        A JSON response with an `error` key and a `task_id` key.
-    """
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required", "task_id": None})
-    from generate.tasks import generate_image as _generate_image
-
-    guidance_scale = float(request.POST.get("guidance_scale", 7.5))
-    inference_steps = int(request.POST.get("inference_steps", 50))
-    height = int(request.POST.get("height", 512))
-    width = int(request.POST.get("width", 512))
-    seed = request.POST.get("seed", None)
-    model: str = request.POST.get("model", settings.DEFAULT_TEXT_TO_IMAGE_MODEL)
-    nsfw: bool = bool(len(request.POST.get("nsfw", "")))
-    preview = bool(len(request.POST.get("use_preview", "")))
-    prompt = request.POST["prompt"]
-    negative_prompt = request.POST.get("negative_prompt", None)
-    if seed:
-        seed = int(seed)
-    params = {
-        "guidance_scale": guidance_scale,
-        "num_inference_steps": inference_steps,
-        "height": height,
-        "width": width,
-        "seed": seed,
-        "nsfw": nsfw,
-    }
-    image = GeneratedImage(
-        prompt=prompt,
-        negative_prompt=negative_prompt,
-        model=model,
-        **params,
-    )
-    image.save()
-    image_id = image.id
-    models = model.split(";") if ";" in model else None
-    result = _generate_image.apply_async(
-        kwargs=dict(
-            image_id=image_id,
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            model_path_or_name=models or model,
-            preview_image=preview,
-            **params,
-        ),
-        countdown=2,
-    )
-    async_to_sync(channel_layer.group_send)(
-        "generate",
-        {"type": "event_message", "event": "image_queued", "message": str(image_id)},
-    )
-    return JsonResponse({"error": None, "image_id": image_id})
 
 
 def csrf_form(request: HttpRequest) -> HttpResponse:
