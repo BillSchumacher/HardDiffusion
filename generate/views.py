@@ -58,14 +58,15 @@ class GeneratedImageViewSet(DynamicModelViewSet):
 
     def perform_create(self, serializer: GeneratedImageSerializer) -> None:
         """Set the owner of the image to the current user."""
-        model = serializer.validated_data.get('model')
+        model = serializer.validated_data.get("model")
         if not model:
-            serializer.validated_data['model'] = settings.DEFAULT_TEXT_TO_IMAGE_MODEL
+            serializer.validated_data["model"] = settings.DEFAULT_TEXT_TO_IMAGE_MODEL
         obj = serializer.save(owner=self.request.user)
         model = obj.model
         models = model.split(";") if ";" in model else None
         image_id = obj.id
-        preview = serializer.data.get("preview")
+        preview = serializer.initial_data.get("preview")
+        session_id = serializer.initial_data.get("session_id")
         params = {
             "guidance_scale": obj.guidance_scale,
             "num_inference_steps": obj.num_inference_steps,
@@ -77,6 +78,7 @@ class GeneratedImageViewSet(DynamicModelViewSet):
         result = _generate_image.apply_async(
             kwargs=dict(
                 image_id=image_id,
+                session_id=session_id,
                 prompt=obj.prompt,
                 negative_prompt=obj.negative_prompt,
                 model_path_or_name=models or model,
@@ -85,8 +87,11 @@ class GeneratedImageViewSet(DynamicModelViewSet):
             ),
             countdown=2,
         )
+        # TODO: Makes this happen at the same time as serializer save.
+        obj.task_id = result.id
+        obj.save()
         async_to_sync(channel_layer.group_send)(
-            "generate",
+            session_id,
             {
                 "type": "event_message",
                 "event": "image_queued",

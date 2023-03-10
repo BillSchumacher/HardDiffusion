@@ -6,16 +6,16 @@ from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
 
-from generate.models import GeneratedImage, RenderWorkerDevice
+from generate.models import GeneratedImage
 
 CHANNEL_LAYER = get_channel_layer()
 GROUP_SEND = async_to_sync(CHANNEL_LAYER.group_send)
 
 
 @shared_task(name="generate_image_status", queue="image_progress")
-def generate_image_status_task(event):
+def generate_image_status_task(session_id, event):
     GROUP_SEND(
-        "generate",
+        session_id,
         {
             "type": "event_message",
             "event": "image_generating",
@@ -25,16 +25,21 @@ def generate_image_status_task(event):
 
 
 @shared_task(name="generate_image_completed", queue="image_progress")
-def generate_image_completed_task(image_id, task_id, hostname, start, end, seed):
+def generate_image_completed_task(
+    image_id, session_id, task_id, hostname, start, end, seed
+):
     generated_image = GeneratedImage.objects.get(pk=image_id)
     start = datetime.fromisoformat(start)
     end = datetime.fromisoformat(end)
     duration = (end - start).total_seconds()
-    save_generated_image(generated_image, task_id, seed, duration, start, end, hostname)
+    save_generated_image(
+        generated_image, session_id, task_id, seed, duration, start, end, hostname
+    )
 
 
 def save_generated_image(
     generated_image: GeneratedImage,
+    session_id: str,
     task_id: str,
     seed: int,
     duration: float,
@@ -62,7 +67,7 @@ def save_generated_image(
     generated_image.host = hostname
     generated_image.save()
     GROUP_SEND(
-        "generate",
+        session_id,
         {
             "type": "event_message",
             "event": "image_generated",
@@ -72,12 +77,12 @@ def save_generated_image(
 
 
 @shared_task(name="generate_image_error", queue="image_progress")
-def generate_image_error_task(image_id, task_id, hostname):
+def generate_image_error_task(image_id, session_id, task_id, hostname):
     generated_image = GeneratedImage.objects.get(pk=image_id)
-    save_error(generated_image, task_id, hostname)
+    save_error(generated_image, session_id, task_id, hostname)
 
 
-def save_error(generated_image: GeneratedImage, task_id, hostname) -> None:
+def save_error(generated_image: GeneratedImage, session_id, task_id, hostname) -> None:
     """Save the error to the database.
 
     Args:
@@ -91,7 +96,7 @@ def save_error(generated_image: GeneratedImage, task_id, hostname) -> None:
     generated_image.error = True
     generated_image.save()
     GROUP_SEND(
-        "generate",
+        session_id,
         {
             "type": "event_message",
             "event": "image_errored",
@@ -154,6 +159,7 @@ def update_render_device_stats(device_id, render_device, now, new):
 @shared_task(bind=True, name="generate_image", queue="render", max_concurrency=1)
 def generate_image(
     self,
+    session_id: str,
     image_id: int,
     prompt: str = "An astronaut riding a horse on the moon.",
     negative_prompt: Optional[str] = None,

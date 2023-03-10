@@ -7,6 +7,7 @@
 """
 import json
 from typing import Any, Dict
+from uuid import uuid4
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -16,11 +17,14 @@ class GenerateConsumer(AsyncWebsocketConsumer):
 
     async def connect(self) -> None:
         """Called when the websocket is handshaking as part of initial connection."""
-        self.room_group_name = "generate"
+        self.session_id = uuid4().hex
+        self.room_group_name = f"{self.session_id}"
+        self.authenticated = False
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
+        connected_event = {"session_id": self.session_id}
         await self.send(
-            text_data=json.dumps({"message": "Connected to HardDiffusion!"})
+            text_data=json.dumps({"event": "connected", "message": connected_event})
         )
 
     async def disconnect(self, close_code: int) -> None:
@@ -42,11 +46,7 @@ class GenerateConsumer(AsyncWebsocketConsumer):
         print("td", text_data)
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
-        print("message", message)
-        # Send message to room group
-        await self.channel_layer.group_send(
-            "damap", {"type": "event_message", "message": message}
-        )
+        print("recv message", message)
 
     # Receive message from room group
     async def event_message(self, event):

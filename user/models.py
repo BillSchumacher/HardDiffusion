@@ -7,3 +7,7 @@ class User(AbstractUser):
     """User model."""
 
     huggingface_token = models.CharField(max_length=255, blank=True, null=True)
+    twitter_access_token = models.CharField(max_length=255, blank=True, null=True)
+    twitter_access_token_secret = models.CharField(
+        max_length=255, blank=True, null=True
+    )
