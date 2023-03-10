@@ -24,4 +24,5 @@ pylint
 pylint_django
 python-dotenv
 sentry-sdk
+tweepy
 typing-extensions
