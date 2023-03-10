@@ -1,7 +1,7 @@
 HardDiffusion
 =============
 
-This project has moved to GitLab: https://gitlab.com/hard-diffusion/HardDiffusion
+This project has moved to GitLab: https://gitlab.com/hard-diffusion/HardDiffusionBackend
 Inspired by EasyDiffusion
 
 This works, kinda, expect issues.
